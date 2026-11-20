@@ -39,15 +39,13 @@
         .header-datetime { font-size: 16px; color: #ffab40; font-weight: 600; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 10px; }
         .header-actions { display: flex; gap: 12px; align-items: center; }
 
-        .audio-btn, .test-btn {
+        .audio-btn {
             color: white; border: none; padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
             display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: rgba(48, 209, 88, 0.2); color: var(--app-green); border: 1px solid rgba(48, 209, 88, 0.4);
         }
-        .audio-btn { background: rgba(48, 209, 88, 0.2); color: var(--app-green); border: 1px solid rgba(48, 209, 88, 0.4); }
         .audio-btn.active { background: var(--app-green); color: #000; }
-        .test-btn { background: rgba(255, 122, 0, 0.2); color: var(--app-orange); border: 1px solid rgba(255, 122, 0, 0.4); }
 
-        /* แบ่งหน้าจอหลัก และ แถบ Waiting List ด้านขวา */
         .main-layout {
             display: grid;
             grid-template-columns: 1fr 340px;
@@ -158,7 +156,7 @@
 
     <div class="header-container">
         <div class="header-title">
-            <i class="fa-solid fa-desktop" style="color: var(--app-orange);"></i> จอมอนิเตอร์หัตถการ
+            <i class="fa-solid fa-desktop" style="color: var(--app-orange);"></i> จอมอนิเตอร์หัตถการ (สูงสุด 5 เตียงต่อรอบ)
         </div>
         <div class="header-datetime" id="liveDateTime">กำลังโหลดวันเวลา...</div>
         <div class="header-actions">
@@ -169,10 +167,10 @@
     </div>
 
     <div class="main-layout">
-        <!-- ฝั่งซ้าย: หน้าจอมอนิเตอร์เคสหลักที่กำลังทำหัตถการ -->
+        <!-- ฝั่งซ้าย: มอนิเตอร์หลัก (แสดงสูงสุด 5 เตียง) -->
         <div class="monitor-container" id="monitorQueue"></div>
 
-        <!-- ฝั่งขวา: แท็บ Waiting List (รอคิวเฉพาะชื่อ) -->
+        <!-- ฝั่งขวา: Waiting List (คิวรอ) -->
         <div class="sidebar-waitlist">
             <div class="sidebar-title">
                 <span><i class="fa-solid fa-clock-rotate-left"></i> ผู้ป่วยรอคิว (Waiting List)</span>
@@ -185,9 +183,8 @@
     </div>
 
     <script>
- 		// กำหนดค่า Firebase Config ของคุณที่นี่ (ให้ตรงกับหน้า Commander)
         const firebaseConfig = {
-            	apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+                apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -204,7 +201,6 @@
         let soundEnabled = false;
         let currentData = {};
 
-        // ฟังก์ชันแสดง วัน/เดือน/ปี และเวลาปัจจุบันภาษาไทย
         function updateDateTime() {
             const now = new Date();
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
@@ -238,11 +234,12 @@
             queueRef.child(key).remove();
         }
 
-        // ย้ายจากรอคิว (waiting) มาเป็นทำหัตถการหลัก (active)
+        // เมื่อกดเริ่มทำจากคิวรอ ให้เปลี่ยนสถานะเป็น active และอัปเดต timestamp เป็นเวลาปัจจุบัน เพื่อดันขึ้นบนสุด
         function startWaitingPatient(key) {
             queueRef.child(key).update({ 
                 status: 'active',
-                endTime: Date.now() + (30 * 60 * 1000) // เริ่มนับเวลาใหม่ 30 นาทีเมื่อกดเริ่ม
+                timestamp: 0 - Date.now(), // ดันขึ้นบนสุดเสมอ
+                endTime: Date.now() + (30 * 60 * 1000)
             });
         }
 
@@ -252,12 +249,18 @@
             const waitlistContainer = document.getElementById('waitlistContainer');
             let keys = Object.keys(currentData);
 
+            // เรียงลำดับคิวตาม timestamp ใหม่ล่าสุดขึ้นก่อน (0 - Date.now ยิ่งตัวเลขติดลบน้อย ยิ่งอยู่บนสุด)
+            keys.sort((a, b) => {
+                let timeA = currentData[a].timestamp || 0;
+                let timeB = currentData[b].timestamp || 0;
+                return timeA - timeB;
+            });
+
             let activeKeys = keys.filter(k => currentData[k].status === 'active' || !currentData[k].status);
             let waitingKeys = keys.filter(k => currentData[k].status === 'waiting');
 
             document.getElementById('waitCount').innerText = `(${waitingKeys.length})`;
 
-            // ตรวจสอบเสียงเตือนเฉพาะเคส active ใหม่
             if (soundEnabled && activeKeys.length > 0) {
                 let newActive = activeKeys.filter(k => !previousKeys.includes(k));
                 if (newActive.length > 0) {
@@ -269,8 +272,10 @@
             }
             previousKeys = [...keys];
 
-            // เรนเดอร์ฝั่งซ้าย: มอนิเตอร์หลัก (Active)
-            if (activeKeys.length === 0) {
+            // จำกัดหน้าจอหลักแสดงสูงสุด 5 เตียง
+            let displayActiveKeys = activeKeys.slice(0, 5);
+
+            if (displayActiveKeys.length === 0) {
                 container.innerHTML = `
                     <div class="empty-slot">
                         <i class="fa-solid fa-bed-pulse fa-3x" style="margin-bottom: 15px; color: var(--app-orange);"></i>
@@ -278,7 +283,7 @@
                     </div>`;
             } else {
                 let html = '';
-                activeKeys.forEach((key) => {
+                displayActiveKeys.forEach((key) => {
                     let p = currentData[key];
                     let timeLeftMs = p.endTime - Date.now();
                     let isTimeUp = timeLeftMs <= 0;
@@ -322,7 +327,7 @@
                 container.innerHTML = html;
             }
 
-            // เรนเดอร์ฝั่งขวา: รายชื่อผู้ป่วยรอคิว (Waiting List)
+            // เรนเดอร์ Waiting List ฝั่งขวา (เรียงตามเวลาที่เข้ามาเช่นกัน)
             if (waitingKeys.length === 0) {
                 waitlistContainer.innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.4); padding: 30px; font-size: 14px;">ยังไม่มีคิวรอ</div>`;
             } else {
@@ -343,7 +348,6 @@
             }
         });
 
-        // อัปเดตเวลานับถอยหลังทุก 1 วินาที
         setInterval(() => {
             let keys = Object.keys(currentData);
             if (keys.length > 0) {
