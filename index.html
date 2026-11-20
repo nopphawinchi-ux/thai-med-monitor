@@ -115,7 +115,7 @@
             <input type="hidden" id="edit-key" value="">
 
             <div class="form-grid">
-                <!-- เตียง 12 เตียงครบถ้วน -->
+                <!-- เตียง 12 เตียง -->
                 <div class="form-group">
                     <label><i class="fa-solid fa-bed"></i> เลขที่เตียง (12 เตียง)</label>
                     <select id="input-bed">
@@ -143,7 +143,7 @@
                     <input type="text" id="input-pname" placeholder="เช่น นายสมชาย ใจดี">
                 </div>
                 
-                <!-- วินิจฉัย 16 รายการครบถ้วน -->
+                <!-- วินิจฉัย -->
                 <div class="form-group full">
                     <label><i class="fa-solid fa-stethoscope"></i> วินิจฉัย (Diagnosis)</label>
                     <select id="input-diagnosis">
@@ -199,7 +199,7 @@
                     </div>
                 </div>
 
-                <!-- หัตถการ 8 รายการครบถ้วน -->
+                <!-- หัตถการ -->
                 <div class="form-group">
                     <label><i class="fa-solid fa-hand-holding-medical"></i> หัตถการ</label>
                     <select id="input-proc-type">
@@ -215,7 +215,7 @@
                     </select>
                 </div>
 
-                <!-- อวัยวะครบถ้วน รวมถึง ทั่วร่างกาย -->
+                <!-- อวัยวะ -->
                 <div class="form-group">
                     <label><i class="fa-solid fa-child-reaching"></i> อวัยวะ</label>
                     <select id="input-proc-organ">
@@ -235,7 +235,7 @@
                     </select>
                 </div>
 
-                <!-- ผู้ทำหัตถการ 12 ท่านครบถ้วน -->
+                <!-- ผู้ทำหัตถการ 12 ท่าน -->
                 <div class="form-group full">
                     <label><i class="fa-solid fa-user-doctor"></i> ผู้ทำหัตถการ</label>
                     <select id="input-operator">
@@ -280,7 +280,7 @@
     </div>
 
     <script>
- 	// กำหนดค่า Firebase Config ของคุณที่นี่ (ให้ตรงกับหน้า Commander)
+	// กำหนดค่า Firebase Config ของคุณที่นี่ (ให้ตรงกับหน้า Commander)
         const firebaseConfig = {
             	apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
@@ -318,6 +318,68 @@
                 <text x="50" y="44" font-size="20" font-family="Prompt" font-weight="bold" fill="${bg}" text-anchor="middle">${initials}</text>
             </svg>`;
             return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+        }
+
+        // ฟังก์ชันตรวจสอบและล็อกเตียง + ผู้ทำหัตถการ (ลำดับ 1-11) ที่กำลังให้บริการ (active)
+        function updateFormDropdownLocks() {
+            let activeBeds = [];
+            let activeOperators = [];
+
+            Object.values(currentQueueData).forEach(p => {
+                // เช็คเฉพาะเคสที่กำลังปฏิบัติงานหลัก (active)
+                if (p.status === 'active' || !p.status) {
+                    if (p.bed) activeBeds.push(p.bed);
+                    if (p.operator) activeOperators.push(p.operator);
+                }
+            });
+
+            const editKey = document.getElementById('edit-key').value;
+            let editingItem = editKey ? currentQueueData[editKey] : null;
+
+            // ล็อกเตียงซ้ำ
+            const bedSelect = document.getElementById('input-bed');
+            for (let option of bedSelect.options) {
+                if (option.value === "") continue;
+                let isUsed = activeBeds.includes(option.value);
+                // หากกำลังแก้ไขเคสเดิม อนุญาตให้ใช้เตียงเดิมของตัวเองได้
+                if (editingItem && editingItem.bed === option.value) {
+                    isUsed = false;
+                }
+                option.disabled = isUsed;
+                option.style.color = isUsed ? "#b0b0b0" : "#000";
+                if (isUsed) {
+                    option.innerText = `${option.value} (กำลังใช้งาน)`;
+                } else {
+                    // คืนค่าข้อความเดิม (ตัดวงเงินออก)
+                    option.innerText = option.value.replace(" (กำลังใช้งาน)", "").replace(" (กำลังปฏิบัติงาน)", "");
+                }
+            }
+
+            // ล็อกผู้ทำหัตถการลำดับ 1-11 (ลำดับ 12 ไม่ล็อก)
+            const operatorSelect = document.getElementById('input-operator');
+            for (let option of operatorSelect.options) {
+                if (option.value === "") continue;
+                
+                // ตรวจสอบว่าเป็นลำดับที่ 1-11 หรือไม่ (เช็คจากข้อความหรือชื่อ)
+                let isRestricted = !option.value.includes("นายแพทย์กฤตธนัท วงค์วิเศษ"); // ลำดับ 12 ไม่ล็อก
+
+                let isBusy = activeOperators.includes(option.value);
+                if (editingItem && editingItem.operator === option.value) {
+                    isBusy = false;
+                }
+
+                if (isRestricted && isBusy) {
+                    option.disabled = true;
+                    option.style.color = "#b0b0b0";
+                    if (!option.innerText.includes("กำลังปฏิบัติงาน")) {
+                        option.innerText += " (กำลังปฏิบัติงาน)";
+                    }
+                } else {
+                    option.disabled = false;
+                    option.style.color = "#000";
+                    option.innerText = option.innerText.replace(" (กำลังปฏิบัติงาน)", "");
+                }
+            }
         }
 
         function savePatient(statusType) {
@@ -373,6 +435,9 @@
             let keys = Object.keys(currentQueueData);
             document.getElementById('queueCount').innerText = `(${keys.length} เคส)`;
 
+            // อัปเดตสถานะการล็อกเตียงและผู้ปฏิบัติงานแบบเรียลไทม์
+            updateFormDropdownLocks();
+
             if (keys.length === 0) {
                 listEl.innerHTML = `<div style="text-align: center; color: var(--app-gray); padding: 50px;">ยังไม่มีรายการ</div>`;
                 return;
@@ -408,6 +473,9 @@
             document.getElementById('input-diagnosis').value = p.diagnosis;
             document.getElementById('input-operator').value = p.operator;
             document.getElementById('edit-key').value = key;
+            
+            // รีเฟรชล็อกเพื่อให้เลือกเตียงเดิมหรือชื่อเดิมของตัวเองได้ขณะแก้ไข
+            updateFormDropdownLocks();
         }
 
         function removePatient(key) {
@@ -426,6 +494,8 @@
             document.querySelectorAll('.badge-option').forEach(el => el.classList.remove('selected'));
             document.querySelector('.time-badge').classList.add('selected');
             document.getElementById('input-duration').value = "30";
+            
+            updateFormDropdownLocks();
         }
     </script>
 </body>
