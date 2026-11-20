@@ -58,6 +58,11 @@
         }
         input:focus, select:focus { border-color: var(--app-orange); background: #fff; box-shadow: 0 0 0 4px rgba(255, 122, 0, 0.1); }
         
+        /* ซ่อนลูกศรขึ้นลงในช่อง input number บนทุกเบราว์เซอร์ */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
         .badge-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
         .badge-option { 
             background: #f0f0f3; border: 1px solid transparent; padding: 8px 14px; border-radius: 16px; 
@@ -134,10 +139,13 @@
                         </optgroup>
                     </select>
                 </div>
+
+                <!-- ช่องกรอก HN (จำกัดเฉพาะตัวเลขเท่านั้น + ดึงข้อมูลอัตโนมัติเมื่อพิมพ์เสร็จ) -->
                 <div class="form-group">
-                    <label><i class="fa-solid fa-barcode"></i> HN ผู้ป่วย</label>
-                    <input type="text" id="input-hn" placeholder="เช่น 6701234">
+                    <label><i class="fa-solid fa-barcode"></i> HN ผู้ป่วย (เฉพาะตัวเลข)</label>
+                    <input type="number" id="input-hn" placeholder="พิมพ์ HN แล้วกด Enter หรือคลิกออก" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                 </div>
+
                 <div class="form-group full">
                     <label><i class="fa-solid fa-user-circle"></i> ชื่อ-นามสกุล ผู้ป่วย</label>
                     <input type="text" id="input-pname" placeholder="เช่น นายสมชาย ใจดี">
@@ -280,9 +288,8 @@
     </div>
 
     <script>
-	// กำหนดค่า Firebase Config ของคุณที่นี่ (ให้ตรงกับหน้า Commander)
         const firebaseConfig = {
-            	apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+              	apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -294,6 +301,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const queueRef = database.ref('patientQueue');
+        const registryRef = database.ref('patientRegistry'); // โหนดสำหรับจำ HN และชื่อผู้ป่วย
 
         let currentQueueData = {};
 
@@ -305,6 +313,28 @@
             document.querySelectorAll('#group-time .badge-option').forEach(el => el.classList.remove('selected'));
             element.classList.add('selected');
             document.getElementById('input-duration').value = minutes;
+        }
+
+        // ระบบดึงข้อมูลอัตโนมัติเมื่อพิมพ์ HN เสร็จแล้วคลิกออก (Blur) หรือกด Enter
+        const hnInput = document.getElementById('input-hn');
+        hnInput.addEventListener('blur', lookupPatientByHN);
+        hnInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                lookupPatientByHN();
+                document.getElementById('input-pname').focus();
+            }
+        });
+
+        function lookupPatientByHN() {
+            let hnVal = hnInput.value.trim();
+            if (hnVal.length > 0) {
+                registryRef.child(hnVal).once('value').then((snapshot) => {
+                    if (snapshot.exists()) {
+                        let data = snapshot.val();
+                        document.getElementById('input-pname').value = data.pname || '';
+                    }
+                });
+            }
         }
 
         function generateUniqueAvatar(name) {
@@ -320,13 +350,11 @@
             return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
         }
 
-        // ฟังก์ชันตรวจสอบและล็อกเตียง + ผู้ทำหัตถการ (ลำดับ 1-11) ที่กำลังให้บริการ (active)
         function updateFormDropdownLocks() {
             let activeBeds = [];
             let activeOperators = [];
 
             Object.values(currentQueueData).forEach(p => {
-                // เช็คเฉพาะเคสที่กำลังปฏิบัติงานหลัก (active)
                 if (p.status === 'active' || !p.status) {
                     if (p.bed) activeBeds.push(p.bed);
                     if (p.operator) activeOperators.push(p.operator);
@@ -336,12 +364,10 @@
             const editKey = document.getElementById('edit-key').value;
             let editingItem = editKey ? currentQueueData[editKey] : null;
 
-            // ล็อกเตียงซ้ำ
             const bedSelect = document.getElementById('input-bed');
             for (let option of bedSelect.options) {
                 if (option.value === "") continue;
                 let isUsed = activeBeds.includes(option.value);
-                // หากกำลังแก้ไขเคสเดิม อนุญาตให้ใช้เตียงเดิมของตัวเองได้
                 if (editingItem && editingItem.bed === option.value) {
                     isUsed = false;
                 }
@@ -350,19 +376,15 @@
                 if (isUsed) {
                     option.innerText = `${option.value} (กำลังใช้งาน)`;
                 } else {
-                    // คืนค่าข้อความเดิม (ตัดวงเงินออก)
                     option.innerText = option.value.replace(" (กำลังใช้งาน)", "").replace(" (กำลังปฏิบัติงาน)", "");
                 }
             }
 
-            // ล็อกผู้ทำหัตถการลำดับ 1-11 (ลำดับ 12 ไม่ล็อก)
             const operatorSelect = document.getElementById('input-operator');
             for (let option of operatorSelect.options) {
                 if (option.value === "") continue;
                 
-                // ตรวจสอบว่าเป็นลำดับที่ 1-11 หรือไม่ (เช็คจากข้อความหรือชื่อ)
-                let isRestricted = !option.value.includes("นายแพทย์กฤตธนัท วงค์วิเศษ"); // ลำดับ 12 ไม่ล็อก
-
+                let isRestricted = !option.value.includes("นายแพทย์กฤตธนัท วงค์วิเศษ");
                 let isBusy = activeOperators.includes(option.value);
                 if (editingItem && editingItem.operator === option.value) {
                     isBusy = false;
@@ -384,8 +406,8 @@
 
         function savePatient(statusType) {
             const bed = document.getElementById('input-bed').value;
-            const hn = document.getElementById('input-hn').value;
-            const pname = document.getElementById('input-pname').value;
+            const hn = document.getElementById('input-hn').value.trim();
+            const pname = document.getElementById('input-pname').value.trim();
             const diagnosis = document.getElementById('input-diagnosis').value;
             const duration = parseInt(document.getElementById('input-duration').value) || 30;
             const procType = document.getElementById('input-proc-type').value;
@@ -426,6 +448,14 @@
                 document.getElementById('edit-key').value = "";
             }
 
+            // บันทึก HN ผูกกับชื่อเก็บไว้ใน Firebase ทันที เพื่อให้เรียกใช้ครั้งต่อไปได้
+            if (hn && hn !== '-----' && pname) {
+                registryRef.child(hn).set({
+                    pname: pname,
+                    lastUpdated: Date.now()
+                });
+            }
+
             resetForm();
         }
 
@@ -435,7 +465,6 @@
             let keys = Object.keys(currentQueueData);
             document.getElementById('queueCount').innerText = `(${keys.length} เคส)`;
 
-            // อัปเดตสถานะการล็อกเตียงและผู้ปฏิบัติงานแบบเรียลไทม์
             updateFormDropdownLocks();
 
             if (keys.length === 0) {
@@ -474,7 +503,6 @@
             document.getElementById('input-operator').value = p.operator;
             document.getElementById('edit-key').value = key;
             
-            // รีเฟรชล็อกเพื่อให้เลือกเตียงเดิมหรือชื่อเดิมของตัวเองได้ขณะแก้ไข
             updateFormDropdownLocks();
         }
 
