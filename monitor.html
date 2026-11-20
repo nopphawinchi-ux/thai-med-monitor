@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Display Monitor - จอมอนิเตอร์หัตถการ</title>
+    <title>Live Treatment Dashboard - จอมอนิเตอร์หัตถการ</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -39,12 +39,19 @@
         .header-datetime { font-size: 16px; color: #ffab40; font-weight: 600; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 10px; }
         .header-actions { display: flex; gap: 12px; align-items: center; }
 
-        .audio-btn {
+        .control-btn {
             color: white; border: none; padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
             display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .audio-btn {
             background: rgba(48, 209, 88, 0.2); color: var(--app-green); border: 1px solid rgba(48, 209, 88, 0.4);
         }
         .audio-btn.active { background: var(--app-green); color: #000; }
+
+        .saver-btn {
+            background: rgba(123, 44, 191, 0.2); color: #d8b4fe; border: 1px solid rgba(123, 44, 191, 0.4);
+        }
+        .saver-btn:hover { background: rgba(123, 44, 191, 0.4); }
 
         .main-layout {
             display: grid;
@@ -100,12 +107,6 @@
         .card-operator { display: flex; align-items: center; gap: 8px; font-size: 14px; }
         .card-operator img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); }
 
-        .empty-slot {
-            grid-column: 1 / -1; text-align: center; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; color: rgba(255,255,255,0.3);
-            background: rgba(30, 15, 45, 0.8); border-radius: 24px; border: 2px dashed rgba(255, 122, 0, 0.2); font-size: 18px; padding: 50px;
-        }
-
         .btn-done { 
             background: rgba(255, 69, 58, 0.2); color: var(--app-red); border: 1px solid rgba(255, 69, 58, 0.4); 
             padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700;
@@ -150,17 +151,67 @@
             border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
         }
         .btn-start-wait:hover { background: #e56d00; }
+
+        /* ================= Screen Saver Style ================= */
+        #screenSaverOverlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% 50%, #1a0b2e 0%, #0a0410 100%);
+            z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.8s ease-in-out;
+        }
+        #screenSaverOverlay.active {
+            opacity: 1; pointer-events: auto;
+        }
+        .saver-content {
+            animation: floatSlow 6s ease-in-out infinite alternate;
+        }
+        .saver-logo {
+            font-size: 70px; color: var(--app-orange); margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(255, 122, 0, 0.4);
+        }
+        .saver-title {
+            font-size: 42px; font-weight: 800; color: #fff; margin: 0 0 10px 0;
+            letter-spacing: 1px;
+        }
+        .saver-subtitle {
+            font-size: 20px; color: #b794f4; font-weight: 400; margin-bottom: 40px;
+        }
+        .saver-clock {
+            font-size: 64px; font-weight: 800; color: #ffab40;
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 40px; border-radius: 20px; backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: inline-block;
+        }
+        @keyframes floatSlow {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-15px); }
+        }
     </style>
 </head>
 <body>
 
+    <!-- หน้าจอ Screen Saver (ภาพพักหน้าจอ) -->
+    <div id="screenSaverOverlay" onclick="toggleManualScreenSaver()">
+        <div class="saver-content">
+            <div class="saver-logo"><i class="fa-solid fa-hospital-user"></i></div>
+            <h1 class="saver-title">ระบบหัตถการแพทย์แผนไทย</h1>
+            <p class="saver-subtitle">พร้อมให้บริการผู้ป่วยทุกท่าน • แตะหน้าจอเพื่อกลับสู่หน้าจอหลัก</p>
+            <div class="saver-clock" id="saverClock">00:00:00</div>
+        </div>
+    </div>
+
     <div class="header-container">
         <div class="header-title">
-            <i class="fa-solid fa-desktop" style="color: var(--app-orange);"></i> สถานะการให้บริการและหัตถการ (TTM PMH)
+            <i class="fa-solid fa-desktop" style="color: var(--app-orange);"></i> Live Treatment Dashboard
         </div>
         <div class="header-datetime" id="liveDateTime">กำลังโหลดวันเวลา...</div>
         <div class="header-actions">
-            <button id="audioToggleBtn" class="audio-btn" onclick="initAudio()">
+            <!-- ปุ่มเปิด/ปิดภาพพักหน้าจอด้วยมือ -->
+            <button class="control-btn saver-btn" onclick="toggleManualScreenSaver()">
+                <i class="fa-solid fa-moon"></i> พักหน้าจอ
+            </button>
+            <button id="audioToggleBtn" class="control-btn audio-btn" onclick="initAudio()">
                 <i class="fa-solid fa-volume-xmark"></i> เปิดเสียง
             </button>
         </div>
@@ -184,7 +235,7 @@
 
     <script>
         const firebaseConfig = {
-                apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+            	apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -200,13 +251,20 @@
         let previousKeys = [];
         let soundEnabled = false;
         let currentData = {};
+        let manualSaverActive = false; // ตัวแปรเช็คสถานะกดพักหน้าจอด้วยมือ
 
         function updateDateTime() {
             const now = new Date();
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
             let dateStr = now.toLocaleDateString('th-TH', options);
             let timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
             document.getElementById('liveDateTime').innerHTML = `<i class="fa-regular fa-calendar-days"></i> ${dateStr} | <i class="fa-regular fa-clock"></i> ${timeStr}`;
+            
+            const saverClockEl = document.getElementById('saverClock');
+            if (saverClockEl) {
+                saverClockEl.innerText = timeStr;
+            }
         }
         setInterval(updateDateTime, 1000);
         updateDateTime();
@@ -230,26 +288,39 @@
             }
         }
 
+        // ฟังก์ชันเปิด/ปิดภาพพักหน้าจอด้วยมือ
+        function toggleManualScreenSaver() {
+            manualSaverActive = !manualSaverActive;
+            const screenSaver = document.getElementById('screenSaverOverlay');
+            if (manualSaverActive) {
+                screenSaver.classList.add('active');
+            } else {
+                screenSaver.classList.remove('active');
+            }
+        }
+
         function removePatient(key) {
             queueRef.child(key).remove();
         }
 
-        // เมื่อกดเริ่มทำจากคิวรอ ให้เปลี่ยนสถานะเป็น active และอัปเดต timestamp เป็นเวลาปัจจุบัน เพื่อดันขึ้นบนสุด
         function startWaitingPatient(key) {
             queueRef.child(key).update({ 
                 status: 'active',
-                timestamp: 0 - Date.now(), // ดันขึ้นบนสุดเสมอ
+                timestamp: 0 - Date.now(),
                 endTime: Date.now() + (30 * 60 * 1000)
             });
+            // หากกดเริ่มทำจากคิวรอ ให้ปลดล็อกหน้าจอพักอัตโนมัติด้วย
+            manualSaverActive = false;
         }
 
         queueRef.orderByChild('timestamp').on('value', (snapshot) => {
             currentData = snapshot.val() || {};
             const container = document.getElementById('monitorQueue');
             const waitlistContainer = document.getElementById('waitlistContainer');
+            const screenSaver = document.getElementById('screenSaverOverlay');
+            
             let keys = Object.keys(currentData);
 
-            // เรียงลำดับคิวตาม timestamp ใหม่ล่าสุดขึ้นก่อน (0 - Date.now ยิ่งตัวเลขติดลบน้อย ยิ่งอยู่บนสุด)
             keys.sort((a, b) => {
                 let timeA = currentData[a].timestamp || 0;
                 let timeB = currentData[b].timestamp || 0;
@@ -258,6 +329,13 @@
 
             let activeKeys = keys.filter(k => currentData[k].status === 'active' || !currentData[k].status);
             let waitingKeys = keys.filter(k => currentData[k].status === 'waiting');
+
+            // เงื่อนไขเปิด Screen Saver: เปิดอัตโนมัติเมื่อไม่มีเคส หรือเปิดผ่านปุ่มกดมือ
+            if ((activeKeys.length === 0 && waitingKeys.length === 0) || manualSaverActive) {
+                screenSaver.classList.add('active');
+            } else {
+                screenSaver.classList.remove('active');
+            }
 
             document.getElementById('waitCount').innerText = `(${waitingKeys.length})`;
 
@@ -272,14 +350,13 @@
             }
             previousKeys = [...keys];
 
-            // จำกัดหน้าจอหลักแสดงสูงสุด 5 เตียง
             let displayActiveKeys = activeKeys.slice(0, 5);
 
             if (displayActiveKeys.length === 0) {
                 container.innerHTML = `
-                    <div class="empty-slot">
-                        <i class="fa-solid fa-bed-pulse fa-3x" style="margin-bottom: 15px; color: var(--app-orange);"></i>
-                        <span>ไม่มีเคสกำลังทำหัตถการ (สามารถกด "เริ่มทำ" จากแถบรอคิวขวามือได้)</span>
+                    <div style="grid-column: 1 / -1; text-align: center; color: rgba(255,255,255,0.3); background: rgba(30, 15, 45, 0.8); border-radius: 24px; border: 2px dashed rgba(255, 122, 0, 0.2); font-size: 18px; padding: 50px;">
+                        <i class="fa-solid fa-bed-pulse fa-3x" style="margin-bottom: 15px; color: var(--app-orange);"></i><br>
+                        ไม่มีเคสกำลังทำหัตถการ (สามารถกดปุ่ม "พักหน้าจอ" ด้านบนขวาได้ตลอดเวลา)
                     </div>`;
             } else {
                 let html = '';
@@ -327,7 +404,6 @@
                 container.innerHTML = html;
             }
 
-            // เรนเดอร์ Waiting List ฝั่งขวา (เรียงตามเวลาที่เข้ามาเช่นกัน)
             if (waitingKeys.length === 0) {
                 waitlistContainer.innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.4); padding: 30px; font-size: 14px;">ยังไม่มีคิวรอ</div>`;
             } else {
