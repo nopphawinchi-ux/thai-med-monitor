@@ -76,21 +76,23 @@
         .status-sidebar {
             background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 12px; padding: 14px;
             max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            overflow-y: auto;
         }
-        .sidebar-header {
-            font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 10px;
-            border-bottom: 2px solid var(--card-border); padding-bottom: 6px;
+        .sidebar-section-title {
+            font-size: 13px; font-weight: 700; padding: 4px 8px; border-radius: 4px; margin: 8px 0 4px 0;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .status-list { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; padding-right: 2px; }
+        .title-inside { background: #064e3b; color: #34d399; border: 1px solid #059669; }
+        .title-outside { background: #1e3a8a; color: #93c5fd; border: 1px solid #3b82f6; }
+
+        .status-list { display: flex; flex-direction: column; gap: 6px; }
         
         .clinic-theme-thai { background: #0a2318 !important; border-color: #10b981 !important; }
         .clinic-theme-china { background: #0a1b2a !important; border-color: #3b82f6 !important; }
         .clinic-theme-spa { background: #220e24 !important; border-color: #ec4899 !important; }
 
-        .clinic-text-thai { color: #34d399 !important; }
-        .clinic-text-china { color: #60a5fa !important; }
-        .clinic-text-spa { color: #f472b6 !important; }
+        .card-inside-badge { background: #047857; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .card-outside-badge { background: #1d4ed8; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
         .status-card {
             border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: center; position: relative;
@@ -110,7 +112,7 @@
         .pt-regis { background: #172b4d; color: #38bdf8; border: 1px solid #38bdf8; }
         .pt-doctor { background: #3b2808; color: #fbbf24; border: 1px solid #fbbf24; }
         .pt-pharmacy { background: #3b0731; color: #f472b6; border: 1px solid #f472b6; }
-        .pt-cashier { background: #064e3b; color: #34d399; border: 1px solid #34d399; }
+        .pt-cashier { background: #064e3b; color: #34d399; border: 1px solid #059669; }
         .pt-done { background: #1e293b; color: #94a3b8; border: 1px solid #94a3b8; }
 
         .btn-sidebar-edit {
@@ -140,6 +142,12 @@
         .clinic-china { background: #1e3a8a; border-color: #3b82f6; }
         .clinic-spa { background: #701a75; border-color: #ec4899; }
 
+        .service-type-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .btn-service-type {
+            padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: 2px solid #204e3b; background: #133326; color: #fff; text-align: center; opacity: 0.6; transition: 0.2s;
+        }
+        .btn-service-type.selected { opacity: 1; border-color: var(--accent-green); background: #064e3b; box-shadow: 0 0 10px rgba(46,196,182,0.3); }
+
         .disease-badge-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
         .disease-badge {
             background: #133326; border: 1px solid #204e3b; padding: 6px 12px; border-radius: 6px;
@@ -147,12 +155,20 @@
         }
         .disease-badge.selected { background: #059669; border-color: #34d399; }
 
-        .treatment-btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 6px; }
+        .treatment-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 6px; }
         .btn-treatment {
-            background: #133326; border: 1px solid #204e3b; padding: 10px; border-radius: 8px;
-            font-size: 13px; font-weight: 600; cursor: pointer; color: #fff; transition: 0.2s; text-align: center; user-select: none;
+            padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; color: #fff; transition: 0.2s; text-align: center; user-select: none; border: 2px solid transparent; opacity: 0.6;
         }
-        .btn-treatment.selected { background: #059669; border-color: #34d399; }
+        .btn-treatment.selected { opacity: 1; border-color: #fff; transform: scale(1.01); }
+        
+        .t-massage { background: #065f46; border-color: #10b981; }
+        .t-herb-compress { background: #047857; border-color: #34d399; }
+        .t-both { background: #1d4ed8; border-color: #60a5fa; }
+        .t-pharmacy { background: #701a75; border-color: #f472b6; }
+        .t-acupuncture { background: #b45309; border-color: #fbbf24; }
+        .t-steam { background: #991b1b; border-color: #f87171; }
+        .t-salt-pot { background: #78350f; border-color: #d97706; }
+        .t-spa { background: #4c1d95; border-color: #a78bfa; }
 
         .preset-syndrome-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; margin-bottom: 10px; }
         .btn-syndrome {
@@ -175,7 +191,7 @@
             padding: 12px; text-align: center; margin-bottom: 10px;
         }
         .crop-avatar-preview {
-            width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-green);
+            width: 140px; height: 88px; border-radius: 6px; object-fit: contain; border: 2px solid var(--accent-green);
             margin: 0 auto 8px auto; display: block; background: #133326;
         }
         .camera-btn-row { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
@@ -225,13 +241,38 @@
         .admin-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
         .btn-detail-toggle { background: #0284c7; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
+        .filter-btn-group { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+        .btn-filter { background: #133326; border: 1px solid #204e3b; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-filter.active { background: var(--accent-green); color: #071711; border-color: #45ede0; font-weight: 700; }
+
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
             display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px);
         }
         .modal-content {
-            background: #0f251d; border: 2px solid var(--accent-green); border-radius: 14px; padding: 18px;
-            width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            background: #0f251d; border: 2px solid var(--accent-green); border-radius: 14px; padding: 22px;
+            width: 90%; max-width: 780px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            position: relative;
+        }
+
+        .medical-watermark {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 32px; font-weight: 800; color: rgba(46, 196, 182, 0.07); pointer-events: none;
+            white-space: nowrap; z-index: 0; text-align: center;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #adminDetailModal, #adminDetailModal * { visibility: visible; }
+            #adminDetailModal {
+                position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+                background: #fff !important; color: #000 !important; border: none; box-shadow: none;
+            }
+            .modal-content {
+                background: #fff !important; color: #000 !important; width: 100% !important; max-width: 100% !important; border: none !important;
+            }
+            .btn-action-main, button { display: none !important; }
+            .medical-watermark { color: rgba(0, 0, 0, 0.04) !important; }
         }
     </style>
 </head>
@@ -245,7 +286,7 @@
         <div class="live-clock" id="liveClockDisplay">กำลังโหลดเวลา...</div>
     </div>
 
-    <!-- แถบเมนูด้านบน แยกปุ่ม Log In ไว้มุมซ้ายสุด และแถบจุดบริการอื่นๆ -->
+    <!-- แถบเมนูด้านบน -->
     <div class="top-nav">
         <div class="nav-login-area">
             <button class="nav-tab-btn nav-tab-login active" id="tab-btn-0" onclick="switchView('view-0', this)"><i class="fa-solid fa-right-to-bracket"></i> 0. Log In</button>
@@ -255,7 +296,7 @@
             <button class="nav-tab-btn" id="tab-btn-2" onclick="switchView('view-2', this)" disabled><i class="fa-solid fa-stethoscope"></i> 2. ห้องตรวจ</button>
             <button class="nav-tab-btn" id="tab-btn-3" onclick="switchView('view-3', this)" disabled><i class="fa-solid fa-pills"></i> 3. ห้องยา</button>
             <button class="nav-tab-btn" id="tab-btn-4" onclick="switchView('view-4', this)" disabled><i class="fa-solid fa-cash-register"></i> 4. การเงิน</button>
-            <button class="nav-tab-btn nav-tab-admin" id="tab-btn-5" onclick="switchView('view-5', this)" disabled><i class="fa-solid fa-shield-halved"></i> 5. สรุปรายวัน</button>
+            <button class="nav-tab-btn nav-tab-admin" id="tab-btn-5" onclick="switchView('view-5', this)" disabled><i class="fa-solid fa-file-invoice"></i> 5. สรุปรายวัน</button>
         </div>
     </div>
 
@@ -301,22 +342,32 @@
                     </select>
                 </div>
 
+                <!-- ประเภทบริการ ใน/นอก สถานบริการ -->
+                <div class="form-group full">
+                    <label><i class="fa-solid fa-map-location-dot"></i> ประเภทสถานที่บริการ *</label>
+                    <div class="service-type-group">
+                        <div class="btn-service-type selected" id="btn-service-inside" onclick="selectServiceType('ในสถานบริการ')">🏥 ในสถานบริการ</div>
+                        <div class="btn-service-type" id="btn-service-outside" onclick="selectServiceType('นอกสถานบริการ')">🚗 นอกสถานบริการ</div>
+                    </div>
+                    <input type="hidden" id="reg-service-type" value="ในสถานบริการ">
+                </div>
+
                 <div class="camera-box-container">
-                    <img id="scannedAvatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="crop-avatar-preview" alt="Patient Face">
+                    <img id="scannedAvatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="crop-avatar-preview" alt="Patient Card Preview" style="object-fit: cover;">
                     <div style="color: var(--accent-green); font-weight: 700; font-size: 13px; margin-bottom: 6px;">
-                        <i class="fa-solid fa-camera"></i> สแกนบัตรประชาชน (OCR) หรือเลือกรูปภาพ
+                        <i class="fa-solid fa-camera"></i> ถ่ายรูปหรืออัปโหลดภาพ (สัดส่วน 1:1.59 บัตรประชาชน)
                     </div>
                     
                     <div class="camera-btn-row">
                         <button type="button" class="btn-cam" onclick="document.getElementById('cameraInput').click()">
                             <i class="fa-solid fa-camera-retro"></i> ถ่ายรูปจากกล้อง
                         </button>
-                        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImageUploadAndOCR(event)">
+                        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImageUploadAndCompress(event)">
 
                         <button type="button" class="btn-cam" onclick="document.getElementById('fileUploadInput').click()">
                             <i class="fa-solid fa-folder-open"></i> เลือกรูปภาพ
                         </button>
-                        <input type="file" id="fileUploadInput" accept="image/*" style="display:none" onchange="handleImageUploadAndOCR(event)">
+                        <input type="file" id="fileUploadInput" accept="image/*" style="display:none" onchange="handleImageUploadAndCompress(event)">
                     </div>
                 </div>
 
@@ -347,10 +398,12 @@
                         <select id="reg-right" onchange="checkRightSchemeValidation()">
                             <option value="บัตรทอง">1. บัตรทอง</option>
                             <option value="บัตรทอง 30 บาท">2. บัตรทอง 30 บาท</option>
-                            <option value="จ่ายตรงกรมบัญชีกลาง">3. จ่ายตรงกรมบัญชีกลาง</option>
-                            <option value="การปกครองส่วนท้องถิ่น">4. การปกครองส่วนท้องถิ่น</option>
-                            <option value="สำรองจ่าย/รัฐวิสาหกิจ">5. สำรองจ่าย/รัฐวิสาหกิจ</option>
-                            <option value="ชำระเงินเอง">6. ชำระเงินเอง</option>
+                            <option value="ประกันสังคม ใน สกลนคร">3. ประกันสังคม ใน สกลนคร</option>
+                            <option value="ประกันสังคม รพ.อื่น">4. ประกันสังคม รพ.อื่น</option>
+                            <option value="จ่ายตรงกรมบัญชีกลาง">5. จ่ายตรงกรมบัญชีกลาง</option>
+                            <option value="การปกครองส่วนท้องถิ่น">6. การปกครองส่วนท้องถิ่น</option>
+                            <option value="สำรองจ่าย/รัฐวิสาหกิจ">7. สำรองจ่าย/รัฐวิสาหกิจ</option>
+                            <option value="ชำระเงินเอง">8. ชำระเงินเอง</option>
                         </select>
                     </div>
 
@@ -393,9 +446,10 @@
             <div id="view-2" class="section-view">
                 <div class="panel-title" style="margin-bottom:8px;">
                     <span style="font-size:16px;"><i class="fa-solid fa-stethoscope" style="color:var(--accent-green);"></i> จุดที่ 2: ห้องตรวจแพทย์</span>
-                    <div style="display:flex; gap:6px;">
-                        <a href="https://thai-herb-order.netlify.app/" target="_blank" style="background:#0891b2; color:#fff; text-decoration:none; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:700;"><i class="fa-solid fa-capsules"></i> สั่งยาปรุงเฉพาะราย</a>
-                        <a href="https://nopphawinchi-ux.github.io/thai-med-monitor/" target="_blank" style="background:#4f46e5; color:#fff; text-decoration:none; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600;"><i class="fa-solid fa-external-link-alt"></i> Commander</a>
+                    <div style="display:flex; gap:6px; flex-wrap: wrap;">
+                        <a href="https://thai-herb-order.netlify.app/" target="_blank" style="background:#0891b2; color:#fff; text-decoration:none; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:700;"><i class="fa-solid fa-capsules"></i> สั่งยาปรุงเฉพาะราย</a>
+                        <a href="https://medbank.bmhos.com" target="_blank" style="background:#7c3aed; color:#fff; text-decoration:none; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:700;"><i class="fa-solid fa-address-card"></i> ตรวจสอบประวัติ</a>
+                        <a id="commanderLinkBtn" href="https://nopphawinchi-ux.github.io/thai-med-monitor/" target="_blank" style="background:#4f46e5; color:#fff; text-decoration:none; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:600;"><i class="fa-solid fa-external-link-alt"></i> สั่งการผ่านหน้าจอ</a>
                     </div>
                 </div>
                 
@@ -468,32 +522,40 @@
                 </div>
             </div>
 
-            <!-- จุดที่ 5: สรุปรายวัน (Admin หน้าจอรายงานสรุป) -->
+            <!-- จุดที่ 5: สรุปรายวัน -->
             <div id="view-5" class="section-view">
                 <div class="panel-title">
-                    <span><i class="fa-solid fa-file-invoice-dollar" style="color:var(--accent-green);"></i> จุดที่ 5: หน้าสรุปรายการประจำวัน (สำหรับ Admin)</span>
+                    <span><i class="fa-solid fa-file-invoice-dollar" style="color:var(--accent-green);"></i> จุดที่ 5: หน้าสรุปรายการประจำวัน</span>
                     <div style="display:flex; gap:8px; align-items:center;">
                         <label style="font-size:12px; color:var(--accent-green); margin:0;">เลือกวันที่:</label>
                         <input type="date" id="admin-filter-date" style="padding:4px 8px; font-size:13px; width:150px;" onchange="renderAdminSummaryTable()">
                         <button class="btn-cam" onclick="renderAdminSummaryTable()"><i class="fa-solid fa-rotate"></i> โหลด</button>
                     </div>
                 </div>
+
+                <div class="filter-btn-group">
+                    <button class="btn-filter active" id="filter-all" onclick="setAdminFilter('all', this)">📌 รวมทั้งหมด</button>
+                    <button class="btn-filter" id="filter-inside" onclick="setAdminFilter('ในสถานบริการ', this)">🏥 ในสถานบริการ</button>
+                    <button class="btn-filter" id="filter-outside" onclick="setAdminFilter('นอกสถานบริการ', this)">🚗 นอกสถานบริการ</button>
+                </div>
+
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
                             <tr>
                                 <th>เวลา</th>
                                 <th>HN / ชื่อ-นามสกุล</th>
+                                <th>ประเภท</th>
                                 <th>คลินิก</th>
                                 <th>สิทธิ์การรักษา</th>
                                 <th>หัตถการ</th>
                                 <th>รายการยาหลัก</th>
-                                <th>สถานะล่าสุด</th>
+                                <th>สถานะ</th>
                                 <th>จัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="adminSummaryTableBody">
-                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">กำลังโหลดข้อมูลสรุป...</td></tr>
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">กำลังโหลดข้อมูลสรุป...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -501,14 +563,27 @@
 
         </div>
 
-        <!-- Right Sidebar (แสดงเฉพาะผู้ป่วยที่ยังไม่กลับบ้าน พร้อมแยกสีตามคลินิก) -->
+        <!-- Right Sidebar (ในสถานบริการ อยู่ด้านบน | นอกสถานบริการ อยู่ด้านล่าง) -->
         <div class="status-sidebar">
             <div class="sidebar-header">
                 <span><i class="fa-solid fa-users-line" style="color:var(--accent-green);"></i> สถานะผู้ป่วยทุกจุด</span>
                 <span id="totalPatientCount" style="font-size: 13px; color: var(--accent-green);">(0 คน)</span>
             </div>
-            <div class="status-list" id="globalStatusList">
-                <div style="text-align: center; color: var(--text-muted); padding: 15px; font-size: 13px;">กรุณา Log In ก่อนใช้งานระบบ</div>
+            
+            <div class="sidebar-section-title title-inside">
+                <span>🏥 ในสถานบริการ</span>
+                <span id="countInside" style="font-size:11px;">0 คน</span>
+            </div>
+            <div class="status-list" id="globalStatusListInside">
+                <div style="text-align: center; color: var(--text-muted); padding: 10px; font-size: 12px;">ไม่มีผู้ป่วยในสถานบริการ</div>
+            </div>
+
+            <div class="sidebar-section-title title-outside" style="margin-top: 12px;">
+                <span>🚗 นอกสถานบริการ</span>
+                <span id="countOutside" style="font-size:11px;">0 คน</span>
+            </div>
+            <div class="status-list" id="globalStatusListOutside">
+                <div style="text-align: center; color: var(--text-muted); padding: 10px; font-size: 12px;">ไม่มีผู้ป่วยนอกสถานบริการ</div>
             </div>
         </div>
 
@@ -540,18 +615,31 @@
         </div>
     </div>
 
-    <!-- Modal ดูรายละเอียดเพิ่มเติมผู้ป่วยสำหรับ Admin -->
+    <!-- Modal เวชระเบียนผู้ป่วย -->
     <div class="modal-overlay" id="adminDetailModal">
-        <div class="modal-content" style="max-width: 600px;">
-            <h3 style="margin-top:0; color:var(--accent-green); font-size:16px;"><i class="fa-solid fa-circle-info"></i> รายละเอียดผู้ป่วยเชิงลึก</h3>
-            <div id="adminDetailBody" style="line-height: 1.6; font-size: 13px; color: var(--text-main);"></div>
-            <button class="btn-action-main" style="margin-top: 15px; padding: 8px;" onclick="document.getElementById('adminDetailModal').style.display='none'">ปิดหน้าต่าง</button>
+        <div class="modal-content">
+            <div class="medical-watermark">โรงพยาบาลพระอาจารย์มั่น ภูริทัตโต</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--card-border); padding-bottom: 10px; margin-bottom: 14px; position:relative; z-index:1;">
+                <h3 style="margin:0; color:var(--accent-green); font-size:19px;">
+                    <i class="fa-solid fa-file-medical"></i> เวชระเบียนสรุปประวัติผู้ป่วย
+                </h3>
+                <div style="display:flex; gap:6px;">
+                    <button onclick="window.print()" style="background:#0284c7; color:#fff; border:none; padding:8px 12px; border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                        <i class="fa-solid fa-print"></i> พิมพ์ A5
+                    </button>
+                    <button onclick="window.print()" style="background:#059669; color:#fff; border:none; padding:8px 12px; border-radius:6px; font-size:13px; font-weight:bold; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                        <i class="fa-solid fa-file-pdf"></i> Save PDF
+                    </button>
+                </div>
+            </div>
+            <div id="adminDetailBody" style="position:relative; z-index:1; line-height: 1.6; font-size: 15px; color: var(--text-main);"></div>
+            <button class="btn-action-main" style="margin-top: 18px; padding: 10px; font-size:15px; position:relative; z-index:1;" onclick="document.getElementById('adminDetailModal').style.display='none'">ปิดหน้าต่าง</button>
         </div>
     </div>
 
     <script>
         const firebaseConfig = {
-               	apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -562,7 +650,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const sysRef = database.ref('hospitalFlowQueryGreenThemeV32');
+        const sysRef = database.ref('hospitalFlowQueryGreenThemeV40');
 
         let allPatientsData = {};
         let selectedDoctorKey = null;
@@ -571,6 +659,7 @@
         let isSystemLoggedIn = false;
         let isAdminLoggedIn = false;
         let currentAvatarBase64 = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+        let currentAdminFilter = 'all';
 
         const staffList = [
             "พรสิน เฮียงราช", "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด",
@@ -698,7 +787,7 @@
 
         function checkAdminAccess(btn) {
             if (!isSystemLoggedIn) { alert("กรุณาเข้าสู่ระบบ (จุดที่ 0) ก่อนใช้งาน"); return; }
-            let pwd = prompt("กรุณากรอกรหัสความปลอดภัยสำหรับเข้าหน้าสรุปรายวัน (Admin):");
+            let pwd = prompt("กรุณากรอกรหัสความปลอดภัยสำหรับเข้าหน้าสรุปรายวัน:");
             if (pwd === "29042533") {
                 isAdminLoggedIn = true;
                 switchView('view-5', btn);
@@ -728,75 +817,53 @@
             alert("กรอกข้อมูลจำลองสำหรับทดสอบเรียบร้อย!");
         }
 
-        // ฟังก์ชันสำหรับเชื่อมต่อ Google Cloud Vision API (OCR) จริง
-async function handleImageUploadAndOCR(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async function(e) {
-        currentAvatarBase64 = e.target.result;
-        document.getElementById('scannedAvatarPreview').src = currentAvatarBase64;
-        
-        // 1. นำ API Key ของคุณมาใส่ตรงนี้
-        const googleApiKey = "AIzaSyBVTi52AZedE2Jl_uQlpT43ttdRvd4WUHk"; 
-        const endpoint = `https://vision.googleapis.com/v1/images:annotate?key=${googleApiKey}`;
-        
-        // ตัด Base64 header ออก
-        const base64Content = currentAvatarBase64.replace(/^data:image\/[a-z]+;base64,/, "");
-
-        const requestBody = {
-            requests: [
-                {
-                    image: { content: base64Content },
-                    features: [{ type: "TEXT_DETECTION", maxResults: 10 }]
-                }
-            ]
-        };
-
-        try {
-            alert("กำลังส่งภาพไปสแกนข้อความด้วย Google Cloud Vision API...");
-            let response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-
-            let result = await response.json();
-            
-            if (result.responses && result.responses[0].textAnnotations) {
-                let extractedText = result.responses[0].textAnnotations[0].description;
-                console.log("ข้อความที่สแกนได้:", extractedText);
-                
-                // แยกข้อความค้นหาเลขบัตร 13 หลักด้วย Regex เบื้องต้น
-                let idCardRegex = /\d{1}\s?\d{4}\s?\d{5}\s?\d{2}\s?\d{1}/g;
-                let match = extractedText.match(idCardRegex);
-                if (match && match.length > 0) {
-                    let cleanId = match[0].replace(/\s+/g, '');
-                    document.getElementById('reg-idcard').value = cleanId;
-                }
-                
-                alert("สแกนข้อมูลบัตรสำเร็จ!");
+        function selectServiceType(type) {
+            document.getElementById('btn-service-inside').classList.remove('selected');
+            document.getElementById('btn-service-outside').classList.remove('selected');
+            if (type === 'ในสถานบริการ') {
+                document.getElementById('btn-service-inside').classList.add('selected');
             } else {
-                alert("ไม่พบข้อความในภาพ กรุณาลองถ่ายใหม่อีกครั้ง");
+                document.getElementById('btn-service-outside').classList.add('selected');
             }
-        } catch (error) {
-            console.error("Vision API Error:", error);
-            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ Google Cloud Vision API");
+            document.getElementById('reg-service-type').value = type;
         }
-    };
-    reader.readAsDataURL(file);
-}
+
+        function handleImageUploadAndCompress(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const MAX_WIDTH = 500;
+                    const MAX_HEIGHT = Math.round(500 / 1.59);
+
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = MAX_HEIGHT;
+                    ctx.drawImage(img, 0, 0, MAX_WIDTH, MAX_HEIGHT);
+
+                    currentAvatarBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                    document.getElementById('scannedAvatarPreview').src = currentAvatarBase64;
+                    alert("บันทึกและปรับสัดส่วนภาพ 1:1.59 สำเร็จ!");
+                };
+            };
+            reader.readAsDataURL(file);
+        }
 
         function handleDoctorSelection(selectEl) {
             let val = selectEl.value;
             if (val.includes("พทป.นพวินทร์ จิรศศิภิรมย์")) {
-                let pwd = prompt("กรุณากรอกรหัสความปลอดภัยสำหรับผู้ดูแลระบบ (Admin):");
+                let pwd = prompt("กรุณากรอกรหัสความปลอดภัยสำหรับผู้ดูแลระบบ:");
                 if (pwd === "29042533") {
                     isAdminLoggedIn = true;
-                    alert("ยืนยันตัวตนสำเร็จ! คุณมีสิทธิ์เป็น Admin เข้าถึงและแก้ไขได้ทุกหน้า");
+                    alert("ยืนยันตัวตนสำเร็จ!");
                 } else {
-                    alert("รหัสความปลอดภัยไม่ถูกต้อง! ไม่อนุญาตให้เลือก");
+                    alert("รหัสความปลอดภัยไม่ถูกต้อง!");
                     selectEl.value = "";
                     isAdminLoggedIn = false;
                 }
@@ -846,7 +913,7 @@ async function handleImageUploadAndOCR(event) {
             const reqPaymentLabel = document.getElementById('req-payment-label');
             const reqStatusLabel = document.getElementById('req-status-label');
 
-            const isFreeScheme = (rightVal === 'บัตรทอง' || rightVal === 'จ่ายตรงกรมบัญชีกลาง' || rightVal === 'การปกครองส่วนท้องถิ่น');
+            const isFreeScheme = (rightVal === 'บัตรทอง' || rightVal === 'ประกันสังคม ใน สกลนคร' || rightVal === 'จ่ายตรงกรมบัญชีกลาง' || rightVal === 'การปกครองส่วนท้องถิ่น');
 
             if (isFreeScheme) {
                 paymentSelect.value = "ไม่ต้องชำระเงิน";
@@ -863,7 +930,7 @@ async function handleImageUploadAndOCR(event) {
                 document.getElementById('pay-status-group-box').style.opacity = "1";
                 document.getElementById('pay-status-group-box').style.pointerEvents = "auto";
 
-                const isMandatory = (rightVal === 'บัตรทอง 30 บาท' || rightVal === 'สำรองจ่าย/รัฐวิสาหกิจ' || rightVal === 'ชำระเงินเอง');
+                const isMandatory = (rightVal === 'บัตรทอง 30 บาท' || rightVal === 'ประกันสังคม รพ.อื่น' || rightVal === 'สำรองจ่าย/รัฐวิสาหกิจ' || rightVal === 'ชำระเงินเอง');
                 reqPaymentLabel.style.display = isMandatory ? 'inline' : 'none';
                 reqStatusLabel.style.display = isMandatory ? 'inline' : 'none';
             }
@@ -874,6 +941,7 @@ async function handleImageUploadAndOCR(event) {
             const staffUser = document.getElementById('user-point-1').value;
             if(!staffUser) { alert("กรุณาเลือกชื่อเจ้าหน้าที่ผู้ปฏิบัติงาน (User) จุดลงทะเบียนก่อนบันทึก"); return; }
 
+            const serviceType = document.getElementById('reg-service-type').value;
             const idcard = document.getElementById('reg-idcard').value;
             const hn = document.getElementById('reg-hn').value;
             const pname = document.getElementById('reg-pname').value;
@@ -881,7 +949,7 @@ async function handleImageUploadAndOCR(event) {
             
             if(!idcard || !hn || !pname) { alert("กรุณากรอกข้อมูลสำคัญให้ครบถ้วน"); return; }
 
-            const isFreeScheme = (rightScheme === 'บัตรทอง' || rightScheme === 'จ่ายตรงกรมบัญชีกลาง' || rightScheme === 'การปกครองส่วนท้องถิ่น');
+            const isFreeScheme = (rightScheme === 'บัตรทอง' || rightScheme === 'ประกันสังคม ใน สกลนคร' || rightScheme === 'จ่ายตรงกรมบัญชีกลาง' || rightScheme === 'การปกครองส่วนท้องถิ่น');
             let paymentMethod = document.getElementById('reg-payment-method').value;
             let payStatus = document.getElementById('reg-pay-status').value;
 
@@ -889,7 +957,7 @@ async function handleImageUploadAndOCR(event) {
                 paymentMethod = "ไม่ต้องชำระเงิน";
                 payStatus = "ไม่ต้องชำระเงิน";
             } else {
-                const isMandatory = (rightScheme === 'บัตรทอง 30 บาท' || rightScheme === 'สำรองจ่าย/รัฐวิสาหกิจ' || rightScheme === 'ชำระเงินเอง');
+                const isMandatory = (rightScheme === 'บัตรทอง 30 บาท' || rightScheme === 'ประกันสังคม รพ.อื่น' || rightScheme === 'สำรองจ่าย/รัฐวิสาหกิจ' || rightScheme === 'ชำระเงินเอง');
                 if (isMandatory) {
                     if (!paymentMethod) { alert("สิทธิ์ [" + rightScheme + "] บังคับเลือกรูปแบบการชำระเงิน"); return; }
                     if (!payStatus) { alert("สิทธิ์ [" + rightScheme + "] บังคับเลือกสถานะการชำระเงิน"); return; }
@@ -910,6 +978,7 @@ async function handleImageUploadAndOCR(event) {
             let initialCost = (rightScheme === 'บัตรทอง 30 บาท') ? 30 : 0;
 
             const newCase = {
+                serviceType,
                 idcard, hn, pname,
                 avatar: currentAvatarBase64,
                 staffRegis: staffUser,
@@ -943,12 +1012,21 @@ async function handleImageUploadAndOCR(event) {
 
             sysRef.push(newCase);
             alert("บันทึกข้อมูลและส่งไปยังห้องตรวจสำเร็จ!");
+            
             document.getElementById('reg-idcard').value = '';
             document.getElementById('reg-hn').value = '';
             document.getElementById('reg-pname').value = '';
             document.getElementById('reg-weight').value = '';
             document.getElementById('reg-height').value = '';
+            document.getElementById('reg-bp').value = '';
+            document.getElementById('reg-pr').value = '';
+            document.getElementById('reg-temp').value = '';
             document.querySelectorAll('.disease-badge.selected').forEach(b => b.classList.remove('selected'));
+            
+            currentAvatarBase64 = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+            document.getElementById('scannedAvatarPreview').src = currentAvatarBase64;
+            document.getElementById('cameraInput').value = '';
+            document.getElementById('fileUploadInput').value = '';
         }
 
         sysRef.on('value', (snapshot) => {
@@ -972,61 +1050,80 @@ async function handleImageUploadAndOCR(event) {
         });
 
         function renderGlobalSidebar() {
-            const listEl = document.getElementById('globalStatusList');
+            const listInside = document.getElementById('globalStatusListInside');
+            const listOutside = document.getElementById('globalStatusListOutside');
+            
             if (!isSystemLoggedIn) {
-                listEl.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 15px; font-size: 13px;">กรุณา Log In ก่อนใช้งานระบบ</div>`;
+                listInside.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 10px; font-size: 12px;">กรุณา Log In ก่อน</div>`;
+                listOutside.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 10px; font-size: 12px;">กรุณา Log In ก่อน</div>`;
                 document.getElementById('totalPatientCount').innerText = `(0 คน)`;
+                document.getElementById('countInside').innerText = `0 คน`;
+                document.getElementById('countOutside').innerText = `0 คน`;
                 return;
             }
 
             let keys = Object.keys(allPatientsData).filter(k => allPatientsData[k].currentPoint !== 'เสร็จสิ้นภารกิจ');
             document.getElementById('totalPatientCount').innerText = `(${keys.length} คน)`;
 
-            if(keys.length === 0) {
-                listEl.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 15px; font-size:13px;">ไม่มีผู้ป่วยค้างในระบบ</div>`;
-                return;
-            }
+            let insideKeys = keys.filter(k => !allPatientsData[k].serviceType || allPatientsData[k].serviceType === 'ในสถานบริการ');
+            let outsideKeys = keys.filter(k => allPatientsData[k].serviceType === 'นอกสถานบริการ');
 
-            let html = '';
-            keys.reverse().forEach(key => {
-                let p = allPatientsData[key];
-                
-                let cardClass = 'clinic-theme-thai';
-                let textClass = 'clinic-text-thai';
-                if (p.clinic === 'แพทย์แผนจีน') {
-                    cardClass = 'clinic-theme-china';
-                    textClass = 'clinic-text-china';
-                } else if (p.clinic === 'สปาเพื่อสุขภาพ') {
-                    cardClass = 'clinic-theme-spa';
-                    textClass = 'clinic-text-spa';
+            document.getElementById('countInside').innerText = `${insideKeys.length} คน`;
+            document.getElementById('countOutside').innerText = `${outsideKeys.length} คน`;
+
+            let buildHtml = (targetKeys) => {
+                if(targetKeys.length === 0) {
+                    return `<div style="text-align: center; color: var(--text-muted); padding: 10px; font-size: 12px;">ไม่มีรายการ</div>`;
                 }
+                let h = '';
+                targetKeys.reverse().forEach(key => {
+                    let p = allPatientsData[key];
+                    let cardClass = 'clinic-theme-thai';
+                    let textClass = 'clinic-text-thai';
+                    if (p.clinic === 'แพทย์แผนจีน') { cardClass = 'clinic-theme-china'; textClass = 'clinic-text-china'; }
+                    else if (p.clinic === 'สปาเพื่อสุขภาพ') { cardClass = 'clinic-theme-spa'; textClass = 'clinic-text-spa'; }
 
-                let badgeClass = 'pt-regis';
-                if(p.currentPoint.includes('ห้องตรวจ')) badgeClass = 'pt-doctor';
-                else if(p.currentPoint.includes('ห้องยา')) badgeClass = 'pt-pharmacy';
-                else if(p.currentPoint.includes('การเงิน')) badgeClass = 'pt-cashier';
+                    let badgeClass = 'pt-regis';
+                    if(p.currentPoint.includes('ห้องตรวจ')) badgeClass = 'pt-doctor';
+                    else if(p.currentPoint.includes('ห้องยา')) badgeClass = 'pt-pharmacy';
+                    else if(p.currentPoint.includes('การเงิน')) badgeClass = 'pt-cashier';
 
-                let payBadgeClass = 'badge-pay-none';
-                if (p.payStatus === 'ชำระแล้ว') payBadgeClass = 'badge-pay-paid';
-                else if (p.payStatus === 'ยังไม่ชำระ') payBadgeClass = 'badge-pay-unpaid';
+                    let payBadgeClass = 'badge-pay-none';
+                    if (p.payStatus === 'ชำระแล้ว') payBadgeClass = 'badge-pay-paid';
+                    else if (p.payStatus === 'ยังไม่ชำระ') payBadgeClass = 'badge-pay-unpaid';
 
-                html += `
-                    <div class="status-card ${cardClass}">
-                        <button class="btn-sidebar-edit" onclick="openEditModal('${key}')"><i class="fa-solid fa-pen"></i></button>
-                        <img src="${p.avatar}" class="patient-avatar-sm" alt="Avatar">
-                        <div style="flex-grow:1; padding-right: 35px;">
-                            <h5 class="${textClass}">${p.pname}</h5>
-                            <p>HN: ${p.hn} | ${p.clinic}</p>
-                            <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px;">
-                                <span class="badge-point badge-right-sidebar"><i class="fa-solid fa-shield-halved"></i> ${p.rightScheme}</span>
-                                <span class="badge-point ${payBadgeClass}"><i class="fa-solid fa-wallet"></i> ${p.payStatus}</span>
+                    let isOutside = p.serviceType === 'นอกสถานบริการ';
+                    let nameColor = isOutside ? '#60a5fa' : '#34d399';
+                    let badgeHtml = isOutside ? '<span class="card-outside-badge">🚗 นอก</span>' : '<span class="card-inside-badge">🏥 ใน</span>';
+
+                    h += `
+                        <div class="status-card ${cardClass}">
+                            <button class="btn-sidebar-edit" onclick="openEditModal('${key}')"><i class="fa-solid fa-pen"></i></button>
+                            <img src="${p.avatar}" class="patient-avatar-sm" alt="Avatar">
+                            <div style="flex-grow:1; padding-right: 35px;">
+                                <h5 style="color: ${nameColor};">${p.pname} ${badgeHtml}</h5>
+                                <p>HN: ${p.hn} | ${p.clinic}</p>
+                                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px;">
+                                    <span class="badge-point badge-right-sidebar">${p.rightScheme}</span>
+                                    <span class="badge-point ${payBadgeClass}">${p.payStatus}</span>
+                                </div>
+                                <div style="margin-top: 3px;"><span class="badge-point ${badgeClass}">${p.currentPoint}</span></div>
                             </div>
-                            <div style="margin-top: 3px;"><span class="badge-point ${badgeClass}">${p.currentPoint}</span></div>
                         </div>
-                    </div>
-                `;
-            });
-            listEl.innerHTML = html;
+                    `;
+                });
+                return h;
+            };
+
+            listInside.innerHTML = buildHtml(insideKeys);
+            listOutside.innerHTML = buildHtml(outsideKeys);
+        }
+
+        function setAdminFilter(filterType, btnEl) {
+            currentAdminFilter = filterType;
+            document.querySelectorAll('.filter-btn-group .btn-filter').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            renderAdminSummaryTable();
         }
 
         function renderAdminSummaryTable() {
@@ -1036,12 +1133,14 @@ async function handleImageUploadAndOCR(event) {
 
             let filteredKeys = keys.filter(k => {
                 let p = allPatientsData[k];
-                if (!p.entryDate) return true;
-                return p.entryDate === selectedDate;
+                if (p.entryDate && p.entryDate !== selectedDate) return false;
+                if (currentAdminFilter === 'ในสถานบริการ' && p.serviceType === 'นอกสถานบริการ') return false;
+                if (currentAdminFilter === 'นอกสถานบริการ' && (!p.serviceType || p.serviceType === 'ในสถานบริการ')) return false;
+                return true;
             });
 
             if (filteredKeys.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:20px;">ไม่มีข้อมูลผู้รับบริการในวันที่เลือก (${selectedDate})</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:20px;">ไม่มีข้อมูลผู้รับบริการในเงื่อนไขที่เลือก</td></tr>`;
                 return;
             }
 
@@ -1052,15 +1151,17 @@ async function handleImageUploadAndOCR(event) {
                 let p = allPatientsData[key];
                 let treatments = p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : '-';
                 let drugs = p.prescriptions && p.prescriptions.length > 0 ? p.prescriptions.map(r => `${r.name} (${r.qty})`).join(', ') : 'ไม่มีรายการยา';
+                let serviceBadge = p.serviceType === 'นอกสถานบริการ' ? '<span style="color:#60a5fa; font-weight:bold;">🚗 นอก</span>' : '<span style="color:#34d399; font-weight:bold;">🏥 ใน</span>';
 
                 html += `
                     <tr>
                         <td style="white-space:nowrap; color:var(--accent-gold); font-weight:600;">${p.entryTime || '-'}</td>
                         <td><b>${p.pname}</b><br><span style="font-size:11px; color:var(--text-muted);">HN: ${p.hn}</span></td>
+                        <td>${serviceBadge}</td>
                         <td>${p.clinic}</td>
                         <td>${p.rightScheme}</td>
                         <td>${treatments}</td>
-                        <td style="max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${drugs}">${drugs}</td>
+                        <td style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${drugs}">${drugs}</td>
                         <td><span class="badge-point pt-done">${p.currentPoint}</span></td>
                         <td><button class="btn-detail-toggle" onclick="openAdminDetailModal('${key}')"><i class="fa-solid fa-eye"></i> รายละเอียด</button></td>
                     </tr>
@@ -1069,27 +1170,51 @@ async function handleImageUploadAndOCR(event) {
             tbody.innerHTML = html;
         }
 
+        // หน้าต่างเวชระเบียนผู้ป่วย
         function openAdminDetailModal(key) {
             let p = allPatientsData[key];
             let drugsDetailed = p.prescriptions && p.prescriptions.length > 0 ? p.prescriptions.map(r => `• ${r.name} - จำนวน: ${r.qty} (${r.instruction})`).join('<br>') : 'ไม่มีรายการยา';
             let treatments = p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : '-';
+            let vs = p.vitalSign || {};
+            let serviceLabel = p.serviceType === 'นอกสถานบริการ' ? '🚗 นอกสถานบริการ' : '🏥 ในสถานบริการ';
 
             let content = `
-                <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
-                    <img src="${p.avatar}" style="width:55px; height:55px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-green);">
-                    <div>
-                        <h4 style="margin:0; color:#34d399; font-size:16px;">${p.pname} (HN: ${p.hn})</h4>
-                        <p style="margin:2px 0 0 0; font-size:13px; color:var(--text-muted);">เลขบัตร: ${p.idcard} | วันที่: ${p.entryDate || '-'} เวลา: ${p.entryTime}</p>
+                <div style="display:flex; gap:16px; align-items:center; margin-bottom:14px;">
+                    <div style="width:50%; flex-shrink:0; background:#000; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                        <img src="${p.avatar}" style="width:100%; height:auto; aspect-ratio: 1.59 / 1; object-fit: contain;" alt="ภาพถ่ายบัตรประชาชน">
+                    </div>
+                    <div style="width:50%; display:flex; flex-direction:column; justify-content:center;">
+                        <h4 style="margin:0 0 6px 0; color:#34d399; font-size:24px; font-weight:bold; line-height: 1.2;">${p.pname}</h4>
+                        <p style="margin:3px 0; font-size:16px;"><b>ประเภท:</b> <span style="color:#ffb703;">${serviceLabel}</span></p>
+                        <p style="margin:3px 0; font-size:16px;"><b>HN:</b> ${p.hn || '-'}</p>
+                        <p style="margin:3px 0; font-size:16px;"><b>เลขบัตร:</b> ${p.idcard || '-'}</p>
+                        <p style="margin:3px 0; font-size:16px;"><b>วันที่:</b> ${p.entryDate || '-'} (${p.entryTime})</p>
                     </div>
                 </div>
-                <hr style="border-color:#1e4635; margin:8px 0;">
-                <p><b>คลินิก:</b> ${p.clinic} | <b>สิทธิ์การรักษา:</b> ${p.rightScheme}</p>
-                <p><b>แพทย์ผู้ตรวจ:</b> ${p.doctorName || '-'}</p>
-                <p><b>อาการสำคัญ (CC):</b> ${p.chiefComplaint || '-'}</p>
-                <p><b>หัตถการ:</b> ${treatments}</p>
-                <p><b>รายการยาและวิธีใช้:</b><br>${drugsDetailed}</p>
-                <p><b>การชำระเงิน:</b> ${p.paymentMethod} (${p.payStatus}) - ยอดรวมสุทธิ: <b style="color:#ffb703;">${p.totalCost || 0} บาท</b></p>
-                <p><b>สถานะล่าสุด:</b> <span style="color:#34d399;">${p.currentPoint}</span></p>
+                <hr style="border-color:#1e4635; margin:12px 0;">
+                <div style="font-size:16px; margin-bottom:10px;">
+                    <p style="margin:4px 0;"><b>คลินิก:</b> ${p.clinic} | <b>สิทธิ์การรักษา:</b> ${p.rightScheme}</p>
+                </div>
+                <div style="background:rgba(46,196,182,0.08); border:1px solid #1e4635; padding:10px 14px; border-radius:8px; margin-bottom:12px;">
+                    <b style="color:var(--accent-green); font-size:16px;"><i class="fa-solid fa-heart-pulse"></i> ข้อมูล Vital Sign:</b>
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; margin-top:6px; font-size:15px;">
+                        <div>BP: <b>${vs.bp || '-'}</b></div>
+                        <div>PR: <b>${vs.pr || '-'}</b></div>
+                        <div>Temp: <b>${vs.temp || '-'}</b>°C</div>
+                        <div>นน./ส.: <b>${vs.wt || '-'}</b></div>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; font-size:16px;">
+                    <p style="margin:3px 0;"><b>แพทย์ผู้ตรวจ:</b> ${p.doctorName || '-'}</p>
+                    <p style="margin:3px 0;"><b>อาการสำคัญ (CC):</b> ${p.chiefComplaint || '-'}</p>
+                    <p style="margin:3px 0;"><b>หัตถการ:</b> ${treatments}</p>
+                    <p style="margin:3px 0;"><b>รายการยาและวิธีใช้:</b><br><span style="padding-left:12px; display:inline-block; margin-top:4px;">${drugsDetailed}</span></p>
+                </div>
+                <hr style="border-color:#1e4635; margin:12px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:16px;">
+                    <span><b>การชำระเงิน:</b> ${p.paymentMethod} (${p.payStatus})</span>
+                    <span style="color:#ffb703; font-size:20px; font-weight:bold;">ยอดสุทธิ: ${p.totalCost || 0} บาท</span>
+                </div>
             `;
             document.getElementById('adminDetailBody').innerHTML = content;
             document.getElementById('adminDetailModal').style.display = 'flex';
@@ -1107,6 +1232,8 @@ async function handleImageUploadAndOCR(event) {
                     <select id="edit-right">
                         <option value="บัตรทอง" ${p.rightScheme==='บัตรทอง'?'selected':''}>บัตรทอง</option>
                         <option value="บัตรทอง 30 บาท" ${p.rightScheme==='บัตรทอง 30 บาท'?'selected':''}>บัตรทอง 30 บาท</option>
+                        <option value="ประกันสังคม ใน สกลนคร" ${p.rightScheme==='ประกันสังคม ใน สกลนคร'?'selected':''}>ประกันสังคม ใน สกลนคร</option>
+                        <option value="ประกันสังคม รพ.อื่น" ${p.rightScheme==='ประกันสังคม รพ.อื่น'?'selected':''}>ประกันสังคม รพ.อื่น</option>
                         <option value="จ่ายตรงกรมบัญชีกลาง" ${p.rightScheme==='จ่ายตรงกรมบัญชีกลาง'?'selected':''}>จ่ายตรงกรมบัญชีกลาง</option>
                         <option value="การปกครองส่วนท้องถิ่น" ${p.rightScheme==='การปกครองส่วนท้องถิ่น'?'selected':''}>การปกครองส่วนท้องถิ่น</option>
                         <option value="สำรองจ่าย/รัฐวิสาหกิจ" ${p.rightScheme==='สำรองจ่าย/รัฐวิสาหกิจ'?'selected':''}>สำรองจ่าย/รัฐวิสาหกิจ</option>
@@ -1138,7 +1265,6 @@ async function handleImageUploadAndOCR(event) {
                 currentPoint: targetPoint
             };
 
-            // หากส่งกลับห้องตรวจ ให้รีเซ็ตสถานะเป็นรอตรวจเพื่อให้รายชื่อเด้งเข้าคิวรอตรวจทันที
             if (targetPoint === 'จุดที่ 2: ห้องตรวจ') {
                 updateObj.status = 'รอตรวจห้องแพทย์';
                 updateObj.pharmacyFeedback = 'รอจัดยา';
@@ -1162,16 +1288,18 @@ async function handleImageUploadAndOCR(event) {
             waitingKeys.forEach(key => {
                 let p = allPatientsData[key];
                 let activeClass = (selectedDoctorKey === key) ? 'active' : '';
-                
                 let queueClinicClass = 'clinic-theme-thai';
                 if (p.clinic === 'แพทย์แผนจีน') queueClinicClass = 'clinic-theme-china';
                 else if (p.clinic === 'สปาเพื่อสุขภาพ') queueClinicClass = 'clinic-theme-spa';
+
+                let isOutside = p.serviceType === 'นอกสถานบริการ';
+                let badgeHtml = isOutside ? '<span style="color:#60a5fa;">[นอก]</span>' : '<span style="color:#34d399;">[ใน]</span>';
 
                 html += `
                     <div class="queue-item-doc ${queueClinicClass} ${activeClass}" onclick="selectPatientForDoctor('${key}')">
                         <img src="${p.avatar}" class="patient-avatar-xs" alt="Avatar">
                         <div style="overflow:hidden; width:100%;">
-                            <div style="font-weight:700; color:#fff; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.pname}</div>
+                            <div style="font-weight:700; color:#fff; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.pname} ${badgeHtml}</div>
                             <div style="font-size:11px; color:var(--text-muted);">HN: ${p.hn} | ${p.clinic}</div>
                             ${p.pharmacyFeedback.includes('ขอแก้ไข') ? '<div style="color:#f87171; font-size:10px; font-weight:700;">⚠️ แก้ไขยา</div>' : ''}
                         </div>
@@ -1194,12 +1322,16 @@ async function handleImageUploadAndOCR(event) {
             let isGold30 = (p.rightScheme === 'บัตรทอง 30 บาท');
             let currentTotalCost = p.totalCost !== undefined ? p.totalCost : (isGold30 ? 30 : 0);
 
+            // อัปเดตลิงก์ส่งข้อมูลไปหน้า Commander พร้อมแนบ HN, ชื่อ และ อาการสำคัญ
+            let commanderUrl = `https://nopphawinchi-ux.github.io/thai-med-monitor/?hn=${encodeURIComponent(p.hn || '')}&name=${encodeURIComponent(p.pname || '')}&cc=${encodeURIComponent(p.chiefComplaint || '')}`;
+            document.getElementById('commanderLinkBtn').href = commanderUrl;
+
             formContainer.innerHTML = `
                 <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; background:#133326; padding:8px; border-radius:8px; border:1px solid #204e3b;">
                     <img src="${p.avatar}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-green);">
                     <div style="flex-grow:1;">
                         <h3 style="margin:0; color:#34d399; font-size:15px;">${p.pname} (HN: ${p.hn})</h3>
-                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์การรักษา: <b style="color:#38bdf8;">${p.rightScheme}</b> | คลินิก: <b style="color:#ffb703;">${p.clinic}</b></p>
+                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#38bdf8;">${p.rightScheme}</b> | คลินิก: <b style="color:#ffb703;">${p.clinic}</b></p>
                     </div>
                 </div>
 
@@ -1210,31 +1342,40 @@ async function handleImageUploadAndOCR(event) {
                     <div>นน./ส.: <b style="color:var(--accent-green);">${wtDisplay}</b></div>
                 </div>
 
-                <div class="form-grid">
-                    <div class="form-group full" style="margin-bottom:4px;"><label style="margin-bottom:2px;">เลือกหัตถการ (บังคับเลือกอย่างน้อย 1 อย่าง *)</label></div>
-                    <div class="form-group full" style="margin-top:0;">
-                        <div class="treatment-btn-group" id="treatment-btn-container">
-                            <div class="btn-treatment ${currentTreatments.includes('หัตถบำบัด')?'selected':''}" data-name="หัตถบำบัด" onclick="toggleTreatmentAndCalc(this, 'หัตถบำบัด', 250)">หัตถบำบัด (+250)</div>
-                            <div class="btn-treatment ${currentTreatments.includes('จ่ายยาสมุนไพร')?'selected':''}" data-name="จ่ายยาสมุนไพร" onclick="toggleTreatmentAndCalc(this, 'จ่ายยาสมุนไพร', 100)">จ่ายยาสมุนไพร (+100)</div>
-                            <div class="btn-treatment ${currentTreatments.includes('ฝังเข็มแผนจีน')?'selected':''}" data-name="ฝังเข็มแผนจีน" onclick="toggleTreatmentAndCalc(this, 'ฝังเข็มแผนจีน', 150)">ฝังเข็มแผนจีน (+150)</div>
-                            <div class="btn-treatment ${currentTreatments.includes('อบสมุนไพร')?'selected':''}" data-name="อบสมุนไพร" onclick="toggleTreatmentAndCalc(this, 'อบสมุนไพร', 120)">อบสมุนไพร (+120)</div>
-                            <div class="btn-treatment ${currentTreatments.includes('ทับหม้อเกลือ')?'selected':''}" data-name="ทับหม้อเกลือ" onclick="toggleTreatmentAndCalc(this, 'ทับหม้อเกลือ', 500)">ทับหม้อเกลือ (+500)</div>
-                            <div class="btn-treatment ${currentTreatments.includes('สปาบำบัด')?'selected':''}" data-name="สปาบำบัด" onclick="toggleTreatmentAndCalc(this, 'สปาบำบัด', 0)">สปาบำบัด (ระบุยอด)</div>
-                        </div>
-                    </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label style="margin-bottom:2px;">อาการสำคัญ (Chief Complaint) <span style="color:#e71d36;">* (บังคับระบุ)</span></label>
+                    <textarea id="doc-cc" rows="2" placeholder="ระบุอาการสำคัญของผู้ป่วย..." style="padding:6px 10px; font-size:13px;" oninput="updateCommanderUrlDynamic(this.value, '${p.hn || ''}', '${p.pname || ''}')">${p.chiefComplaint || ''}</textarea>
+                </div>
 
-                    <div class="form-group"><label>ค่าใช้จ่ายรวมสุทธิ (บาท) * ${isGold30 ? '<span style="color:#ffb703; font-size:11px;">(รวมสิทธิ์ 30 บาทแล้ว)</span>' : ''}</label><input type="number" id="doc-cost" value="${currentTotalCost}" ${isGold30 ? 'readonly' : ''} style="padding:6px 10px; font-size:14px; font-weight:bold; color:#ffb703; ${isGold30 ? 'background:#152920;' : ''}"></div>
-                    <div class="form-group"></div>
-
-                    <div class="form-group full" style="margin-bottom:2px;"><label style="margin-bottom:2px;">อาการสำคัญ (Chief Complaint) <span style="color:#e71d36;">* (บังคับระบุ)</span></label>
-                        <textarea id="doc-cc" rows="2" placeholder="ระบุอาการสำคัญของผู้ป่วย..." style="padding:6px 10px; font-size:13px;">${p.chiefComplaint || ''}</textarea>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label style="margin-bottom:2px;">เลือกหัตถการ (บังคับเลือกอย่างน้อย 1 อย่าง *)</label>
+                    <div class="treatment-btn-group" id="treatment-btn-container">
+                        <div class="btn-treatment t-massage ${currentTreatments.includes('นวดรักษา')?'selected':''}" data-name="นวดรักษา" onclick="toggleSubTreatment(this, 'นวดรักษา', 200)">💆‍♂️ นวดรักษา (200฿)</div>
+                        <div class="btn-treatment t-herb-compress ${currentTreatments.includes('ประคบสมุนไพร')?'selected':''}" data-name="ประคบสมุนไพร" onclick="toggleSubTreatment(this, 'ประคบสมุนไพร', 150)">🌿 ประคบสมุนไพร (150฿)</div>
+                        <div class="btn-treatment t-both ${currentTreatments.includes('นวดและประคบ')?'selected':''}" data-name="นวดและประคบ" onclick="toggleSubTreatment(this, 'นวดและประคบ', 250)">👐 นวดและประคบ (250฿)</div>
+                        <div class="btn-treatment t-pharmacy ${currentTreatments.includes('จ่ายยาสมุนไพร')?'selected':''}" data-name="จ่ายยาสมุนไพร" onclick="toggleSubTreatment(this, 'จ่ายยาสมุนไพร', 100)">💊 จ่ายยาสมุนไพร (+100฿)</div>
+                        <div class="btn-treatment t-acupuncture ${currentTreatments.includes('ฝังเข็มแผนจีน')?'selected':''}" data-name="ฝังเข็มแผนจีน" onclick="toggleSubTreatment(this, 'ฝังเข็มแผนจีน', 150)">📌 ฝังเข็มแผนจีน (+150฿)</div>
+                        <div class="btn-treatment t-steam ${currentTreatments.includes('อบสมุนไพร')?'selected':''}" data-name="อบสมุนไพร" onclick="toggleSubTreatment(this, 'อบสมุนไพร', 120)">♨️ อบสมุนไพร (+120฿)</div>
+                        <div class="btn-treatment t-salt-pot ${currentTreatments.includes('ทับหม้อเกลือ')?'selected':''}" data-name="ทับหม้อเกลือ" onclick="toggleSubTreatment(this, 'ทับหม้อเกลือ', 500)">🔥 ทับหม้อเกลือ (+500฿)</div>
+                        <div class="btn-treatment t-spa ${currentTreatments.includes('สปาบำบัด')?'selected':''}" data-name="สปาบำบัด" onclick="toggleSubTreatment(this, 'สปาบำบัด', 0)">✨ สปาบำบัด (ระบุยอด)</div>
                     </div>
                 </div>
-                <button class="btn-action-warning" onclick="saveDoctorData('${key}', ${isGold30})" style="padding:10px; font-size:14px;"><i class="fa-solid fa-paper-plane"></i> บันทึกผลตรวจและส่งต่อไป</button>
+
+                <div class="form-group" style="background:#051b14; border:2px solid var(--accent-green); padding:10px; border-radius:8px; margin-bottom:12px;">
+                    <label style="font-size:15px; color:#34d399; margin-bottom:4px;">💰 ค่าใช้จ่ายรวมสุทธิ (บาท) * ${isGold30 ? '<span style="color:#ffb703; font-size:12px;">(รวมสิทธิ์ 30 บาทแล้ว)</span>' : ''}</label>
+                    <input type="number" id="doc-cost" value="${currentTotalCost}" ${isGold30 ? 'readonly' : ''} style="padding:10px 14px; font-size:20px; font-weight:bold; color:#ffb703; text-align:center; ${isGold30 ? 'background:#152920;' : ''}">
+                </div>
+
+                <button class="btn-action-warning" onclick="saveDoctorData('${key}', ${isGold30})" style="padding:12px; font-size:15px;"><i class="fa-solid fa-paper-plane"></i> บันทึกผลตรวจและส่งต่อไป</button>
             `;
         }
 
-        function toggleTreatmentAndCalc(el, name, basePrice) {
+        function updateCommanderUrlDynamic(ccVal, hn, name) {
+            let commanderUrl = `https://nopphawinchi-ux.github.io/thai-med-monitor/?hn=${encodeURIComponent(hn)}&name=${encodeURIComponent(name)}&cc=${encodeURIComponent(ccVal)}`;
+            document.getElementById('commanderLinkBtn').href = commanderUrl;
+        }
+
+        function toggleSubTreatment(el, name, basePrice) {
             let isNowSelected = !el.classList.contains('selected');
             el.classList.toggle('selected');
             
@@ -1322,17 +1463,19 @@ async function handleImageUploadAndOCR(event) {
             pharmKeys.forEach(key => {
                 let p = allPatientsData[key];
                 let activeClass = (selectedPharmacyKey === key) ? 'active' : '';
-                
                 let queueClinicClass = 'clinic-theme-thai';
                 if (p.clinic === 'แพทย์แผนจีน') queueClinicClass = 'clinic-theme-china';
                 else if (p.clinic === 'สปาเพื่อสุขภาพ') queueClinicClass = 'clinic-theme-spa';
 
                 let tList = p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : '-';
+                let isOutside = p.serviceType === 'นอกสถานบริการ';
+                let badgeHtml = isOutside ? '<span style="color:#60a5fa;">[นอก]</span>' : '<span style="color:#34d399;">[ใน]</span>';
+
                 html += `
                     <div class="queue-item-doc ${queueClinicClass} ${activeClass}" onclick="selectPatientForPharmacy('${key}')">
                         <img src="${p.avatar}" class="patient-avatar-xs" alt="Avatar">
                         <div style="overflow:hidden; width:100%;">
-                            <div style="font-weight:700; color:#fff; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.pname}</div>
+                            <div style="font-weight:700; color:#fff; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.pname} ${badgeHtml}</div>
                             <div style="font-size:11px; color:var(--text-muted);">HN: ${p.hn} | ${tList}</div>
                             ${p.pharmacyFeedback.includes('ขอแก้ไข') ? '<div style="color:#f87171; font-size:10px; font-weight:700;">⚠️ แก้ไขยา</div>' : ''}
                         </div>
@@ -1353,7 +1496,7 @@ async function handleImageUploadAndOCR(event) {
                     <img src="${p.avatar}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-green);">
                     <div style="flex-grow:1;">
                         <h3 style="margin:0; color:#34d399; font-size:15px;">${p.pname} (HN: ${p.hn})</h3>
-                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์การรักษา: <b style="color:#38bdf8;">${p.rightScheme}</b> | การรักษา: <b>${tList}</b></p>
+                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#38bdf8;">${p.rightScheme}</b> | การรักษา: <b>${tList}</b></p>
                     </div>
                 </div>
 
@@ -1494,14 +1637,13 @@ async function handleImageUploadAndOCR(event) {
             let html = '';
             cashierKeys.forEach(key => {
                 let p = allPatientsData[key];
-                
                 let cashierClinicClass = 'clinic-theme-thai';
                 if (p.clinic === 'แพทย์แผนจีน') cashierClinicClass = 'clinic-theme-china';
                 else if (p.clinic === 'สปาเพื่อสุขภาพ') cashierClinicClass = 'clinic-theme-spa';
 
                 let rxText = p.prescriptions && p.prescriptions.length > 0 ? p.prescriptions.map(r => `${r.name} (${r.qty})`).join(', ') : 'ไม่มี';
                 
-                const isFreeScheme = (p.rightScheme === 'บัตรทอง' || p.rightScheme === 'จ่ายตรงกรมบัญชีกลาง' || p.rightScheme === 'การปกครองส่วนท้องถิ่น');
+                const isFreeScheme = (p.rightScheme === 'บัตรทอง' || p.rightScheme === 'ประกันสังคม ใน สกลนคร' || p.rightScheme === 'จ่ายตรงกรมบัญชีกลาง' || p.rightScheme === 'การปกครองส่วนท้องถิ่น');
                 const isPaid = (p.payStatus === 'ชำระแล้ว');
 
                 let payBtnText = isFreeScheme ? '✅ ยินยันแล้ว' : (isPaid ? 'ชำระเงินแล้ว' : '💳 ยืนยันรับเงิน');
@@ -1561,7 +1703,7 @@ async function handleImageUploadAndOCR(event) {
             if(!staffUser) { alert("กรุณาเลือกชื่อเจ้าหน้าที่ผู้ปฏิบัติงาน (User) จุดการเงินก่อนทำรายการ"); return; }
 
             let p = allPatientsData[key];
-            const isFreeScheme = (p.rightScheme === 'บัตรทอง' || p.rightScheme === 'จ่ายตรงกรมบัญชีกลาง' || p.rightScheme === 'การปกครองส่วนท้องถิ่น');
+            const isFreeScheme = (p.rightScheme === 'บัตรทอง' || p.rightScheme === 'ประกันสังคม ใน สกลนคร' || p.rightScheme === 'จ่ายตรงกรมบัญชีกลาง' || p.rightScheme === 'การปกครองส่วนท้องถิ่น');
             
             if (!isFreeScheme && p.payStatus !== 'ชำระแล้ว') {
                 alert("⚠️ ไม่สามารถส่งคนไข้กลับบ้านได้! กรุณากดยืนยันรับเงินและชำระเงินให้เรียบร้อยก่อนปิดสิทธิ์และกลับบ้าน");
