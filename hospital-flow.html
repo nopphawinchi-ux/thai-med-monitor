@@ -249,7 +249,9 @@
         .admin-table th, .admin-table td { border: 1px solid #1e4635; padding: 8px 10px; text-align: left; }
         .admin-table th { background: #133326; color: var(--accent-green); font-weight: 700; }
         .admin-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
-        .btn-detail-toggle { background: #0284c7; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .btn-detail-toggle { background: #0284c7; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-right: 3px; }
+        .btn-admin-edit { background: #d97706; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-right: 3px; }
+        .btn-admin-del { background: #dc2626; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
         .filter-btn-group { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
         .btn-filter { background: #133326; border: 1px solid #204e3b; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
@@ -280,6 +282,9 @@
             }
             .modal-content {
                 background: #fff !important; color: #000 !important; width: 100% !important; max-width: 100% !important; border: none !important;
+            }
+            #adminDetailBody, #adminDetailBody * {
+                color: #000 !important;
             }
             .btn-action-main, button { display: none !important; }
             .medical-watermark { color: rgba(0, 0, 0, 0.04) !important; }
@@ -382,7 +387,6 @@
                 </div>
 
                 <div class="form-grid">
-                    <!-- บังคับเฉพาะตัวเลขล้วน (Numeric Keypad คล้ายปุ่มกดโทรศัพท์) -->
                     <div class="form-group">
                         <label>เลขประจำตัวประชาชน (13 หลัก)</label>
                         <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-idcard" placeholder="ระบุเลขบัตร 13 หลัก" maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
@@ -393,7 +397,6 @@
                     </div>
                     <div class="form-group full"><label>ชื่อ-นามสกุล ผู้ป่วย</label><input type="text" id="reg-pname" placeholder="ชื่อ นามสกุล"></div>
                     
-                    <!-- แยกช่องความดัน SYS และ DIA (ตัวเลขล้วน) -->
                     <div class="form-group">
                         <label>ความดันโลหิต (SYS / DIA mmHg)</label>
                         <div style="display: flex; gap: 6px; align-items: center;">
@@ -676,7 +679,7 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+              apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -687,7 +690,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const sysRef = database.ref('hospitalFlowQueryGreenThemeV43');
+        const sysRef = database.ref('hospitalFlowQueryGreenThemeV47');
 
         let allPatientsData = {};
         let selectedDoctorKey = null;
@@ -799,7 +802,7 @@
             });
             document.getElementById('drugGuideList').innerHTML = guideListHtml;
 
-            if (sessionStorage.getItem('ttm_logged_in') === 'true') {
+            if (localStorage.getItem('ttm_logged_in') === 'true') {
                 isSystemLoggedIn = true;
                 document.getElementById('login-success-msg').style.display = 'block';
                 for (let i = 1; i <= 5; i++) {
@@ -816,7 +819,7 @@
 
             if (uInput === "TTMPMH" && pInput === "11097") {
                 isSystemLoggedIn = true;
-                sessionStorage.setItem('ttm_logged_in', 'true');
+                localStorage.setItem('ttm_logged_in', 'true');
                 document.getElementById('login-success-msg').style.display = 'block';
                 for (let i = 1; i <= 5; i++) {
                     let btn = document.getElementById(`tab-btn-${i}`);
@@ -852,17 +855,16 @@
             document.getElementById('reg-idcard').value = "1100123456789";
             document.getElementById('reg-hn').value = "670123";
             document.getElementById('reg-pname').value = randomName;
-            document.getElementById('reg-sys').value = "120";
-            document.getElementById('reg-dia').value = "80";
-            document.getElementById('reg-pr').value = "72";
+            document.getElementById('reg-sys').value = "150";
+            document.getElementById('reg-dia').value = "95";
+            document.getElementById('reg-pr').value = "105";
             document.getElementById('reg-temp').value = "365";
             document.getElementById('reg-weight').value = "65";
             document.getElementById('reg-height').value = "172";
             document.getElementById('reg-right').value = "บัตรทอง 30 บาท";
             checkRightSchemeValidation();
-            selectPayStatusBtn(document.querySelector('.pay-unpaid'), 'ยังไม่ชำระ');
             
-            alert("กรอกข้อมูลจำลองสำหรับทดสอบเรียบร้อย!");
+            alert("กรอกข้อมูลจำลอง (ความดันและชีพจรสูงเกินเกณฑ์) เรียบร้อย!");
         }
 
         function selectServiceType(type) {
@@ -876,7 +878,6 @@
             document.getElementById('reg-service-type').value = type;
         }
 
-        // ตัดครอบกรอบเป็นสี่เหลี่ยมผืนผ้าตามภาพต้นฉบับเดิมโดยไม่บิดเบือนสัดส่วน
         function handleImageUploadAndCompress(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -973,6 +974,8 @@
             } else {
                 paymentSelect.disabled = false;
                 if(paymentSelect.value === "ไม่ต้องชำระเงิน") paymentSelect.value = "";
+                payStatusBtns.forEach(btn => btn.classList.remove('selected'));
+                document.getElementById('reg-pay-status').value = "";
                 document.getElementById('pay-status-group-box').style.opacity = "1";
                 document.getElementById('pay-status-group-box').style.pointerEvents = "auto";
 
@@ -1177,6 +1180,7 @@
             renderAdminSummaryTable();
         }
 
+        // หน้าสรุปรายวัน มีปุ่ม รายละเอียด, แก้ไข และ ลบ ครบถ้วน
         function renderAdminSummaryTable() {
             const tbody = document.getElementById('adminSummaryTableBody');
             const selectedDate = document.getElementById('admin-filter-date').value;
@@ -1212,11 +1216,50 @@
                         <td>${p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : '-'}</td>
                         <td style="color:var(--accent-gold); font-weight:bold;">${p.totalCost || 0} ฿</td>
                         <td><span class="badge-point pt-done">${p.currentPoint}</span></td>
-                        <td><button class="btn-detail-toggle" onclick="openAdminDetailModal('${key}')"><i class="fa-solid fa-eye"></i> รายละเอียด</button></td>
+                        <td style="white-space:nowrap;">
+                            <button class="btn-detail-toggle" onclick="openAdminDetailModal('${key}')" title="ดูรายละเอียด"><i class="fa-solid fa-eye"></i></button>
+                            <button class="btn-admin-edit" onclick="openEditModal('${key}')" title="แก้ไขข้อมูล"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-admin-del" onclick="deletePatientRecord('${key}', '${p.pname}')" title="ลบข้อมูล"><i class="fa-solid fa-trash"></i></button>
+                        </td>
                     </tr>
                 `;
             });
             tbody.innerHTML = html;
+        }
+
+        function deletePatientRecord(key, patientName) {
+            let confirmDelete = confirm(`⚠️ คำเตือน: คุณต้องการลบข้อมูลของ "${patientName}" ออกจากระบบใช่หรือไม่?\n(การกระทำนี้จะไม่สามารถกู้คืนได้)`);
+            if (confirmDelete) {
+                sysRef.child(key).remove()
+                    .then(() => {
+                        alert("ลบข้อมูลผู้ป่วยสำเร็จ!");
+                    })
+                    .catch((error) => {
+                        alert("เกิดข้อผิดพลาดในการลบข้อมูล: " + error.message);
+                    });
+            }
+        }
+
+        function formatBpWithRedColor(bpStr) {
+            if (!bpStr || bpStr === '-') return '-';
+            let parts = bpStr.split('/');
+            if (parts.length === 2) {
+                let sys = parseInt(parts[0]) || 0;
+                let dia = parseInt(parts[1]) || 0;
+                let sysColor = sys > 140 ? '#ef4444' : 'inherit';
+                let diaColor = dia > 90 ? '#ef4444' : 'inherit';
+                let sysWeight = sys > 140 ? 'bold' : 'normal';
+                let diaWeight = dia > 90 ? 'bold' : 'normal';
+                return `<span style="color: ${sysColor}; font-weight: ${sysWeight};">${sys}</span>/<span style="color: ${diaColor}; font-weight: ${diaWeight};">${dia}</span>`;
+            }
+            return bpStr;
+        }
+
+        function formatPrWithRedColor(prStr) {
+            let pr = parseInt(prStr) || 0;
+            let prColor = pr > 100 ? '#ef4444' : 'inherit';
+            let prWeight = pr > 100 ? 'bold' : 'normal';
+            return `<span style="color: ${prColor}; font-weight: ${prWeight};">${prStr}</span>`;
         }
 
         function openAdminDetailModal(key) {
@@ -1225,6 +1268,9 @@
             let treatments = p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : '-';
             let vs = p.vitalSign || {};
             let serviceLabel = p.serviceType === 'นอกสถานบริการ' ? '🚗 นอกสถานบริการ' : '🏥 ในสถานบริการ';
+
+            let bpFormatted = formatBpWithRedColor(vs.bp);
+            let prFormatted = formatPrWithRedColor(vs.pr);
 
             let content = `
                 <div style="display:flex; gap:16px; align-items:center; margin-bottom:14px;">
@@ -1242,12 +1288,13 @@
                 <hr style="border-color:#1e4635; margin:12px 0;">
                 <div style="font-size:16px; margin-bottom:10px;">
                     <p style="margin:4px 0;"><b>คลินิก:</b> ${p.clinic} | <b>สิทธิ์การรักษา:</b> ${p.rightScheme}</p>
+                    <p style="margin:4px 0;"><b>โรคประจำตัว:</b> <span style="color:#ffb703;">${p.diseases || 'ไม่มี'}</span></p>
                 </div>
                 <div style="background:rgba(46,196,182,0.08); border:1px solid #1e4635; padding:10px 14px; border-radius:8px; margin-bottom:12px;">
                     <b style="color:var(--accent-green); font-size:16px;"><i class="fa-solid fa-heart-pulse"></i> ข้อมูล Vital Sign:</b>
                     <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; margin-top:6px; font-size:15px;">
-                        <div>BP: <b>${vs.bp || '-'}</b></div>
-                        <div>PR: <b>${vs.pr || '-'}</b></div>
+                        <div>BP: <b>${bpFormatted}</b></div>
+                        <div>PR: <b>${prFormatted}</b></div>
                         <div>Temp: <b>${vs.temp || '-'}</b>°C</div>
                         <div>นน./ส.: <b>${vs.wt || '-'}</b></div>
                     </div>
@@ -1357,6 +1404,7 @@
             container.innerHTML = html;
         }
 
+        // จุดที่ 2: ห้องตรวจแพทย์ (แสดงโรคประจำตัวคู่ Vital Sign และเชื่อมต่อ HN, ชื่อไปยัง Commander)
         function selectPatientForDoctor(key) {
             selectedDoctorKey = key;
             let p = allPatientsData[key];
@@ -1370,8 +1418,12 @@
             let isGold30 = (p.rightScheme === 'บัตรทอง 30 บาท');
             let currentTotalCost = p.totalCost !== undefined ? p.totalCost : (isGold30 ? 30 : 0);
 
-            let commanderUrl = `https://nopphawinchi-ux.github.io/thai-med-monitor/?hn=${encodeURIComponent(p.hn || '')}&name=${encodeURIComponent(p.pname || '')}&cc=${encodeURIComponent(p.chiefComplaint || '')}`;
+            // ส่งข้อมูล HN และ ชื่อ-นามสกุล ไปยังหน้า Commander อัตโนมัติ
+            let commanderUrl = `https://nopphawinchi-ux.github.io/thai-med-monitor/?hn=${encodeURIComponent(p.hn || '')}&name=${encodeURIComponent(p.pname || '')}`;
             document.getElementById('commanderLinkBtn').href = commanderUrl;
+
+            let bpFormatted = formatBpWithRedColor(p.vitalSign.bp);
+            let prFormatted = formatPrWithRedColor(p.vitalSign.pr);
 
             formContainer.innerHTML = `
                 <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; background:#133326; padding:8px; border-radius:8px; border:1px solid #204e3b;">
@@ -1382,16 +1434,22 @@
                     </div>
                 </div>
 
-                <div style="background:#071711; border:1px solid #204e3b; padding:8px; border-radius:6px; margin-bottom:10px; display:grid; grid-template-columns: repeat(4, 1fr); text-align:center; font-size:12px;">
-                    <div>BP: <b style="color:var(--accent-green);">${p.vitalSign.bp}</b></div>
-                    <div>PR: <b style="color:var(--accent-green);">${p.vitalSign.pr}</b></div>
+                <!-- แสดง Vital Sign (สีแดงหากเกินเกณฑ์) -->
+                <div style="background:#071711; border:1px solid #204e3b; padding:8px; border-radius:6px; margin-bottom:6px; display:grid; grid-template-columns: repeat(4, 1fr); text-align:center; font-size:12px;">
+                    <div>BP: <b>${bpFormatted}</b></div>
+                    <div>PR: <b>${prFormatted}</b></div>
                     <div>Temp: <b style="color:var(--accent-green);">${p.vitalSign.temp}</b></div>
                     <div>นน./ส.: <b style="color:var(--accent-green);">${wtDisplay}</b></div>
                 </div>
 
+                <!-- แสดงโรคประจำตัวคู่ Vital Sign -->
+                <div style="background:rgba(239, 68, 68, 0.1); border:1px solid #ef4444; padding:6px 10px; border-radius:6px; margin-bottom:10px; font-size:12px; color:#fca5a5;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> <b>โรคประจำตัว:</b> <span style="color:#fff; font-weight:bold;">${p.diseases || 'ไม่มี'}</span>
+                </div>
+
                 <div class="form-group" style="margin-bottom: 10px;">
                     <label style="margin-bottom:2px;">อาการสำคัญ (Chief Complaint) <span style="color:#e71d36;">* (บังคับระบุ)</span></label>
-                    <textarea id="doc-cc" rows="2" placeholder="ระบุอาการสำคัญของผู้ป่วย..." style="padding:6px 10px; font-size:13px;" oninput="updateCommanderUrlDynamic(this.value, '${p.hn || ''}', '${p.pname || ''}')">${p.chiefComplaint || ''}</textarea>
+                    <textarea id="doc-cc" rows="2" placeholder="ระบุอาการสำคัญของผู้ป่วย..." style="padding:6px 10px; font-size:13px;">${p.chiefComplaint || ''}</textarea>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 10px;">
@@ -1415,11 +1473,6 @@
 
                 <button class="btn-action-warning" onclick="saveDoctorData('${key}', ${isGold30})" style="padding:12px; font-size:15px;"><i class="fa-solid fa-paper-plane"></i> บันทึกผลตรวจและส่งต่อไป</button>
             `;
-        }
-
-        function updateCommanderUrlDynamic(ccVal, hn, name) {
-            let commanderUrl = `https://nopphawinchi-ux.github.io/thai-med-monitor/?hn=${encodeURIComponent(hn)}&name=${encodeURIComponent(name)}&cc=${encodeURIComponent(ccVal)}`;
-            document.getElementById('commanderLinkBtn').href = commanderUrl;
         }
 
         function toggleSubTreatment(el, name, basePrice) {
@@ -1523,7 +1576,7 @@
                         <img src="${p.avatar}" class="patient-avatar-xs" alt="Avatar">
                         <div style="overflow:hidden; width:100%;">
                             <div style="font-weight:700; color:#fff; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.pname} ${badgeHtml}</div>
-                            <div style="font-size:11px; color:var(--text-muted);">HN: ${p.hn} | ${tList}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">HN: ${p.hn} | ${p.clinic}</div>
                             ${p.pharmacyFeedback.includes('ขอแก้ไข') ? '<div style="color:#f87171; font-size:10px; font-weight:700;">⚠️ แก้ไขยา</div>' : ''}
                         </div>
                     </div>
@@ -1532,11 +1585,16 @@
             container.innerHTML = html;
         }
 
+        // จุดที่ 3: ห้องยา (แสดงโรคประจำตัวและ Vital Sign ให้เภสัชกรเห็นชัดเจน)
         function selectPatientForPharmacy(key) {
             selectedPharmacyKey = key;
             let p = allPatientsData[key];
             const container = document.getElementById('pharmacyFormContainer');
             let tList = p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : '-';
+            let wtDisplay = p.vitalSign.wt || '-';
+
+            let bpFormatted = formatBpWithRedColor(p.vitalSign.bp);
+            let prFormatted = formatPrWithRedColor(p.vitalSign.pr);
 
             container.innerHTML = `
                 <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; background:#133326; padding:8px; border-radius:8px; border:1px solid #204e3b;">
@@ -1545,6 +1603,18 @@
                         <h3 style="margin:0; color:#34d399; font-size:15px;">${p.pname} (HN: ${p.hn})</h3>
                         <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#38bdf8;">${p.rightScheme}</b> | การรักษา: <b>${tList}</b></p>
                     </div>
+                </div>
+
+                <!-- แสดง Vital Sign และโรคประจำตัวในห้องยา -->
+                <div style="background:#071711; border:1px solid #204e3b; padding:8px; border-radius:6px; margin-bottom:6px; display:grid; grid-template-columns: repeat(4, 1fr); text-align:center; font-size:12px;">
+                    <div>BP: <b>${bpFormatted}</b></div>
+                    <div>PR: <b>${prFormatted}</b></div>
+                    <div>Temp: <b style="color:var(--accent-green);">${p.vitalSign.temp}</b></div>
+                    <div>นน./ส.: <b style="color:var(--accent-green);">${wtDisplay}</b></div>
+                </div>
+
+                <div style="background:rgba(239, 68, 68, 0.1); border:1px solid #ef4444; padding:6px 10px; border-radius:6px; margin-bottom:10px; font-size:12px; color:#fca5a5;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> <b>โรคประจำตัว:</b> <span style="color:#fff; font-weight:bold;">${p.diseases || 'ไม่มี'}</span>
                 </div>
 
                 <label style="color:#34d399; margin-bottom:6px; font-size:13px;"><i class="fa-solid fa-bolt"></i> พรีเซตกลุ่มอาการ (คลิกเลือกเพื่อเพิ่มยาและบวกค่าใช้จ่ายอัตโนมัติ)</label>
