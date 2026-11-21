@@ -71,76 +71,78 @@
 
         .monitor-container {
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); 
             gap: 20px;
             align-content: start;
         }
 
+        /* การ์ดมอนิเตอร์ดีไซน์ใหม่ จัดสัดส่วนซ้าย-ขวา ชิดซ้าย และใส่ภาพพื้นหลังเต็มกรอบด้านขวา */
         .monitor-card {
             background: var(--app-card); backdrop-filter: blur(25px);
-            border-radius: 24px; padding: 20px; position: relative;
+            border-radius: 24px; padding: 20px; position: relative; overflow: hidden;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6); border: 1px solid var(--app-border); 
             border-left: 10px solid var(--app-orange); display: flex; flex-direction: column; justify-content: space-between;
             animation: fadeIn 0.4s ease;
+            min-height: 280px;
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-        .card-top { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px; margin-bottom: 10px; }
-        .card-bed { background: var(--app-orange); color: #000; padding: 4px 12px; border-radius: 8px; font-size: 18px; font-weight: 800; }
+        /* กรอบภาพเจ้าหน้าที่ด้านหลัง ชิดขวาเต็มพื้นที่ตั้งแต่หัวจรดท้าย และเบลนความโปร่งแสง 50% เข้ากับพื้นหลัง */
+        .card-bg-operator {
+            position: absolute; top: 0; right: 0; width: 50%; height: 100%;
+            z-index: 1; pointer-events: none; opacity: 0.5;
+            mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 60%);
+            -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 60%);
+        }
+        .card-bg-operator img {
+            width: 100%; height: 100%; object-fit: cover; object-position: center;
+            mix-blend-mode: luminosity;
+        }
+
+        /* ให้เนื้อหาอยู่ชั้นหน้า (z-index: 2) เสมอ และจัดชิดซ้าย */
+        .card-content-left {
+            position: relative; z-index: 2; width: 65%;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .card-top { display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 4px; }
+        .card-bed { background: var(--app-orange); color: #000; padding: 2px 10px; border-radius: 6px; font-size: 15px; font-weight: 800; margin-bottom: 4px; display: inline-block; }
         
-        .card-patient h3 { margin: 0; font-size: 22px; font-weight: 700; color: #fff; }
-        .card-patient p { margin: 4px 0 0; font-size: 14px; color: rgba(255,255,255,0.6); }
+        .card-patient h3 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; line-height: 1.2; }
+        .card-patient p { margin: 2px 0 0; font-size: 13px; color: rgba(255,255,255,0.6); }
         .card-patient .diag-text { color: #ffd60a; font-weight: 600; }
 
         .card-procedure {
-            background: rgba(255, 122, 0, 0.15); padding: 10px; border-radius: 10px;
-            font-size: 16px; font-weight: 700; text-align: center; margin-bottom: 10px; color: #ffab40;
-            border: 1px dashed rgba(255, 122, 0, 0.4);
+            background: rgba(255, 122, 0, 0.2); padding: 8px; border-radius: 8px;
+            font-size: 14px; font-weight: 700; text-align: left; color: #ffab40;
+            border: 1px dashed rgba(255, 122, 0, 0.4); display: inline-block;
         }
 
         .card-timer {
-            background: rgba(0, 0, 0, 0.4); padding: 8px; border-radius: 10px; text-align: center;
-            font-size: 20px; font-weight: 800; color: var(--app-green); margin-bottom: 10px;
-            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(0, 0, 0, 0.5); padding: 6px 10px; border-radius: 8px; text-align: left;
+            font-size: 16px; font-weight: 800; color: var(--app-green);
+            border: 1px solid rgba(255,255,255,0.06); display: inline-block;
         }
         .card-timer.time-up { color: var(--app-red); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        .card-details { font-size: 13px; margin-bottom: 10px; background: rgba(0, 0, 0, 0.25); padding: 8px 12px; border-radius: 10px; }
+        .card-details { font-size: 12px; background: rgba(0, 0, 0, 0.3); padding: 6px 10px; border-radius: 8px; }
         .card-details div span { color: rgba(255,255,255,0.5); }
 
-        .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; gap: 6px; }
-        
-        /* สไตล์กรอบและรูปผู้ทำหัตถการ (Blended Avatar - ใช้พื้นที่ 50% ของกรอบวงกลมกลืนกับพื้นหลัง) */
-        .card-operator { display: flex; align-items: center; gap: 10px; font-size: 14px; }
-        .operator-avatar-frame {
-            width: 44px; height: 44px; border-radius: 50%;
-            background: rgba(123, 44, 191, 0.3);
-            border: 1px solid rgba(255, 122, 0, 0.4);
-            display: flex; align-items: center; justify-content: center;
-            position: relative; overflow: hidden; flex-shrink: 0;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-        }
-        .operator-avatar-frame img {
-            width: 50%; height: 50%; object-fit: cover; border-radius: 50%;
-            mix-blend-mode: luminosity; opacity: 0.85;
-            transition: 0.3s ease;
-        }
-        .card-operator:hover .operator-avatar-frame img {
-            mix-blend-mode: normal; opacity: 1; transform: scale(1.1);
-        }
+        .card-footer { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 6px; }
+        .card-operator-name { font-size: 13px; color: rgba(255,255,255,0.8); }
 
         .card-btn-group { display: flex; gap: 6px; }
         .btn-call {
             background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4);
-            padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700;
+            padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700;
         }
         .btn-call:hover { background: #0ea5e9; color: #fff; }
 
         .btn-done { 
             background: rgba(255, 69, 58, 0.2); color: var(--app-red); border: 1px solid rgba(255, 69, 58, 0.4); 
-            padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700;
+            padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700;
         }
         .btn-done:hover { background: var(--app-red); color: #fff; }
 
@@ -271,7 +273,6 @@
         let currentViewMode = 'inside';
         let manualSaverActive = false;
 
-        // แมปชื่อผู้ปฏิบัติงานกับไฟล์รูปภาพในโฟลเดอร์ imsges/staff-1.jpg ถึง staff-12.jpg
         const operatorStaffList = [
             "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
             "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
@@ -284,7 +285,7 @@
             if (index !== -1) {
                 return `imsges/staff-${index + 1}.jpg`;
             }
-            return ''; // ถ้าไม่พบจะให้ระบบใช้ fallback รูปวาด SVG เดิม
+            return '';
         }
 
         function updateDateTime() {
@@ -445,40 +446,45 @@
                     let qBadge = p.queueNo ? `<span style="background:var(--app-purple); color:#fff; padding:2px 8px; border-radius:6px; font-size:14px; margin-right:6px;">คิว: ${p.queueNo}</span>` : '';
                     let staffImgPath = getStaffImagePath(p.operator);
 
-                    // สร้าง Tag รูปภาพ หรือ fallback เป็น SVG หากยังไม่มีไฟล์ใน folder imsges
-                    let avatarHtml = staffImgPath 
-                        ? `<img src="${staffImgPath}" alt="${p.operator}" onerror="this.onerror=null; this.src='${p.avatar}';">`
+                    let bgAvatarHtml = staffImgPath 
+                        ? `<img src="${staffImgPath}" alt="${p.operator}" onerror="this.onerror=function(){this.src='${p.avatar}';}; this.src='${staffImgPath.replace('.jpg', '.png')}';">`
                         : `<img src="${p.avatar}" alt="${p.operator}">`;
 
                     html += `
                         <div class="monitor-card" id="card-${key}">
-                            <div class="card-top">
-                                <div class="card-patient">
-                                    <h3>${qBadge} ${p.pname}</h3>
-                                    <p>HN: ${p.hn} | วินิจฉัย: <span class="diag-text">${p.diagnosis}</span></p>
-                                </div>
-                                <div class="card-bed">${p.bed}</div>
+                            <!-- ภาพเจ้าหน้าที่ด้านหลังการ์ด เต็มพื้นที่ เบลนกลืนกับพื้นหลัง -->
+                            <div class="card-bg-operator">
+                                ${bgAvatarHtml}
                             </div>
 
-                            <div class="card-procedure">
-                                <i class="fa-solid fa-hands-asl-interpreting"></i> ${p.procedure}
-                            </div>
-
-                            <div class="card-timer ${isTimeUp ? 'time-up' : ''}" id="timer-${key}">
-                                <i class="fa-regular fa-clock"></i> ${timeStr}
-                            </div>
-
-                            <div class="card-details">
-                                <div><span>โรคประจำตัว:</span> ${p.disease}</div>
-                                <div style="color:#ffb3b3;"><span>ข้อควรระวัง:</span> ${p.caution}</div>
-                            </div>
-
-                            <div class="card-footer">
-                                <div class="card-operator">
-                                    <div class="operator-avatar-frame">
-                                        ${avatarHtml}
+                            <!-- ส่วนเนื้อหาหลัก จัดชิดซ้าย (ซ้อนทับภาพพื้นหลัง) -->
+                            <div class="card-content-left">
+                                <div class="card-top">
+                                    <div class="card-bed">${p.bed}</div>
+                                    <div class="card-patient">
+                                        <h3>${qBadge} ${p.pname}</h3>
+                                        <p>HN: ${p.hn} | วินิจฉัย: <span class="diag-text">${p.diagnosis}</span></p>
                                     </div>
-                                    <span>ผู้ปฏิบัติงาน: <b>${p.operator}</b></span>
+                                </div>
+
+                                <div class="card-procedure">
+                                    <i class="fa-solid fa-hands-asl-interpreting"></i> ${p.procedure}
+                                </div>
+
+                                <div class="card-timer ${isTimeUp ? 'time-up' : ''}" id="timer-${key}">
+                                    <i class="fa-regular fa-clock"></i> ${timeStr}
+                                </div>
+
+                                <div class="card-details">
+                                    <div><span>โรคประจำตัว:</span> ${p.disease}</div>
+                                    <div style="color:#ffb3b3;"><span>ข้อควรระวัง:</span> ${p.caution}</div>
+                                </div>
+                            </div>
+
+                            <!-- ส่วนท้ายการ์ด -->
+                            <div class="card-footer">
+                                <div class="card-operator-name">
+                                    ผู้ปฏิบัติงาน: <b>${p.operator}</b>
                                 </div>
                                 <div class="card-btn-group">
                                     <button class="btn-call" onclick="repeatCallPatient('${p.pname}', '${p.bed}', '${p.operator}', '${p.queueNo || ''}')" title="กดเรียกคิวซ้ำ">
