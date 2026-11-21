@@ -31,6 +31,16 @@
             font-size: 14px;
         }
 
+        /* ซ่อนลูกศรขึ้นลงของช่อง input number */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
         .agency-banner {
             background: linear-gradient(135deg, #0f3829 0%, #1b5e3f 100%);
             border: 2px solid #2d8a5e; padding: 8px 16px; border-radius: 10px;
@@ -240,8 +250,6 @@
         .admin-table th { background: #133326; color: var(--accent-green); font-weight: 700; }
         .admin-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
         .btn-detail-toggle { background: #0284c7; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        .btn-admin-edit { background: #d97706; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-right: 4px; }
-        .btn-admin-del { background: #dc2626; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
         .filter-btn-group { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
         .btn-filter { background: #133326; border: 1px solid #204e3b; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
@@ -355,9 +363,9 @@
                 </div>
 
                 <div class="camera-box-container">
-                    <img id="scannedAvatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="crop-avatar-preview" alt="Patient Card Preview" style="object-fit: cover;">
+                    <img id="scannedAvatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="crop-avatar-preview" alt="Patient Card Preview" style="object-fit: contain;">
                     <div style="color: var(--accent-green); font-weight: 700; font-size: 13px; margin-bottom: 6px;">
-                        <i class="fa-solid fa-camera"></i> ถ่ายรูปหรืออัปโหลดภาพ (สัดส่วน 1:1.59 บัตรประชาชน)
+                        <i class="fa-solid fa-camera"></i> ถ่ายรูปหรืออัปโหลดภาพ (ตัดครอบกรอบสี่เหลี่ยมผืนผ้า)
                     </div>
                     
                     <div class="camera-btn-row">
@@ -374,24 +382,43 @@
                 </div>
 
                 <div class="form-grid">
-                    <div class="form-group"><label>เลขประจำตัวประชาชน (13 หลัก)</label><input type="number" id="reg-idcard" placeholder="ระบุเลขบัตร"></div>
-                    <div class="form-group"><label>HN (รหัสผู้ป่วย)</label><input type="text" id="reg-hn" placeholder="ระบุ HN"></div>
+                    <!-- บังคับเฉพาะตัวเลขล้วน (Numeric Keypad คล้ายปุ่มกดโทรศัพท์) -->
+                    <div class="form-group">
+                        <label>เลขประจำตัวประชาชน (13 หลัก)</label>
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-idcard" placeholder="ระบุเลขบัตร 13 หลัก" maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <div class="form-group">
+                        <label>HN (รหัสผู้ป่วย)</label>
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-hn" placeholder="ระบุเลข HN" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
                     <div class="form-group full"><label>ชื่อ-นามสกุล ผู้ป่วย</label><input type="text" id="reg-pname" placeholder="ชื่อ นามสกุล"></div>
                     
-                    <!-- แยกช่องความดัน SYS และ DIA (บังคับเฉพาะตัวเลข) -->
+                    <!-- แยกช่องความดัน SYS และ DIA (ตัวเลขล้วน) -->
                     <div class="form-group">
                         <label>ความดันโลหิต (SYS / DIA mmHg)</label>
                         <div style="display: flex; gap: 6px; align-items: center;">
-                            <input type="number" id="reg-sys" placeholder="SYS (เช่น 120)" min="50" max="250" style="text-align: center;">
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-sys" placeholder="SYS (เช่น 120)" style="text-align: center;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             <span style="font-weight: bold; color: var(--accent-green);">/</span>
-                            <input type="number" id="reg-dia" placeholder="DIA (เช่น 80)" min="30" max="150" style="text-align: center;">
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-dia" placeholder="DIA (เช่น 80)" style="text-align: center;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                     </div>
-                    <div class="form-group"><label>ชีพจร (PR ครั้ง/นาที)</label><input type="number" id="reg-pr" placeholder="72" min="30" max="250"></div>
-                    <div class="form-group full"><label>อุณหภูมิ (°C)</label><input type="number" step="0.1" id="reg-temp" placeholder="36.5" min="30" max="45"></div>
+                    <div class="form-group">
+                        <label>ชีพจร (PR ครั้ง/นาที)</label>
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-pr" placeholder="72" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <div class="form-group full">
+                        <label>อุณหภูมิ (°C)</label>
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-temp" placeholder="365 (เช่น 36.5)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
                     
-                    <div class="form-group"><label>น้ำหนัก (kg)</label><input type="number" step="0.1" id="reg-weight" placeholder="เช่น 60"></div>
-                    <div class="form-group"><label>ส่วนสูง (cm)</label><input type="number" id="reg-height" placeholder="เช่น 170"></div>
+                    <div class="form-group">
+                        <label>น้ำหนัก (kg)</label>
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-weight" placeholder="60" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
+                    <div class="form-group">
+                        <label>ส่วนสูง (cm)</label>
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-height" placeholder="170" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    </div>
 
                     <div class="form-group full">
                         <label>โรคประจำตัว (เลือกได้มากกว่า 1)</label>
@@ -573,7 +600,7 @@
 
         </div>
 
-        <!-- Right Sidebar (ในสถานบริการ อยู่ด้านบน | นอกสถานบริการ อยู่ด้านล่าง) -->
+        <!-- Right Sidebar -->
         <div class="status-sidebar">
             <div class="sidebar-header">
                 <span><i class="fa-solid fa-users-line" style="color:var(--accent-green);"></i> สถานะผู้ป่วยทุกจุด</span>
@@ -649,7 +676,7 @@
 
     <script>
         const firebaseConfig = {
-            	aapiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -660,7 +687,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const sysRef = database.ref('hospitalFlowQueryGreenThemeV41');
+        const sysRef = database.ref('hospitalFlowQueryGreenThemeV43');
 
         let allPatientsData = {};
         let selectedDoctorKey = null;
@@ -771,6 +798,15 @@
                 guideListHtml += `<li>${drug}</li>`;
             });
             document.getElementById('drugGuideList').innerHTML = guideListHtml;
+
+            if (sessionStorage.getItem('ttm_logged_in') === 'true') {
+                isSystemLoggedIn = true;
+                document.getElementById('login-success-msg').style.display = 'block';
+                for (let i = 1; i <= 5; i++) {
+                    let btn = document.getElementById(`tab-btn-${i}`);
+                    if(btn) btn.disabled = false;
+                }
+            }
         }
         initStaffDropdowns();
 
@@ -780,6 +816,7 @@
 
             if (uInput === "TTMPMH" && pInput === "11097") {
                 isSystemLoggedIn = true;
+                sessionStorage.setItem('ttm_logged_in', 'true');
                 document.getElementById('login-success-msg').style.display = 'block';
                 for (let i = 1; i <= 5; i++) {
                     let btn = document.getElementById(`tab-btn-${i}`);
@@ -812,13 +849,13 @@
             const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
             
             document.getElementById('user-point-1').selectedIndex = 1;
-            document.getElementById('reg-idcard').value = "1100" + Math.floor(100000000 + Math.random() * 900000000);
-            document.getElementById('reg-hn').value = "HN" + Math.floor(67000 + Math.random() * 9000);
+            document.getElementById('reg-idcard').value = "1100123456789";
+            document.getElementById('reg-hn').value = "670123";
             document.getElementById('reg-pname').value = randomName;
             document.getElementById('reg-sys').value = "120";
             document.getElementById('reg-dia').value = "80";
             document.getElementById('reg-pr').value = "72";
-            document.getElementById('reg-temp').value = "36.5";
+            document.getElementById('reg-temp').value = "365";
             document.getElementById('reg-weight').value = "65";
             document.getElementById('reg-height').value = "172";
             document.getElementById('reg-right').value = "บัตรทอง 30 บาท";
@@ -839,6 +876,7 @@
             document.getElementById('reg-service-type').value = type;
         }
 
+        // ตัดครอบกรอบเป็นสี่เหลี่ยมผืนผ้าตามภาพต้นฉบับเดิมโดยไม่บิดเบือนสัดส่วน
         function handleImageUploadAndCompress(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -851,16 +889,13 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     
-                    const MAX_WIDTH = 500;
-                    const MAX_HEIGHT = Math.round(500 / 1.59);
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
 
-                    canvas.width = MAX_WIDTH;
-                    canvas.height = MAX_HEIGHT;
-                    ctx.drawImage(img, 0, 0, MAX_WIDTH, MAX_HEIGHT);
-
-                    currentAvatarBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                    currentAvatarBase64 = canvas.toDataURL('image/jpeg', 0.85);
                     document.getElementById('scannedAvatarPreview').src = currentAvatarBase64;
-                    alert("บันทึกและปรับสัดส่วนภาพ 1:1.59 สำเร็จ!");
+                    alert("อัปโหลดภาพเรียบร้อย!");
                 };
             };
             reader.readAsDataURL(file);
@@ -1045,14 +1080,13 @@
             document.getElementById('fileUploadInput').value = '';
         }
 
-        // ระบบล้างข้อมูลและรูปเก่าที่เกิน 30 วันอัตโนมัติ
         sysRef.on('value', (snapshot) => {
             allPatientsData = snapshot.val() || {};
 
             let thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
             Object.keys(allPatientsData).forEach(k => {
                 if (allPatientsData[k].timestamp && allPatientsData[k].timestamp < thirtyDaysAgo) {
-                    sysRef.child(k).remove(); // ลบข้อมูลและรูปเก่าที่เกิน 30 วันออกจากคลาวด์อัตโนมัติ
+                    sysRef.child(k).remove();
                 }
             });
 
@@ -1178,32 +1212,13 @@
                         <td>${p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : '-'}</td>
                         <td style="color:var(--accent-gold); font-weight:bold;">${p.totalCost || 0} ฿</td>
                         <td><span class="badge-point pt-done">${p.currentPoint}</span></td>
-                        <td style="white-space:nowrap;">
-                            <button class="btn-detail-toggle" onclick="openAdminDetailModal('${key}')"><i class="fa-solid fa-eye"></i></button>
-                            <button class="btn-admin-edit" onclick="openEditModal('${key}')"><i class="fa-solid fa-pen"></i></button>
-                            <button class="btn-admin-del" onclick="deletePatientRecord('${key}', '${p.pname}')"><i class="fa-solid fa-trash"></i></button>
-                        </td>
+                        <td><button class="btn-detail-toggle" onclick="openAdminDetailModal('${key}')"><i class="fa-solid fa-eye"></i> รายละเอียด</button></td>
                     </tr>
                 `;
             });
             tbody.innerHTML = html;
         }
 
-        // ฟังก์ชันลบข้อมูลพร้อมถามยืนยันซ้ำ
-        function deletePatientRecord(key, patientName) {
-            let confirmDelete = confirm(`⚠️ คำเตือน: คุณต้องการลบข้อมูลของ "${patientName}" ออกจากระบบใช่หรือไม่?\n(การกระทำนี้จะไม่สามารถกู้คืนได้)`);
-            if (confirmDelete) {
-                sysRef.child(key).remove()
-                    .then(() => {
-                        alert("ลบข้อมูลผู้ป่วยสำเร็จ!");
-                    })
-                    .catch((error) => {
-                        alert("เกิดข้อผิดพลาดในการลบข้อมูล: " + error.message);
-                    });
-            }
-        }
-
-        // หน้าต่างเวชระเบียนผู้ป่วย
         function openAdminDetailModal(key) {
             let p = allPatientsData[key];
             let drugsDetailed = p.prescriptions && p.prescriptions.length > 0 ? p.prescriptions.map(r => `• ${r.name} - จำนวน: ${r.qty} (${r.instruction})`).join('<br>') : 'ไม่มีรายการยา';
@@ -1214,7 +1229,7 @@
             let content = `
                 <div style="display:flex; gap:16px; align-items:center; margin-bottom:14px;">
                     <div style="width:50%; flex-shrink:0; background:#000; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
-                        <img src="${p.avatar}" style="width:100%; height:auto; aspect-ratio: 1.59 / 1; object-fit: contain;" alt="ภาพถ่ายบัตรประชาชน">
+                        <img src="${p.avatar}" style="width:100%; height:auto; object-fit: contain;" alt="ภาพถ่ายบัตรประชาชน">
                     </div>
                     <div style="width:50%; display:flex; flex-direction:column; justify-content:center;">
                         <h4 style="margin:0 0 6px 0; color:#34d399; font-size:24px; font-weight:bold; line-height: 1.2;">${p.pname}</h4>
