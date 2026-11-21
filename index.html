@@ -314,7 +314,6 @@
     		measurementId: "G-7SXZRHE5F9"
         };
 
-
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const queueRef = database.ref('patientQueue');
@@ -323,6 +322,7 @@
         let currentQueueData = {};
         let flowPatientsData = {};
         let currentFlowTab = 'inside';
+        let currentImportedQueueNo = ''; // ตัวแปรเก็บหมายเลขคิวชั่วคราวขณะกดดึงข้อมูล
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -410,6 +410,8 @@
             let p = flowPatientsData[key];
             if (!p) return;
 
+            currentImportedQueueNo = p.queueNo || ''; // บันทึกหมายเลขคิว (เช่น A01 หรือ B01)
+
             document.getElementById('input-hn').value = p.hn || '';
             document.getElementById('input-pname').value = p.pname || '';
             
@@ -424,7 +426,7 @@
                 outsideOpt.disabled = false;
             } else {
                 bedSelect.value = '';
-                outsideOpt.disabled = true; // ล็อกไม่ให้ผู้ป่วยในสถานบริการเลือกเตียงนอกพื้นที่
+                outsideOpt.disabled = true;
             }
 
             if (p.diseases) {
@@ -435,7 +437,7 @@
                 });
             }
 
-            alert(`ดึงข้อมูลคุณ "${p.pname}" [คิว: ${p.queueNo || '-'}] เรียบร้อยแล้ว!`);
+            alert(`ดึงข้อมูลคุณ "${p.pname}" [คิว: ${currentImportedQueueNo || '-'}] เรียบร้อยแล้ว!`);
         }
 
         function generateUniqueAvatar(name) {
@@ -541,6 +543,7 @@
                 bed,
                 hn: hn || '-----',
                 pname,
+                queueNo: currentImportedQueueNo || '', // <--- แนบเลขคิว A / B ส่งต่อไปยัง Monitor ตรงนี้ครับ
                 diagnosis: diagnosis || 'ไม่ระบุ',
                 disease: diseases.length > 0 ? diseases.join(', ') : 'ไม่มี',
                 caution: cautions.length > 0 ? cautions.join(', ') : 'ไม่มี',
@@ -560,6 +563,7 @@
                 document.getElementById('edit-key').value = "";
             }
 
+            currentImportedQueueNo = ''; // รีเซ็ตค่าคิวหลังบันทึก
             resetForm();
         }
 
@@ -580,10 +584,11 @@
             keys.forEach((key) => {
                 let p = currentQueueData[key];
                 let badgeStatus = p.status === 'waiting' ? '<span style="color:#6200ee; font-weight:bold;">[รอคิว]</span>' : '<span style="color:#0f766e; font-weight:bold;">[ทำหัตถการ]</span>';
+                let qStr = p.queueNo ? `[${p.queueNo}]` : '';
                 html += `
                     <div class="queue-item">
                         <div class="queue-info">
-                            <h4>${badgeStatus} <b>[${p.bed}]</b> ${p.pname}</h4>
+                            <h4>${badgeStatus} <b style="color:#0f766e;">${qStr}</b> <b>[${p.bed}]</b> ${p.pname}</h4>
                             <p>หัตถการ: ${p.procedure} | ผู้ทำ: ${p.operator}</p>
                         </div>
                         <div class="queue-actions">
@@ -606,6 +611,7 @@
             document.getElementById('input-diagnosis').value = p.diagnosis;
             document.getElementById('input-operator').value = p.operator;
             document.getElementById('edit-key').value = key;
+            currentImportedQueueNo = p.queueNo || '';
             
             updateFormDropdownLocks();
         }
@@ -627,6 +633,7 @@
             document.querySelectorAll('.badge-option').forEach(el => el.classList.remove('selected'));
             document.querySelector('.time-badge').classList.add('selected');
             document.getElementById('input-duration').value = "30";
+            currentImportedQueueNo = '';
             
             updateFormDropdownLocks();
         }

@@ -76,7 +76,6 @@
             align-content: start;
         }
 
-        /* การ์ดมอนิเตอร์ดีไซน์ใหม่ จัดสัดส่วนซ้าย-ขวา ชิดซ้าย และใส่ภาพพื้นหลังเต็มกรอบด้านขวา */
         .monitor-card {
             background: var(--app-card); backdrop-filter: blur(25px);
             border-radius: 24px; padding: 20px; position: relative; overflow: hidden;
@@ -88,7 +87,6 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-        /* กรอบภาพเจ้าหน้าที่ด้านหลัง ชิดขวาเต็มพื้นที่ตั้งแต่หัวจรดท้าย และเบลนความโปร่งแสง 50% เข้ากับพื้นหลัง */
         .card-bg-operator {
             position: absolute; top: 0; right: 0; width: 50%; height: 100%;
             z-index: 1; pointer-events: none; opacity: 0.5;
@@ -100,7 +98,6 @@
             mix-blend-mode: luminosity;
         }
 
-        /* ให้เนื้อหาอยู่ชั้นหน้า (z-index: 2) เสมอ และจัดชิดซ้าย */
         .card-content-left {
             position: relative; z-index: 2; width: 65%;
             display: flex; flex-direction: column; gap: 10px;
@@ -109,9 +106,13 @@
         .card-top { display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 4px; }
         .card-bed { background: var(--app-orange); color: #000; padding: 2px 10px; border-radius: 6px; font-size: 15px; font-weight: 800; margin-bottom: 4px; display: inline-block; }
         
-        .card-patient h3 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; line-height: 1.2; }
+        .card-patient h3 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; line-height: 1.3; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .card-patient p { margin: 2px 0 0; font-size: 13px; color: rgba(255,255,255,0.6); }
         .card-patient .diag-text { color: #ffd60a; font-weight: 600; }
+
+        .queue-badge-main {
+            background: var(--app-purple); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 16px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.2);
+        }
 
         .card-procedure {
             background: rgba(255, 122, 0, 0.2); padding: 8px; border-radius: 8px;
@@ -176,7 +177,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        .waitlist-info h5 { margin: 0 0 4px 0; font-size: 15px; color: #fff; }
+        .waitlist-info h5 { margin: 0 0 4px 0; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px; }
         .waitlist-info p { margin: 0; font-size: 12px; color: rgba(255,255,255,0.6); }
         .btn-start-wait {
             background: var(--app-orange); color: #fff; border: none; padding: 6px 10px;
@@ -262,6 +263,7 @@
     		measurementId: "G-7SXZRHE5F9"
         };
 
+       
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const queueRef = database.ref('patientQueue');
@@ -312,6 +314,14 @@
             speakText("ระบบเสียงพร้อมใช้งานค่ะ");
         }
 
+        // แปลงรูปแบบคิว เช่น A01 ให้เสียงอ่านออกเสียงชัดเจน (เอ 0 1)
+        function formatQueueForSpeech(queueNo) {
+            if (!queueNo) return '';
+            let formatted = queueNo.split('').join(' ');
+            formatted = formatted.replace('A', 'เอ ').replace('B', 'บี ');
+            return formatted;
+        }
+
         function speakText(text) {
             if (!soundEnabled) return;
             if ('speechSynthesis' in window) {
@@ -324,8 +334,9 @@
         }
 
         function repeatCallPatient(pname, bed, operator, queueNo) {
-            let qStr = queueNo ? `หมายเลขคิว ${queueNo}` : '';
-            let announcement = `ขอเชิญ ${qStr} คุณ ${pname}, ที่ ${bed}, ผู้ปฏิบัติงาน ${operator}`;
+            let qSpeech = formatQueueForSpeech(queueNo);
+            let qStr = qSpeech ? `หมายเลขคิว ${qSpeech}` : '';
+            let announcement = `ขอเชิญ ${qStr}, คุณ ${pname}, ที่ ${bed}, ผู้ปฏิบัติงาน ${operator}`;
             speakText(announcement);
         }
 
@@ -385,20 +396,31 @@
                 return timeA - timeB;
             });
 
+            let isOutsideCase = (p) => p.bed === 'นอกพื้นที่';
+
             let allActiveKeys = keys.filter(k => currentQueueData[k].status === 'active' || !currentQueueData[k].status);
-            let waitingKeys = keys.filter(k => currentQueueData[k].status === 'waiting');
+            let allWaitingKeys = keys.filter(k => currentQueueData[k].status === 'waiting');
 
             let activeKeys = allActiveKeys.filter(k => {
                 let p = currentQueueData[k];
-                let isOutsideBed = (p.bed === 'นอกพื้นที่');
                 if (currentViewMode === 'inside') {
-                    return !isOutsideBed;
+                    return !isOutsideCase(p);
                 } else {
-                    return isOutsideBed;
+                    return isOutsideCase(p);
                 }
             });
 
-            if ((allActiveKeys.length === 0 && waitingKeys.length === 0) || manualSaverActive) {
+            let waitingKeys = allWaitingKeys.filter(k => {
+                let p = currentQueueData[k];
+                let isBQueue = p.queueNo && p.queueNo.startsWith('B');
+                if (currentViewMode === 'inside') {
+                    return !isBQueue;
+                } else {
+                    return isBQueue;
+                }
+            });
+
+            if ((allActiveKeys.length === 0 && allWaitingKeys.length === 0) || manualSaverActive) {
                 screenSaver.classList.add('active');
             } else {
                 screenSaver.classList.remove('active');
@@ -406,14 +428,22 @@
 
             document.getElementById('waitCount').innerText = `(${waitingKeys.length})`;
 
+            // อ่านเสียงเฉพาะเคสใหม่ที่ตรงกับโหมดหน้าจอปัจจุบัน โดยอ่าน "คิวก่อนชื่อ"
             if (soundEnabled && allActiveKeys.length > 0) {
                 let newActive = allActiveKeys.filter(k => !previousKeys.includes(k));
                 if (newActive.length > 0) {
                     let latestKey = newActive[0];
                     let p = currentQueueData[latestKey];
-                    let qStr = p.queueNo ? `คิว ${p.queueNo}` : '';
-                    let announcement = `${qStr} ผู้ป่วย ${p.pname}, ที่ ${p.bed}, ผู้ปฏิบัติงาน ${p.operator}`;
-                    setTimeout(() => { speakText(announcement); }, 500);
+                    let isOutside = isOutsideCase(p);
+
+                    let matchMode = (currentViewMode === 'inside' && !isOutside) || (currentViewMode === 'outside' && isOutside);
+
+                    if (matchMode) {
+                        let qSpeech = formatQueueForSpeech(p.queueNo);
+                        let qStr = qSpeech ? `หมายเลขคิว ${qSpeech}` : '';
+                        let announcement = `${qStr}, ผู้ป่วย ${p.pname}, ที่ ${p.bed}, ผู้ปฏิบัติงาน ${p.operator}`;
+                        setTimeout(() => { speakText(announcement); }, 500);
+                    }
                 }
             }
             previousKeys = [...keys];
@@ -443,7 +473,8 @@
                         timeStr = `เกินเวลา +${String(ovMinutes).padStart(2, '0')}:${String(ovSeconds).padStart(2, '0')} นาที`;
                     }
 
-                    let qBadge = p.queueNo ? `<span style="background:var(--app-purple); color:#fff; padding:2px 8px; border-radius:6px; font-size:14px; margin-right:6px;">คิว: ${p.queueNo}</span>` : '';
+                    // แสดงหมายเลขคิวก่อนชื่อผู้ป่วยบนหน้าจอ
+                    let qBadge = p.queueNo ? `<span class="queue-badge-main">${p.queueNo}</span>` : '';
                     let staffImgPath = getStaffImagePath(p.operator);
 
                     let bgAvatarHtml = staffImgPath 
@@ -452,12 +483,10 @@
 
                     html += `
                         <div class="monitor-card" id="card-${key}">
-                            <!-- ภาพเจ้าหน้าที่ด้านหลังการ์ด เต็มพื้นที่ เบลนกลืนกับพื้นหลัง -->
                             <div class="card-bg-operator">
                                 ${bgAvatarHtml}
                             </div>
 
-                            <!-- ส่วนเนื้อหาหลัก จัดชิดซ้าย (ซ้อนทับภาพพื้นหลัง) -->
                             <div class="card-content-left">
                                 <div class="card-top">
                                     <div class="card-bed">${p.bed}</div>
@@ -481,7 +510,6 @@
                                 </div>
                             </div>
 
-                            <!-- ส่วนท้ายการ์ด -->
                             <div class="card-footer">
                                 <div class="card-operator-name">
                                     ผู้ปฏิบัติงาน: <b>${p.operator}</b>
@@ -507,11 +535,11 @@
                 let waitHtml = '';
                 waitingKeys.forEach((key) => {
                     let p = currentQueueData[key];
-                    let qBadge = p.queueNo ? `[คิว: ${p.queueNo}]` : '';
+                    let qBadge = p.queueNo ? `<span style="background:var(--app-purple); color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; margin-right:4px;">${p.queueNo}</span>` : '';
                     waitHtml += `
                         <div class="waitlist-card">
                             <div class="waitlist-info">
-                                <h5><span style="color:#ffab40;">${qBadge}</span> ${p.pname}</h5>
+                                <h5>${qBadge} ${p.pname}</h5>
                                 <p>เตียง: ${p.bed} | ${p.procedure}</p>
                             </div>
                             <button class="btn-start-wait" onclick="startWaitingPatient('${key}')">เริ่มทำ</button>
@@ -533,7 +561,9 @@
 
                         let isDrKrittanat = p.operator && p.operator.includes("นายแพทย์กฤตธนัท วงค์วิเศษ");
                         if (isTimeUp && isDrKrittanat) {
-                            if (soundEnabled && !notifiedTimeUpKeys.includes(key)) {
+                            let isOutside = p.bed === 'นอกพื้นที่';
+                            let matchMode = (currentViewMode === 'inside' && !isOutside) || (currentViewMode === 'outside' && isOutside);
+                            if (soundEnabled && matchMode && !notifiedTimeUpKeys.includes(key)) {
                                 speakText(`หมดเวลาหัตถการของแพทย์กฤตธนัท ที่ ${p.bed}`);
                                 notifiedTimeUpKeys.push(key);
                             }
@@ -550,7 +580,10 @@
                                 return;
                             }
 
-                            if (soundEnabled && !notifiedTimeUpKeys.includes(key)) {
+                            let isOutside = p.bed === 'นอกพื้นที่';
+                            let matchMode = (currentViewMode === 'inside' && !isOutside) || (currentViewMode === 'outside' && isOutside);
+
+                            if (soundEnabled && matchMode && !notifiedTimeUpKeys.includes(key)) {
                                 speakText(`หมดเวลาทำหัตถการ ที่ ${p.bed}`);
                                 notifiedTimeUpKeys.push(key);
                             }
