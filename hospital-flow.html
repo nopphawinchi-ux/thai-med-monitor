@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Hospital Flow System - TTM PMH</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Firebase SDKs -->
@@ -13,21 +13,22 @@
 
     <style>
         :root {
-            --bg-base: #071711;
-            --card-bg: #0f251d;
-            --card-border: #1e4635;
-            --accent-green: #2ec4b6;
-            --accent-green-hover: #209b8f;
-            --accent-gold: #ffb703;
-            --accent-red: #e71d36;
-            --text-main: #f8f9fa;
-            --text-muted: #8da99d;
+            --bg-base: #f4f7f6;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --primary-color: #0f766e;
+            --primary-hover: #115e59;
+            --accent-teal: #0d9488;
+            --accent-gold: #d97706;
+            --accent-red: #dc2626;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
         }
 
         * { box-sizing: border-box; font-family: 'Prompt', sans-serif; }
         body { 
             background-color: var(--bg-base);
-            margin: 0; padding: 10px; min-height: 100vh; color: var(--text-main);
+            margin: 0; padding: 16px; min-height: 100vh; color: var(--text-main);
             font-size: 14px;
         }
 
@@ -36,186 +37,174 @@
         input[type=number] { -moz-appearance: textfield; }
 
         .agency-banner {
-            background: linear-gradient(135deg, #0f3829 0%, #1b5e3f 100%);
-            border: 2px solid #2d8a5e; padding: 8px 16px; border-radius: 10px;
+            background: linear-gradient(135deg, #0f766e 100%, #115e59 0%);
+            border: 1px solid #0d9488; padding: 12px 20px; border-radius: 12px;
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-bottom: 12px; box-shadow: 0 4px 12px rgba(15, 118, 110, 0.15);
         }
-        .agency-title { font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
-        .live-clock { font-size: 13px; font-weight: 600; color: #ffeb3b; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 6px; }
+        .agency-title { font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .live-clock { font-size: 13px; font-weight: 600; color: #fef08a; background: rgba(0,0,0,0.15); padding: 5px 12px; border-radius: 8px; }
 
         .top-nav {
             display: flex; justify-content: space-between; align-items: center;
-            background: #0d221a; padding: 8px 16px; border-radius: 10px; border: 2px solid var(--card-border);
-            margin-bottom: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); gap: 10px; flex-wrap: wrap;
+            background: var(--card-bg); padding: 10px 18px; border-radius: 12px; border: 1px solid var(--card-border);
+            margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); gap: 10px; flex-wrap: wrap;
         }
         .nav-login-area { display: flex; align-items: center; }
         .nav-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
         .nav-tab-btn {
-            background: #133326; border: 2px solid #204e3b; color: var(--text-muted);
-            padding: 6px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            background: #f1f5f9; border: 1px solid #cbd5e1; color: var(--text-muted);
+            padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s;
         }
-        .nav-tab-btn:hover { background: #1b4a37; color: #fff; }
-        .nav-tab-btn.active { background: var(--accent-green); color: #071711; border-color: #45ede0; font-weight: 700; }
-        .nav-tab-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: #153227; }
+        .nav-tab-btn:hover { background: #e2e8f0; color: var(--text-main); }
+        .nav-tab-btn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); font-weight: 700; }
+        .nav-tab-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         
-        .nav-tab-login { background: #172b4d; border-color: #38bdf8; color: #38bdf8; }
-        .nav-tab-login.active { background: #38bdf8; color: #071711; border-color: #7dd3fc; }
-        .nav-tab-admin { background: #3b0731; border-color: #db2777; color: #f472b6; }
-        .nav-tab-admin.active { background: #db2777; color: #fff; border-color: #f472b6; }
+        .nav-tab-login { background: #e0f2fe; border-color: #bae6fd; color: #0369a1; }
+        .nav-tab-login.active { background: #0284c7; color: #fff; border-color: #0284c7; }
+        .nav-tab-admin { background: #fce7f3; border-color: #fbcfe8; color: #be185d; }
+        .nav-tab-admin.active { background: #db2777; color: #fff; border-color: #db2777; }
 
-        .workspace { display: grid; grid-template-columns: 1fr 390px; gap: 12px; max-width: 1800px; margin: 0 auto; }
+        .workspace { display: grid; grid-template-columns: 1fr 410px; gap: 16px; max-width: 1800px; margin: 0 auto; }
         @media(max-width: 1100px) { .workspace { grid-template-columns: 1fr; } }
 
         .content-panel {
-            background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 12px; padding: 16px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4); min-height: 75vh; position: relative; padding-bottom: 60px;
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05); min-height: 75vh; position: relative; padding-bottom: 60px;
         }
         .panel-title {
-            font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 12px;
-            border-bottom: 2px solid var(--card-border); padding-bottom: 8px;
+            font-size: 18px; font-weight: 700; color: var(--primary-color); margin-bottom: 16px;
+            border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
         }
 
         .status-sidebar {
-            background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 12px; padding: 14px;
-            max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 16px;
+            max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 16px rgba(0,0,0,0.05);
             overflow-y: auto;
         }
         .sidebar-section-title {
-            font-size: 13px; font-weight: 700; padding: 4px 8px; border-radius: 4px; margin: 8px 0 4px 0;
+            font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px; margin: 10px 0 6px 0;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .title-inside { background: #064e3b; color: #34d399; border: 1px solid #059669; }
-        .title-outside { background: #1e3a8a; color: #93c5fd; border: 1px solid #3b82f6; }
+        .title-inside { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .title-outside { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
 
-        .status-list { display: flex; flex-direction: column; gap: 6px; }
+        .status-list { display: flex; flex-direction: column; gap: 8px; }
         
-        .clinic-theme-thai { background: #0a2318 !important; border-color: #10b981 !important; }
-        .clinic-theme-china { background: #0a1b2a !important; border-color: #3b82f6 !important; }
-        .clinic-theme-spa { background: #220e24 !important; border-color: #ec4899 !important; }
+        .clinic-theme-thai { background: #f8fafc !important; border-left: 4px solid #10b981 !important; border-color: var(--card-border) !important; }
+        .clinic-theme-china { background: #f8fafc !important; border-left: 4px solid #3b82f6 !important; border-color: var(--card-border) !important; }
+        .clinic-theme-spa { background: #f8fafc !important; border-left: 4px solid #ec4899 !important; border-color: var(--card-border) !important; }
 
-        .card-inside-badge { background: #047857; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        .card-outside-badge { background: #1d4ed8; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .card-inside-badge { background: #059669; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .card-outside-badge { background: #2563eb; color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
         .status-card {
-            border-radius: 8px; padding: 10px; display: flex; gap: 10px; align-items: center; position: relative;
-            border-width: 1px; border-style: solid;
+            border-radius: 10px; padding: 12px; display: flex; gap: 12px; align-items: center; position: relative;
+            border-width: 1px; border-style: solid; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
-        .patient-avatar-sm { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-green); flex-shrink: 0; }
-        .status-card h5 { margin: 0 0 2px 0; font-size: 14px; font-weight: 700; }
-        .status-card p { margin: 1px 0; font-size: 12px; color: var(--text-muted); }
+        .patient-avatar-sm { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid #cbd5e1; flex-shrink: 0; }
+        .status-card h5 { margin: 0 0 3px 0; font-size: 14px; font-weight: 700; color: var(--text-main); }
+        .status-card p { margin: 2px 0; font-size: 12px; color: var(--text-muted); }
 
-        .badge-point { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-top: 3px; }
-        .badge-right-sidebar { background: #064e3b; color: #34d399; border: 1px solid #059669; }
-        .badge-pay-unpaid { background: #3b0731; color: #f472b6; border: 1px solid #db2777; }
-        .badge-pay-paid { background: #166534; color: #4ade80; border: 1px solid #22c55e; }
-        .badge-pay-none { background: #1f2937; color: #9ca3af; border: 1px solid #374151; }
+        .badge-point { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-top: 4px; }
+        .badge-right-sidebar { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+        .badge-pay-unpaid { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .badge-pay-paid { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .badge-pay-none { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         
-        .pt-regis { background: #172b4d; color: #38bdf8; border: 1px solid #38bdf8; }
-        .pt-doctor { background: #3b2808; color: #fbbf24; border: 1px solid #fbbf24; }
-        .pt-pharmacy { background: #3b0731; color: #f472b6; border: 1px solid #f472b6; }
-        .pt-cashier { background: #064e3b; color: #34d399; border: 1px solid #059669; }
-        .pt-done { background: #1e293b; color: #94a3b8; border: 1px solid #94a3b8; }
+        .pt-regis { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .pt-doctor { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .pt-pharmacy { background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8; }
+        .pt-cashier { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .pt-done { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
         .btn-sidebar-edit {
-            background: #d97706; color: #fff; border: none; padding: 4px 8px; border-radius: 6px;
-            font-size: 11px; font-weight: 700; cursor: pointer; position: absolute; top: 8px; right: 8px;
+            background: #d97706; color: #fff; border: none; padding: 5px 9px; border-radius: 6px;
+            font-size: 11px; font-weight: 700; cursor: pointer; position: absolute; top: 10px; right: 10px;
             transition: 0.2s;
         }
         .btn-sidebar-edit:hover { background: #b45309; }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .form-group { margin-bottom: 8px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { margin-bottom: 10px; }
         .form-group.full { grid-column: span 2; }
-        label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 13px; color: #7ecfb9; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 13px; color: #334155; }
         input, select, textarea {
-            width: 100%; padding: 8px 12px; border: 1px solid #204e3b; border-radius: 8px;
-            font-size: 14px; background: #071711; color: #fff; outline: none; transition: 0.2s;
+            width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px;
+            font-size: 14px; background: #fff; color: var(--text-main); outline: none; transition: 0.2s;
         }
-        input:focus, select:focus, textarea:focus { border-color: var(--accent-green); background: #0c261c; }
-        input:disabled, select:disabled { background: #111d18; color: #526e63; border-color: #153227; cursor: not-allowed; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
+        input:disabled, select:disabled { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; }
         
-        .clinic-btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 6px; }
+        .clinic-btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 6px; }
         .btn-clinic {
-            padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: 2px solid transparent; text-align: center; color: #fff; opacity: 0.5; transition: 0.2s;
+            padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid #cbd5e1; text-align: center; color: #475569; background: #f8fafc; transition: 0.2s;
         }
-        .btn-clinic.selected { opacity: 1; border-color: #fff; box-shadow: 0 0 10px rgba(46,196,182,0.4); transform: scale(1.01); }
-        .clinic-thai { background: #14532d; border-color: #10b981; }
-        .clinic-china { background: #1e3a8a; border-color: #3b82f6; }
-        .clinic-spa { background: #701a75; border-color: #ec4899; }
+        .btn-clinic.selected { background: var(--primary-color); color: #fff; border-color: var(--primary-color); box-shadow: 0 2px 6px rgba(15,118,110,0.2); font-weight: 700; }
 
-        .service-type-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .service-type-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
         .btn-service-type {
-            padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; border: 2px solid #204e3b; background: #133326; color: #fff; text-align: center; opacity: 0.6; transition: 0.2s;
+            padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid #cbd5e1; background: #f8fafc; color: #475569; text-align: center; transition: 0.2s;
         }
-        .btn-service-type.selected { opacity: 1; border-color: var(--accent-green); background: #064e3b; box-shadow: 0 0 10px rgba(46,196,182,0.3); }
+        .btn-service-type.selected { background: #0f766e; color: #fff; border-color: #0f766e; font-weight: 700; box-shadow: 0 2px 6px rgba(15,118,110,0.2); }
 
-        .disease-badge-group { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+        .disease-badge-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
         .disease-badge {
-            background: #133326; border: 1px solid #204e3b; padding: 6px 12px; border-radius: 6px;
-            font-size: 13px; font-weight: 600; cursor: pointer; color: #fff; user-select: none; transition: 0.2s;
+            background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px;
+            font-size: 13px; font-weight: 500; cursor: pointer; color: #334155; user-select: none; transition: 0.2s;
         }
-        .disease-badge.selected { background: #059669; border-color: #34d399; }
+        .disease-badge.selected { background: #0f766e; color: #fff; border-color: #0f766e; font-weight: 600; }
 
-        .treatment-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 6px; }
+        .treatment-btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 8px; }
         .btn-treatment {
-            padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; color: #fff; transition: 0.2s; text-align: center; user-select: none; border: 2px solid transparent; opacity: 0.6;
+            padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: #334151; background: #f8fafc; transition: 0.2s; text-align: center; user-select: none; border: 1px solid #cbd5e1;
         }
-        .btn-treatment.selected { opacity: 1; border-color: #fff; transform: scale(1.01); }
-        
-        .t-massage { background: #065f46; border-color: #10b981; }
-        .t-herb-compress { background: #047857; border-color: #34d399; }
-        .t-both { background: #1d4ed8; border-color: #60a5fa; }
-        .t-pharmacy { background: #701a75; border-color: #f472b6; }
-        .t-acupuncture { background: #b45309; border-color: #fbbf24; }
-        .t-steam { background: #991b1b; border-color: #f87171; }
-        .t-salt-pot { background: #78350f; border-color: #d97706; }
-        .t-spa { background: #4c1d95; border-color: #a78bfa; }
+        .btn-treatment.selected { background: var(--primary-color); color: #fff; border-color: var(--primary-color); font-weight: 700; }
 
-        .preset-syndrome-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px; margin-bottom: 10px; }
+        .preset-syndrome-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 12px; }
         .btn-syndrome {
-            background: #133326; border: 1px solid #204e3b; padding: 8px 10px; border-radius: 6px;
-            font-size: 12px; font-weight: 600; cursor: pointer; color: #fff; text-align: center; transition: 0.2s; user-select: none;
+            background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px 10px; border-radius: 8px;
+            font-size: 12px; font-weight: 600; cursor: pointer; color: #334155; text-align: center; transition: 0.2s; user-select: none;
         }
-        .btn-syndrome.selected { background: #0284c7; border-color: #38bdf8; }
+        .btn-syndrome.selected { background: #0284c7; color: #fff; border-color: #0284c7; }
 
-        .pay-status-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+        .pay-status-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 6px; }
         .btn-pay-status {
-            background: #133326; border: 1px solid #204e3b; padding: 8px; border-radius: 8px;
-            font-size: 14px; font-weight: 700; cursor: pointer; color: #fff; text-align: center; transition: 0.2s; opacity: 0.6;
+            background: #f8fafc; border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px;
+            font-size: 14px; font-weight: 600; cursor: pointer; color: #334155; text-align: center; transition: 0.2s;
         }
-        .btn-pay-status.selected { opacity: 1; border-color: #fff; }
-        .pay-unpaid { background: #991b1b; }
-        .pay-paid { background: #166534; }
+        .btn-pay-status.selected { border-color: #0f766e; font-weight: 700; }
+        .pay-unpaid.selected { background: #fee2e2; color: #991b1b; border-color: #ef4444; }
+        .pay-paid.selected { background: #dcfce7; color: #166534; border-color: #22c55e; }
 
         .camera-box-container {
-            border: 2px dashed var(--accent-green); background: rgba(46,196,182,0.05); border-radius: 12px;
-            padding: 12px; text-align: center; margin-bottom: 10px;
+            border: 2px dashed #cbd5e1; background: #f8fafc; border-radius: 12px;
+            padding: 16px; text-align: center; margin-bottom: 14px;
         }
         .crop-avatar-preview {
-            width: 140px; height: 88px; border-radius: 6px; object-fit: contain; border: 2px solid var(--accent-green);
-            margin: 0 auto 8px auto; display: block; background: #133326;
+            width: 140px; height: 88px; border-radius: 6px; object-fit: contain; border: 1px solid #cbd5e1;
+            margin: 0 auto 10px auto; display: block; background: #fff;
         }
-        .camera-btn-row { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+        .camera-btn-row { display: flex; gap: 10px; justify-content: center; margin-top: 10px; }
         .btn-cam {
-            background: #133326; border: 1px solid var(--accent-green); color: #fff; padding: 6px 12px;
-            border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s;
+            background: #fff; border: 1px solid #cbd5e1; color: #334155; padding: 8px 14px;
+            border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;
         }
-        .btn-cam:hover { background: var(--accent-green); color: #071711; }
+        .btn-cam:hover { background: #f1f5f9; border-color: #94a3b8; }
 
-        .btn-action-main { background: #059669; color: #fff; font-weight: 700; border: none; padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; width: 100%; transition: 0.2s; }
-        .btn-action-main:hover { background: #047857; }
-        .btn-action-warning { background: #d97706; color: #fff; font-weight: 700; border: none; padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-action-main { background: var(--primary-color); color: #fff; font-weight: 700; border: none; padding: 12px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; width: 100%; transition: 0.2s; box-shadow: 0 2px 6px rgba(15,118,110,0.2); }
+        .btn-action-main:hover { background: var(--primary-hover); }
+        .btn-action-warning { background: var(--accent-gold); color: #fff; font-weight: 700; border: none; padding: 12px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-action-warning:hover { background: #b45309; }
-        .btn-disabled-done { background: #1f2937 !important; color: #9ca3af !important; border: 1px solid #374151 !important; cursor: not-allowed !important; opacity: 0.7; }
+        .btn-disabled-done { background: #e2e8f0 !important; color: #94a3b8 !important; border: 1px solid #cbd5e1 !important; cursor: not-allowed !important; }
 
         .btn-simulate-patient {
             position: absolute; bottom: 16px; right: 16px;
             background: #7c3aed; color: #fff; border: none; padding: 8px 14px;
             border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4); z-index: 10; transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25); z-index: 10; transition: 0.2s;
             display: inline-flex; align-items: center; gap: 6px;
         }
         .btn-simulate-patient:hover { background: #6d28d9; transform: scale(1.02); }
@@ -223,47 +212,48 @@
         .section-view { display: none; }
         .section-view.active { display: block; }
 
-        .doctor-layout { display: grid; grid-template-columns: 260px 1fr; gap: 12px; }
-        .pharmacy-layout { display: grid; grid-template-columns: 260px 1fr; gap: 12px; }
+        .doctor-layout { display: grid; grid-template-columns: 260px 1fr; gap: 14px; }
+        .pharmacy-layout { display: grid; grid-template-columns: 260px 1fr; gap: 14px; }
         @media(max-width: 900px) { .doctor-layout, .pharmacy-layout { grid-template-columns: 1fr; } }
         
-        .patient-queue-box { background: #0a1f17; border: 1px solid #1e4635; border-radius: 8px; padding: 8px; max-height: 55vh; overflow-y: auto; }
+        .patient-queue-box { background: #f8fafc; border: 1px solid var(--card-border); border-radius: 10px; padding: 8px; max-height: 55vh; overflow-y: auto; }
         .queue-item-doc { 
-            border-radius: 6px; padding: 6px 10px; margin-bottom: 4px; cursor: pointer; 
-            display: flex; gap: 8px; align-items: center; transition: 0.2s; border-width: 1px; border-style: solid; 
+            border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; cursor: pointer; 
+            display: flex; gap: 10px; align-items: center; transition: 0.2s; border-width: 1px; border-style: solid; background: #fff;
         }
-        .queue-item-doc:hover { filter: brightness(1.2); }
-        .patient-avatar-xs { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent-green); flex-shrink: 0; }
+        .queue-item-doc:hover { border-color: var(--primary-color); box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+        .patient-avatar-xs { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid #cbd5e1; flex-shrink: 0; }
         
-        .pharmacy-drug-row { background: #071711; border: 1px solid #204e3b; padding: 8px; border-radius: 8px; margin-bottom: 6px; display: grid; grid-template-columns: 2fr 2fr 1fr 35px; gap: 6px; align-items: center; }
-        .btn-row-add { background: #0284c7; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 4px; font-size: 13px; }
-        .btn-row-del { background: #dc2626; color: #fff; border: none; padding: 4px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 34px; font-size: 12px; }
+        .pharmacy-drug-row { background: #f8fafc; border: 1px solid var(--card-border); padding: 10px; border-radius: 8px; margin-bottom: 8px; display: grid; grid-template-columns: 2fr 2fr 1fr 38px; gap: 8px; align-items: center; }
+        .btn-row-add { background: #0284c7; color: #fff; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 4px; font-size: 13px; }
+        .btn-row-del { background: #dc2626; color: #fff; border: none; padding: 4px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 36px; font-size: 12px; }
 
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        .admin-table th, .admin-table td { border: 1px solid #1e4635; padding: 8px 10px; text-align: left; }
-        .admin-table th { background: #133326; color: var(--accent-green); font-weight: 700; }
-        .admin-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
-        .btn-detail-toggle { background: #0284c7; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-right: 3px; }
-        .btn-admin-edit { background: #d97706; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-right: 3px; }
-        .btn-admin-del { background: #dc2626; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--card-border); }
+        .admin-table th, .admin-table td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 10px 12px; text-align: left; color: var(--text-main); }
+        .admin-table th { background: #f8fafc; color: var(--primary-color); font-weight: 700; }
+        .admin-table tr:hover { background: #f8fafc; }
+        
+        .btn-detail-toggle { background: #0284c7; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; margin-right: 4px; }
+        .btn-admin-edit { background: #d97706; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; margin-right: 4px; }
+        .btn-admin-del { background: #dc2626; color: #fff; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
 
-        .filter-btn-group { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
-        .btn-filter { background: #133326; border: 1px solid #204e3b; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-filter.active { background: var(--accent-green); color: #071711; border-color: #45ede0; font-weight: 700; }
+        .filter-btn-group { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .btn-filter { background: #fff; border: 1px solid #cbd5e1; color: #475569; padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-filter.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); font-weight: 700; }
 
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
-            display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(5px);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6);
+            display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(4px);
         }
         .modal-content {
-            background: #0f251d; border: 2px solid var(--accent-green); border-radius: 14px; padding: 22px;
-            width: 90%; max-width: 780px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-            position: relative;
+            background: #fff; border: 1px solid var(--card-border); border-radius: 16px; padding: 24px;
+            width: 90%; max-width: 780px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            position: relative; color: var(--text-main);
         }
 
         .medical-watermark {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
-            font-size: 32px; font-weight: 800; color: rgba(46, 196, 182, 0.07); pointer-events: none;
+            font-size: 32px; font-weight: 800; color: rgba(15, 118, 110, 0.04); pointer-events: none;
             white-space: nowrap; z-index: 0; text-align: center;
         }
 
@@ -274,12 +264,8 @@
                 position: absolute; left: 0; top: 0; width: 100%; height: 100%;
                 background: #fff !important; color: #000 !important; border: none; box-shadow: none;
             }
-            .modal-content {
-                background: #fff !important; color: #000 !important; width: 100% !important; max-width: 100% !important; border: none !important;
-            }
-            #adminDetailBody, #adminDetailBody * {
-                color: #000 !important;
-            }
+            .modal-content { background: #fff !important; color: #000 !important; width: 100% !important; max-width: 100% !important; border: none !important; }
+            #adminDetailBody, #adminDetailBody * { color: #000 !important; }
             .btn-action-main, button { display: none !important; }
             .medical-watermark { color: rgba(0, 0, 0, 0.04) !important; }
         }
@@ -289,7 +275,7 @@
 
     <div class="agency-banner">
         <div class="agency-title">
-            <i class="fa-solid fa-hospital" style="color: #ffeb3b; font-size: 18px;"></i>
+            <i class="fa-solid fa-hospital" style="color: #fef08a; font-size: 18px;"></i>
             กลุ่มงานการแพทย์แผนไทยและการแพทย์ทางเลือก โรงพยาบาลพระอาจารย์มั่น ภูริทัตโต TTM PMH
         </div>
         <div class="live-clock" id="liveClockDisplay">กำลังโหลดเวลา...</div>
@@ -315,11 +301,11 @@
 
             <!-- จุดที่ 0: หน้า Log In ระบบหลัก -->
             <div id="view-0" class="section-view active">
-                <div class="panel-title"><i class="fa-solid fa-lock" style="color:var(--accent-green);"></i> จุดที่ 0: เข้าสู่ระบบการใช้งาน (System Log In)</div>
+                <div class="panel-title"><i class="fa-solid fa-lock" style="color:var(--primary-color);"></i> จุดที่ 0: เข้าสู่ระบบการใช้งาน (System Log In)</div>
                 
-                <div style="max-width: 420px; margin: 40px auto; background: #0a1f17; border: 2px solid var(--card-border); border-radius: 14px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); text-align: center;">
-                    <div style="font-size: 48px; color: var(--accent-green); margin-bottom: 12px;"><i class="fa-solid fa-hospital-user"></i></div>
-                    <h3 style="color: #fff; margin-top: 0; margin-bottom: 6px;">TTM PMH Flow System</h3>
+                <div style="max-width: 420px; margin: 40px auto; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 14px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); text-align: center;">
+                    <div style="font-size: 48px; color: var(--primary-color); margin-bottom: 12px;"><i class="fa-solid fa-hospital-user"></i></div>
+                    <h3 style="color: var(--text-main); margin-top: 0; margin-bottom: 6px;">TTM PMH Flow System</h3>
                     <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">กรุณากรอก User และ Passcode เพื่อปลดล็อกเข้าสู่ระบบบริการ</p>
                     
                     <div class="form-group" style="text-align: left; margin-bottom: 12px;">
@@ -334,7 +320,7 @@
 
                     <button class="btn-action-main" onclick="handleSystemLogin()" style="padding: 12px; font-size: 15px;"><i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ</button>
                     
-                    <div id="login-success-msg" style="margin-top: 12px; color: #34d399; font-weight: bold; font-size: 13px; display: none;">
+                    <div id="login-success-msg" style="margin-top: 12px; color: #059669; font-weight: bold; font-size: 13px; display: none;">
                         <i class="fa-solid fa-circle-check"></i> เข้าสู่ระบบสำเร็จ! ปลดล็อกทุกจุดบริการแล้ว
                     </div>
                 </div>
@@ -342,16 +328,15 @@
 
             <!-- จุดที่ 1: ลงทะเบียน -->
             <div id="view-1" class="section-view">
-                <div class="panel-title"><i class="fa-solid fa-user-plus" style="color:var(--accent-green);"></i> จุดที่ 1: ลงทะเบียนผู้ป่วย & คัดกรอง Vital Sign</div>
+                <div class="panel-title"><i class="fa-solid fa-user-plus" style="color:var(--primary-color);"></i> จุดที่ 1: ลงทะเบียนผู้ป่วย & คัดกรอง Vital Sign</div>
                 
                 <div class="form-group full" style="margin-bottom: 12px;">
                     <label><i class="fa-solid fa-user-tie"></i> เจ้าหน้าที่ผู้ปฏิบัติงาน (User) *</label>
-                    <select id="user-point-1" style="border-color: var(--accent-green);">
+                    <select id="user-point-1" style="border-color: #cbd5e1;">
                         <option value="">-- กรุณาเลือกเจ้าหน้าที่ผู้ปฏิบัติงาน --</option>
                     </select>
                 </div>
 
-                <!-- ประเภทบริการ ใน/นอก สถานบริการ -->
                 <div class="form-group full">
                     <label><i class="fa-solid fa-map-location-dot"></i> ประเภทสถานที่บริการ *</label>
                     <div class="service-type-group">
@@ -363,7 +348,7 @@
 
                 <div class="camera-box-container">
                     <img id="scannedAvatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="crop-avatar-preview" alt="Patient Card Preview" style="object-fit: contain;">
-                    <div style="color: var(--accent-green); font-weight: 700; font-size: 13px; margin-bottom: 6px;">
+                    <div style="color: var(--primary-color); font-weight: 700; font-size: 13px; margin-bottom: 6px;">
                         <i class="fa-solid fa-camera"></i> ถ่ายรูปหรืออัปโหลดภาพ (ตัดครอบกรอบสี่เหลี่ยมผืนผ้า)
                     </div>
                     
@@ -394,9 +379,9 @@
                     <div class="form-group">
                         <label>ความดันโลหิต (SYS / DIA mmHg)</label>
                         <div style="display: flex; gap: 6px; align-items: center;">
-                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-sys" placeholder="SYS (เช่น 120)" style="text-align: center;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                            <span style="font-weight: bold; color: var(--accent-green);">/</span>
-                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-dia" placeholder="DIA (เช่น 80)" style="text-align: center;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-sys" placeholder="SYS" style="text-align: center;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <span style="font-weight: bold; color: var(--primary-color);">/</span>
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-dia" placeholder="DIA" style="text-align: center;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                     </div>
                     <div class="form-group">
@@ -405,7 +390,7 @@
                     </div>
                     <div class="form-group full">
                         <label>อุณหภูมิ (°C)</label>
-                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-temp" placeholder="365 (เช่น 36.5)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-temp" placeholder="365 (หมายถึง 36.5)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
                     
                     <div class="form-group">
@@ -442,7 +427,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>รูปแบบการชำระเงิน <span id="req-payment-label" style="color:#e71d36; display:none;">* (บังคับเลือก)</span></label>
+                        <label>รูปแบบการชำระเงิน <span id="req-payment-label" style="color:var(--accent-red); display:none;">*</span></label>
                         <select id="reg-payment-method">
                             <option value="">-- กรุณาเลือก --</option>
                             <option value="เงินสด">เงินสด</option>
@@ -451,7 +436,7 @@
                     </div>
 
                     <div class="form-group full">
-                        <label>สถานะการชำระเงิน <span id="req-status-label" style="color:#e71d36; display:none;">* (บังคับเลือก)</span></label>
+                        <label>สถานะการชำระเงิน <span id="req-status-label" style="color:var(--accent-red); display:none;">*</span></label>
                         <div class="pay-status-group" id="pay-status-group-box">
                             <div class="btn-pay-status pay-unpaid" onclick="selectPayStatusBtn(this, 'ยังไม่ชำระ')">ยังไม่ชำระ</div>
                             <div class="btn-pay-status pay-paid" onclick="selectPayStatusBtn(this, 'ชำระแล้ว')">ชำระแล้ว</div>
@@ -479,30 +464,30 @@
             <!-- จุดที่ 2: ห้องตรวจแพทย์ -->
             <div id="view-2" class="section-view">
                 <div class="panel-title" style="margin-bottom:8px;">
-                    <span style="font-size:16px;"><i class="fa-solid fa-stethoscope" style="color:var(--accent-green);"></i> จุดที่ 2: ห้องตรวจแพทย์</span>
+                    <span style="font-size:16px;"><i class="fa-solid fa-stethoscope" style="color:var(--primary-color);"></i> จุดที่ 2: ห้องตรวจแพทย์</span>
                     <div style="display:flex; gap:6px; flex-wrap: wrap;">
-                        <a href="https://thai-herb-order.netlify.app/" target="_blank" style="background:#0891b2; color:#fff; text-decoration:none; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:700;"><i class="fa-solid fa-capsules"></i> สั่งยาปรุงเฉพาะราย</a>
-                        <a href="https://medbank.bmhos.com" target="_blank" style="background:#7c3aed; color:#fff; text-decoration:none; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:700;"><i class="fa-solid fa-address-card"></i> ตรวจสอบประวัติ</a>
-                        <a id="commanderLinkBtn" href="https://nopphawinchi-ux.github.io/thai-med-monitor/" target="_blank" style="background:#4f46e5; color:#fff; text-decoration:none; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:600;"><i class="fa-solid fa-external-link-alt"></i> สั่งการผ่านหน้าจอ</a>
+                        <a href="https://thai-herb-order.netlify.app/" target="_blank" style="background:#0891b2; color:#fff; text-decoration:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700;"><i class="fa-solid fa-capsules"></i> สั่งยาปรุงเฉพาะราย</a>
+                        <a href="https://medbank.bmhos.com" target="_blank" style="background:#7c3aed; color:#fff; text-decoration:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700;"><i class="fa-solid fa-address-card"></i> ตรวจสอบประวัติ</a>
+                        <a id="commanderLinkBtn" href="https://nopphawinchi-ux.github.io/thai-med-monitor/" target="_blank" style="background:#4f46e5; color:#fff; text-decoration:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:600;"><i class="fa-solid fa-external-link-alt"></i> สั่งการผ่านหน้าจอ</a>
                     </div>
                 </div>
                 
-                <div class="form-group full" style="margin-bottom: 12px; background: #0a1f17; padding: 10px; border-radius: 8px; border: 1px solid #1e4635;">
-                    <label style="color:var(--accent-green); font-size: 14px;"><i class="fa-solid fa-user-doctor"></i> เลือกแพทย์ผู้ตรวจก่อนเริ่มปฏิบัติงาน *</label>
-                    <select id="global-doc-select" style="padding:8px 12px; font-size:14px; border-color:var(--accent-green);" onchange="handleDoctorSelection(this)">
+                <div class="form-group full" style="margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border);">
+                    <label style="color:var(--primary-color); font-size: 14px;"><i class="fa-solid fa-user-doctor"></i> เลือกแพทย์ผู้ตรวจก่อนเริ่มปฏิบัติงาน *</label>
+                    <select id="global-doc-select" style="padding:8px 12px; font-size:14px; border-color:#cbd5e1;" onchange="handleDoctorSelection(this)">
                         <option value="">-- กรุณาเลือกแพทย์ผู้ตรวจ --</option>
                     </select>
                 </div>
 
                 <div class="doctor-layout">
                     <div>
-                        <label style="color:#34d399; margin-bottom:4px; font-size:12px;"><i class="fa-solid fa-users"></i> คิวรอตรวจ (คลิกเลือก)</label>
+                        <label style="color:#0f766e; margin-bottom:4px; font-size:12px;"><i class="fa-solid fa-users"></i> คิวรอตรวจ (คลิกเลือก)</label>
                         <div class="patient-queue-box" id="doctorPatientList">
                             <div style="color:var(--text-muted); text-align:center; padding:15px; font-size:13px;">ไม่มีผู้ป่วยรอตรวจ</div>
                         </div>
                     </div>
 
-                    <div id="doctorFormContainer" style="background:#0a1f17; border:1px solid #1e4635; border-radius:10px; padding:14px;">
+                    <div id="doctorFormContainer" style="background:#f8fafc; border:1px solid var(--card-border); border-radius:10px; padding:14px;">
                         <div style="text-align:center; color:var(--text-muted); padding:30px; font-size:13px;">กรุณาเลือกแพทย์ด้านบน และคลิกเลือกรายชื่อผู้ป่วยทางซ้ายมือเพื่อทำการตรวจรักษา</div>
                     </div>
                 </div>
@@ -511,7 +496,7 @@
             <!-- จุดที่ 3: ห้องยา -->
             <div id="view-3" class="section-view">
                 <div class="panel-title" style="margin-bottom:8px;">
-                    <span style="font-size:16px;"><i class="fa-solid fa-pills" style="color:var(--accent-green);"></i> จุดที่ 3: ห้องยา & จัดยา</span>
+                    <span style="font-size:16px;"><i class="fa-solid fa-pills" style="color:var(--primary-color);"></i> จุดที่ 3: ห้องยา & จัดยา</span>
                     <div style="display:flex; gap:6px; flex-wrap: wrap;">
                         <a href="https://heyzine.com/flip-book/676ad6a271.html?fbclid=IwY2xjawVuL2VleHRuA2FlbQIxMABwZG9mAWJyaWQRMWpyMFF4MGV5RlpWdnl1a3lzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEffQhgBeguzh_zUrLMxyoKIK4r-yX_SVM38uwH9-jEvBFPnYtnGyeXi4BREV0_aem_EPlHg-JisyVDrvv_t9uZUg#page/6" target="_blank" class="btn-cam" style="text-decoration:none; background:#0284c7; border-color:#0284c7;"><i class="fa-solid fa-book-medical"></i> คู่มือยาทั้งหมด</a>
                         <button type="button" class="btn-cam" onclick="openDrugGuideModal()"><i class="fa-solid fa-list"></i> รายการยาทั้งหมด</button>
@@ -521,20 +506,20 @@
 
                 <div class="form-group full" style="margin-bottom: 12px;">
                     <label><i class="fa-solid fa-user-tie"></i> เจ้าหน้าที่ผู้ปฏิบัติงาน (User) *</label>
-                    <select id="user-point-3" style="border-color: var(--accent-green);">
+                    <select id="user-point-3" style="border-color: #cbd5e1;">
                         <option value="">-- กรุณาเลือกเจ้าหน้าที่ผู้ปฏิบัติงาน --</option>
                     </select>
                 </div>
                 
                 <div class="pharmacy-layout">
                     <div>
-                        <label style="color:#34d399; margin-bottom:4px; font-size:12px;"><i class="fa-solid fa-users"></i> เลือกผู้ป่วยจัดยา</label>
+                        <label style="color:#0f766e; margin-bottom:4px; font-size:12px;"><i class="fa-solid fa-users"></i> เลือกผู้ป่วยจัดยา</label>
                         <div class="patient-queue-box" id="pharmacyPatientList">
                             <div style="color:var(--text-muted); text-align:center; padding:15px; font-size:13px;">ไม่มีรายการรอจัดยา</div>
                         </div>
                     </div>
 
-                    <div id="pharmacyFormContainer" style="background:#0a1f17; border:1px solid #1e4635; border-radius:10px; padding:14px;">
+                    <div id="pharmacyFormContainer" style="background:#f8fafc; border:1px solid var(--card-border); border-radius:10px; padding:14px;">
                         <div style="text-align:center; color:var(--text-muted); padding:30px; font-size:13px;">กรุณาคลิกเลือกรายชื่อผู้ป่วยทางซ้ายมือเพื่อจัดการจัดยา</div>
                     </div>
                 </div>
@@ -542,11 +527,11 @@
 
             <!-- จุดที่ 4: การเงิน -->
             <div id="view-4" class="section-view">
-                <div class="panel-title"><i class="fa-solid fa-cash-register" style="color:var(--accent-green);"></i> จุดที่ 4: การเงิน (สรุปยอดรวม & ปิดสิทธิ์)</div>
+                <div class="panel-title"><i class="fa-solid fa-cash-register" style="color:var(--primary-color);"></i> จุดที่ 4: การเงิน (สรุปยอดรวม & ปิดสิทธิ์)</div>
                 
                 <div class="form-group full" style="margin-bottom: 12px;">
                     <label><i class="fa-solid fa-user-tie"></i> เจ้าหน้าที่ผู้ปฏิบัติงาน (User) *</label>
-                    <select id="user-point-4" style="border-color: var(--accent-green);">
+                    <select id="user-point-4" style="border-color: #cbd5e1;">
                         <option value="">-- กรุณาเลือกเจ้าหน้าที่ผู้ปฏิบัติงาน --</option>
                     </select>
                 </div>
@@ -559,9 +544,9 @@
             <!-- จุดที่ 5: สรุปรายวัน -->
             <div id="view-5" class="section-view">
                 <div class="panel-title">
-                    <span><i class="fa-solid fa-file-invoice-dollar" style="color:var(--accent-green);"></i> จุดที่ 5: หน้าสรุปรายการประจำวัน</span>
+                    <span><i class="fa-solid fa-file-invoice-dollar" style="color:var(--primary-color);"></i> จุดที่ 5: หน้าสรุปรายการประจำวัน</span>
                     <div style="display:flex; gap:8px; align-items:center;">
-                        <label style="font-size:12px; color:var(--accent-green); margin:0;">เลือกวันที่:</label>
+                        <label style="font-size:12px; color:var(--primary-color); margin:0;">เลือกวันที่:</label>
                         <input type="date" id="admin-filter-date" style="padding:4px 8px; font-size:13px; width:150px;" onchange="renderAdminSummaryTable()">
                         <button class="btn-cam" onclick="renderAdminSummaryTable()"><i class="fa-solid fa-rotate"></i> โหลด</button>
                     </div>
@@ -599,9 +584,9 @@
 
         <!-- Right Sidebar -->
         <div class="status-sidebar">
-            <div class="sidebar-header">
-                <span><i class="fa-solid fa-users-line" style="color:var(--accent-green);"></i> สถานะผู้ป่วยทุกจุด</span>
-                <span id="totalPatientCount" style="font-size: 13px; color: var(--accent-green);">(0 คน)</span>
+            <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 700; font-size: 14px;">
+                <span><i class="fa-solid fa-users-line" style="color:var(--primary-color);"></i> สถานะผู้ป่วยทุกจุด</span>
+                <span id="totalPatientCount" style="font-size: 13px; color: var(--primary-color);">(0 คน)</span>
             </div>
             
             <div class="sidebar-section-title title-inside">
@@ -626,14 +611,14 @@
     <!-- Modal แก้ไขข้อมูลผู้ป่วยด่วน -->
     <div class="modal-overlay" id="editPatientModal">
         <div class="modal-content">
-            <h3 style="margin-top:0; color:var(--accent-green); font-size:16px;"><i class="fa-solid fa-user-pen"></i> แก้ไขข้อมูลผู้ป่วย</h3>
+            <h3 style="margin-top:0; color:var(--primary-color); font-size:16px;"><i class="fa-solid fa-user-pen"></i> แก้ไขข้อมูลผู้ป่วย</h3>
             <input type="hidden" id="edit-patient-key">
             
             <div id="modal-body-fields"></div>
 
             <div style="display:flex; gap:8px; margin-top:14px;">
                 <button class="btn-action-main" onclick="saveEditedPatient()" style="padding:8px; font-size:14px;">บันทึก</button>
-                <button class="btn-action-warning" style="background:#475569; padding:8px; font-size:14px;" onclick="closeEditModal()">ยกเลิก</button>
+                <button class="btn-action-warning" style="background:#64748b; padding:8px; font-size:14px;" onclick="closeEditModal()">ยกเลิก</button>
             </div>
         </div>
     </div>
@@ -641,7 +626,7 @@
     <!-- Modal รายยาสมุนไพรทั้งหมด -->
     <div class="modal-overlay" id="drugGuideModal">
         <div class="modal-content" style="max-width: 600px;">
-            <h3 style="margin-top:0; color:var(--accent-green); font-size:16px;"><i class="fa-solid fa-list"></i> รายยาสมุนไพรทั้งหมด (39 รายการ)</h3>
+            <h3 style="margin-top:0; color:var(--primary-color); font-size:16px;"><i class="fa-solid fa-list"></i> รายยาสมุนไพรทั้งหมด (39 รายการ)</h3>
             <div style="max-height: 60vh; overflow-y: auto; padding-right: 5px;">
                 <ol id="drugGuideList" style="margin: 0; padding-left: 20px; line-height: 1.8; color: var(--text-main);"></ol>
             </div>
@@ -654,7 +639,7 @@
         <div class="modal-content">
             <div class="medical-watermark">โรงพยาบาลพระอาจารย์มั่น ภูริทัตโต</div>
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--card-border); padding-bottom: 10px; margin-bottom: 14px; position:relative; z-index:1;">
-                <h3 style="margin:0; color:var(--accent-green); font-size:19px;">
+                <h3 style="margin:0; color:var(--primary-color); font-size:19px;">
                     <i class="fa-solid fa-file-medical"></i> เวชระเบียนสรุปประวัติผู้ป่วย
                 </h3>
                 <div style="display:flex; gap:6px;">
@@ -673,7 +658,8 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+              const firebaseConfig = {
+            	apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -684,7 +670,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const sysRef = database.ref('hospitalFlowQueryGreenThemeV48'); // ใช้เวอร์ชัน V48 ตรงกัน
+        const sysRef = database.ref('hospitalFlowQueryGreenThemeV49');
 
         let allPatientsData = {};
         let selectedDoctorKey = null;
@@ -1127,9 +1113,8 @@
                 targetKeys.reverse().forEach(key => {
                     let p = allPatientsData[key];
                     let cardClass = 'clinic-theme-thai';
-                    let textClass = 'clinic-text-thai';
-                    if (p.clinic === 'แพทย์แผนจีน') { cardClass = 'clinic-theme-china'; textClass = 'clinic-text-china'; }
-                    else if (p.clinic === 'สปาเพื่อสุขภาพ') { cardClass = 'clinic-theme-spa'; textClass = 'clinic-text-spa'; }
+                    if (p.clinic === 'แพทย์แผนจีน') cardClass = 'clinic-theme-china';
+                    else if (p.clinic === 'สปาเพื่อสุขภาพ') cardClass = 'clinic-theme-spa';
 
                     let badgeClass = 'pt-regis';
                     if(p.currentPoint.includes('ห้องตรวจ')) badgeClass = 'pt-doctor';
@@ -1141,7 +1126,6 @@
                     else if (p.payStatus === 'ยังไม่ชำระ') payBadgeClass = 'badge-pay-unpaid';
 
                     let isOutside = p.serviceType === 'นอกสถานบริการ';
-                    let nameColor = isOutside ? '#60a5fa' : '#34d399';
                     let badgeHtml = isOutside ? '<span class="card-outside-badge">🚗 นอก</span>' : '<span class="card-inside-badge">🏥 ใน</span>';
 
                     h += `
@@ -1149,9 +1133,9 @@
                             <button class="btn-sidebar-edit" onclick="openEditModal('${key}')"><i class="fa-solid fa-pen"></i></button>
                             <img src="${p.avatar}" class="patient-avatar-sm" alt="Avatar">
                             <div style="flex-grow:1; padding-right: 35px;">
-                                <h5 style="color: ${nameColor};">${p.pname} ${badgeHtml}</h5>
+                                <h5 style="margin-bottom: 2px;">${p.pname} ${badgeHtml}</h5>
                                 <p>HN: ${p.hn} | ${p.clinic}</p>
-                                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px;">
+                                <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px;">
                                     <span class="badge-point badge-right-sidebar">${p.rightScheme}</span>
                                     <span class="badge-point ${payBadgeClass}">${p.payStatus}</span>
                                 </div>
@@ -1197,7 +1181,7 @@
             let html = '';
             filteredKeys.forEach(key => {
                 let p = allPatientsData[key];
-                let serviceBadge = p.serviceType === 'นอกสถานบริการ' ? '<span style="color:#60a5fa; font-weight:bold;">🚗 นอก</span>' : '<span style="color:#34d399; font-weight:bold;">🏥 ใน</span>';
+                let serviceBadge = p.serviceType === 'นอกสถานบริการ' ? '<span style="color:#2563eb; font-weight:bold;">🚗 นอก</span>' : '<span style="color:#059669; font-weight:bold;">🏥 ใน</span>';
 
                 html += `
                     <tr>
@@ -1224,12 +1208,8 @@
             let confirmDelete = confirm(`⚠️ คำเตือน: คุณต้องการลบข้อมูลของ "${patientName}" ออกจากระบบใช่หรือไม่?\n(การกระทำนี้จะไม่สามารถกู้คืนได้)`);
             if (confirmDelete) {
                 sysRef.child(key).remove()
-                    .then(() => {
-                        alert("ลบข้อมูลผู้ป่วยสำเร็จ!");
-                    })
-                    .catch((error) => {
-                        alert("เกิดข้อผิดพลาดในการลบข้อมูล: " + error.message);
-                    });
+                    .then(() => { alert("ลบข้อมูลผู้ป่วยสำเร็จ!"); })
+                    .catch((error) => { alert("เกิดข้อผิดพลาดในการลบข้อมูล: " + error.message); });
             }
         }
 
@@ -1239,8 +1219,8 @@
             if (parts.length === 2) {
                 let sys = parseInt(parts[0]) || 0;
                 let dia = parseInt(parts[1]) || 0;
-                let sysColor = sys > 140 ? '#ef4444' : 'inherit';
-                let diaColor = dia > 90 ? '#ef4444' : 'inherit';
+                let sysColor = sys > 140 ? '#dc2626' : 'inherit';
+                let diaColor = dia > 90 ? '#dc2626' : 'inherit';
                 let sysWeight = sys > 140 ? 'bold' : 'normal';
                 let diaWeight = dia > 90 ? 'bold' : 'normal';
                 return `<span style="color: ${sysColor}; font-weight: ${sysWeight};">${sys}</span>/<span style="color: ${diaColor}; font-weight: ${diaWeight};">${dia}</span>`;
@@ -1250,7 +1230,7 @@
 
         function formatPrWithRedColor(prStr) {
             let pr = parseInt(prStr) || 0;
-            let prColor = pr > 100 ? '#ef4444' : 'inherit';
+            let prColor = pr > 100 ? '#dc2626' : 'inherit';
             let prWeight = pr > 100 ? 'bold' : 'normal';
             return `<span style="color: ${prColor}; font-weight: ${prWeight};">${prStr}</span>`;
         }
@@ -1267,41 +1247,41 @@
 
             let content = `
                 <div style="display:flex; gap:16px; align-items:center; margin-bottom:14px;">
-                    <div style="width:50%; flex-shrink:0; background:#000; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                    <div style="width:50%; flex-shrink:0; background:#f1f5f9; border-radius:6px; overflow:hidden; display:flex; align-items:center; justify-content:center; border:1px solid #cbd5e1;">
                         <img src="${p.avatar}" style="width:100%; height:auto; object-fit: contain;" alt="ภาพถ่ายบัตรประชาชน">
                     </div>
                     <div style="width:50%; display:flex; flex-direction:column; justify-content:center;">
-                        <h4 style="margin:0 0 6px 0; color:#34d399; font-size:24px; font-weight:bold; line-height: 1.2;">${p.pname}</h4>
-                        <p style="margin:3px 0; font-size:16px;"><b>ประเภท:</b> <span style="color:#ffb703;">${serviceLabel}</span></p>
-                        <p style="margin:3px 0; font-size:16px;"><b>HN:</b> ${p.hn || '-'}</p>
-                        <p style="margin:3px 0; font-size:16px;"><b>เลขบัตร:</b> ${p.idcard || '-'}</p>
-                        <p style="margin:3px 0; font-size:16px;"><b>วันที่:</b> ${p.entryDate || '-'} (${p.entryTime})</p>
+                        <h4 style="margin:0 0 6px 0; color:var(--primary-color); font-size:22px; font-weight:bold; line-height: 1.2;">${p.pname}</h4>
+                        <p style="margin:3px 0; font-size:15px;"><b>ประเภท:</b> <span style="color:#d97706;">${serviceLabel}</span></p>
+                        <p style="margin:3px 0; font-size:15px;"><b>HN:</b> ${p.hn || '-'}</p>
+                        <p style="margin:3px 0; font-size:15px;"><b>เลขบัตร:</b> ${p.idcard || '-'}</p>
+                        <p style="margin:3px 0; font-size:15px;"><b>วันที่:</b> ${p.entryDate || '-'} (${p.entryTime})</p>
                     </div>
                 </div>
-                <hr style="border-color:#1e4635; margin:12px 0;">
-                <div style="font-size:16px; margin-bottom:10px;">
+                <hr style="border-color:#e2e8f0; margin:12px 0;">
+                <div style="font-size:15px; margin-bottom:10px;">
                     <p style="margin:4px 0;"><b>คลินิก:</b> ${p.clinic} | <b>สิทธิ์การรักษา:</b> ${p.rightScheme}</p>
-                    <p style="margin:4px 0;"><b>โรคประจำตัว:</b> <span style="color:#ffb703;">${p.diseases || 'ไม่มี'}</span></p>
+                    <p style="margin:4px 0;"><b>โรคประจำตัว:</b> <span style="color:#d97706; font-weight:600;">${p.diseases || 'ไม่มี'}</span></p>
                 </div>
-                <div style="background:rgba(46,196,182,0.08); border:1px solid #1e4635; padding:10px 14px; border-radius:8px; margin-bottom:12px;">
-                    <b style="color:var(--accent-green); font-size:16px;"><i class="fa-solid fa-heart-pulse"></i> ข้อมูล Vital Sign:</b>
-                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; margin-top:6px; font-size:15px;">
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:10px 14px; border-radius:8px; margin-bottom:12px;">
+                    <b style="color:var(--primary-color); font-size:15px;"><i class="fa-solid fa-heart-pulse"></i> ข้อมูล Vital Sign:</b>
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; margin-top:6px; font-size:14px;">
                         <div>BP: <b>${bpFormatted}</b></div>
                         <div>PR: <b>${prFormatted}</b></div>
                         <div>Temp: <b>${vs.temp || '-'}</b>°C</div>
                         <div>นน./ส.: <b>${vs.wt || '-'}</b></div>
                     </div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; font-size:16px;">
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; font-size:15px;">
                     <p style="margin:3px 0;"><b>แพทย์ผู้ตรวจ:</b> ${p.doctorName || '-'}</p>
                     <p style="margin:3px 0;"><b>อาการสำคัญ (CC):</b> ${p.chiefComplaint || '-'}</p>
                     <p style="margin:3px 0;"><b>หัตถการ:</b> ${treatments}</p>
                     <p style="margin:3px 0;"><b>รายการยาและวิธีใช้:</b><br><span style="padding-left:12px; display:inline-block; margin-top:4px;">${drugsDetailed}</span></p>
                 </div>
-                <hr style="border-color:#1e4635; margin:12px 0;">
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:16px;">
+                <hr style="border-color:#e2e8f0; margin:12px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:15px;">
                     <span><b>การชำระเงิน:</b> ${p.paymentMethod} (${p.payStatus})</span>
-                    <span style="color:#ffb703; font-size:20px; font-weight:bold;">ยอดสุทธิ: ${p.totalCost || 0} บาท</span>
+                    <span style="color:var(--accent-gold); font-size:18px; font-weight:bold;">ยอดสุทธิ: ${p.totalCost || 0} บาท</span>
                 </div>
             `;
             document.getElementById('adminDetailBody').innerHTML = content;
@@ -1328,7 +1308,7 @@
                         <option value="ชำระเงินเอง" ${p.rightScheme==='ชำระเงินเอง'?'selected':''}>ชำระเงินเอง</option>
                     </select>
                 </div>
-                <div class="form-group"><label>ส่งกลับไปจุดห้องตรวจ (เพื่อให้แพทย์ตรวจซ้ำ/บันทึกใหม่)</label>
+                <div class="form-group"><label>ส่งกลับไปจุดห้องตรวจ</label>
                     <select id="edit-point">
                         <option value="จุดที่ 2: ห้องตรวจ" selected>จุดที่ 2: ห้องตรวจ (ส่งกลับคิวรอตรวจ)</option>
                         <option value="จุดที่ 3: ห้องยา">จุดที่ 3: ห้องยา</option>
@@ -1381,15 +1361,15 @@
                 else if (p.clinic === 'สปาเพื่อสุขภาพ') queueClinicClass = 'clinic-theme-spa';
 
                 let isOutside = p.serviceType === 'นอกสถานบริการ';
-                let badgeHtml = isOutside ? '<span style="color:#60a5fa;">[นอก]</span>' : '<span style="color:#34d399;">[ใน]</span>';
+                let badgeHtml = isOutside ? '<span style="color:#2563eb;">[นอก]</span>' : '<span style="color:#059669;">[ใน]</span>';
 
                 html += `
                     <div class="queue-item-doc ${queueClinicClass} ${activeClass}" onclick="selectPatientForDoctor('${key}')">
                         <img src="${p.avatar}" class="patient-avatar-xs" alt="Avatar">
                         <div style="overflow:hidden; width:100%;">
-                            <div style="font-weight:700; color:#fff; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.pname} ${badgeHtml}</div>
+                            <div style="font-weight:700; color:var(--text-main); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.pname} ${badgeHtml}</div>
                             <div style="font-size:11px; color:var(--text-muted);">HN: ${p.hn} | ${p.clinic}</div>
-                            ${p.pharmacyFeedback.includes('ขอแก้ไข') ? '<div style="color:#f87171; font-size:10px; font-weight:700;">⚠️ แก้ไขยา</div>' : ''}
+                            ${p.pharmacyFeedback.includes('ขอแก้ไข') ? '<div style="color:#dc2626; font-size:10px; font-weight:700;">⚠️ แก้ไขยา</div>' : ''}
                         </div>
                     </div>
                 `;
@@ -1397,7 +1377,6 @@
             container.innerHTML = html;
         }
 
-        // จุดที่ 2: ห้องตรวจแพทย์ (แสดงโรคประจำตัวคู่ Vital Sign และเชื่อมต่อ HN, ชื่อไปยัง Commander)
         function selectPatientForDoctor(key) {
             selectedDoctorKey = key;
             let p = allPatientsData[key];
@@ -1411,7 +1390,6 @@
             let isGold30 = (p.rightScheme === 'บัตรทอง 30 บาท');
             let currentTotalCost = p.totalCost !== undefined ? p.totalCost : (isGold30 ? 30 : 0);
 
-            // ส่งข้อมูล HN และ ชื่อ-นามสกุล ไปยังหน้า Commander อัตโนมัติ
             let commanderUrl = `https://nopphawinchi-ux.github.io/thai-med-monitor/?hn=${encodeURIComponent(p.hn || '')}&name=${encodeURIComponent(p.pname || '')}`;
             document.getElementById('commanderLinkBtn').href = commanderUrl;
 
@@ -1419,30 +1397,28 @@
             let prFormatted = formatPrWithRedColor(p.vitalSign.pr);
 
             formContainer.innerHTML = `
-                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; background:#133326; padding:8px; border-radius:8px; border:1px solid #204e3b;">
-                    <img src="${p.avatar}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-green);">
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; background:#fff; padding:10px; border-radius:8px; border:1px solid var(--card-border);">
+                    <img src="${p.avatar}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid #cbd5e1;">
                     <div style="flex-grow:1;">
-                        <h3 style="margin:0; color:#34d399; font-size:15px;">${p.pname} (HN: ${p.hn})</h3>
-                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#38bdf8;">${p.rightScheme}</b> | คลินิก: <b style="color:#ffb703;">${p.clinic}</b></p>
+                        <h3 style="margin:0; color:var(--primary-color); font-size:15px;">${p.pname} (HN: ${p.hn})</h3>
+                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#0284c7;">${p.rightScheme}</b> | คลินิก: <b style="color:#d97706;">${p.clinic}</b></p>
                     </div>
                 </div>
 
-                <!-- แสดง Vital Sign (สีแดงหากเกินเกณฑ์) -->
-                <div style="background:#071711; border:1px solid #204e3b; padding:8px; border-radius:6px; margin-bottom:6px; display:grid; grid-template-columns: repeat(4, 1fr); text-align:center; font-size:12px;">
+                <div style="background:#fff; border:1px solid var(--card-border); padding:8px; border-radius:6px; margin-bottom:6px; display:grid; grid-template-columns: repeat(4, 1fr); text-align:center; font-size:12px;">
                     <div>BP: <b>${bpFormatted}</b></div>
                     <div>PR: <b>${prFormatted}</b></div>
-                    <div>Temp: <b style="color:var(--accent-green);">${p.vitalSign.temp}</b></div>
-                    <div>นน./ส.: <b style="color:var(--accent-green);">${wtDisplay}</b></div>
+                    <div>Temp: <b style="color:var(--text-main);">${p.vitalSign.temp}</b></div>
+                    <div>นน./ส.: <b style="color:var(--text-main);">${wtDisplay}</b></div>
                 </div>
 
-                <!-- แสดงโรคประจำตัวคู่ Vital Sign -->
-                <div style="background:rgba(239, 68, 68, 0.1); border:1px solid #ef4444; padding:6px 10px; border-radius:6px; margin-bottom:10px; font-size:12px; color:#fca5a5;">
-                    <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> <b>โรคประจำตัว:</b> <span style="color:#fff; font-weight:bold;">${p.diseases || 'ไม่มี'}</span>
+                <div style="background:#fef2f2; border:1px solid #fecaca; padding:6px 10px; border-radius:6px; margin-bottom:10px; font-size:12px; color:#991b1b;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> <b>โรคประจำตัว:</b> <span style="color:#dc2626; font-weight:bold;">${p.diseases || 'ไม่มี'}</span>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 10px;">
-                    <label style="margin-bottom:2px;">อาการสำคัญ (Chief Complaint) <span style="color:#e71d36;">* (บังคับระบุ)</span></label>
-                    <textarea id="doc-cc" rows="2" placeholder="ระบุอาการสำคัญของผู้ป่วย..." style="padding:6px 10px; font-size:13px;">${p.chiefComplaint || ''}</textarea>
+                    <label style="margin-bottom:2px;">อาการสำคัญ (Chief Complaint) <span style="color:#dc2626;">*</span></label>
+                    <textarea id="doc-cc" rows="2" placeholder="ระบุอาการสำคัญของผู้ป่วย..." style="padding:6px 10px; font-size:13px; background:#fff;">${p.chiefComplaint || ''}</textarea>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 10px;">
@@ -1459,9 +1435,9 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="background:#051b14; border:2px solid var(--accent-green); padding:10px; border-radius:8px; margin-bottom:12px;">
-                    <label style="font-size:15px; color:#34d399; margin-bottom:4px;">💰 ค่าใช้จ่ายรวมสุทธิ (บาท) * ${isGold30 ? '<span style="color:#ffb703; font-size:12px;">(รวมสิทธิ์ 30 บาทแล้ว)</span>' : ''}</label>
-                    <input type="number" id="doc-cost" value="${currentTotalCost}" ${isGold30 ? 'readonly' : ''} style="padding:10px 14px; font-size:20px; font-weight:bold; color:#ffb703; text-align:center; ${isGold30 ? 'background:#152920;' : ''}">
+                <div class="form-group" style="background:#fff; border:1px solid var(--card-border); padding:10px; border-radius:8px; margin-bottom:12px;">
+                    <label style="font-size:14px; color:var(--primary-color); margin-bottom:4px;">💰 ค่าใช้จ่ายรวมสุทธิ (บาท) * ${isGold30 ? '<span style="color:#d97706; font-size:12px;">(รวมสิทธิ์ 30 บาทแล้ว)</span>' : ''}</label>
+                    <input type="number" id="doc-cost" value="${currentTotalCost}" ${isGold30 ? 'readonly' : ''} style="padding:10px 14px; font-size:18px; font-weight:bold; color:var(--accent-gold); text-align:center; background:#f8fafc;">
                 </div>
 
                 <button class="btn-action-warning" onclick="saveDoctorData('${key}', ${isGold30})" style="padding:12px; font-size:15px;"><i class="fa-solid fa-paper-plane"></i> บันทึกผลตรวจและส่งต่อไป</button>
@@ -1562,15 +1538,15 @@
 
                 let tList = p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : '-';
                 let isOutside = p.serviceType === 'นอกสถานบริการ';
-                let badgeHtml = isOutside ? '<span style="color:#60a5fa;">[นอก]</span>' : '<span style="color:#34d399;">[ใน]</span>';
+                let badgeHtml = isOutside ? '<span style="color:#2563eb;">[นอก]</span>' : '<span style="color:#059669;">[ใน]</span>';
 
                 html += `
                     <div class="queue-item-doc ${queueClinicClass} ${activeClass}" onclick="selectPatientForPharmacy('${key}')">
                         <img src="${p.avatar}" class="patient-avatar-xs" alt="Avatar">
                         <div style="overflow:hidden; width:100%;">
-                            <div style="font-weight:700; color:#fff; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.pname} ${badgeHtml}</div>
+                            <div style="font-weight:700; color:var(--text-main); font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.pname} ${badgeHtml}</div>
                             <div style="font-size:11px; color:var(--text-muted);">HN: ${p.hn} | ${p.clinic}</div>
-                            ${p.pharmacyFeedback.includes('ขอแก้ไข') ? '<div style="color:#f87171; font-size:10px; font-weight:700;">⚠️ แก้ไขยา</div>' : ''}
+                            ${p.pharmacyFeedback.includes('ขอแก้ไข') ? '<div style="color:#dc2626; font-size:10px; font-weight:700;">⚠️ แก้ไขยา</div>' : ''}
                         </div>
                     </div>
                 `;
@@ -1578,7 +1554,6 @@
             container.innerHTML = html;
         }
 
-        // จุดที่ 3: ห้องยา (แสดงโรคประจำตัวและ Vital Sign ให้เภสัชกรเห็นชัดเจน)
         function selectPatientForPharmacy(key) {
             selectedPharmacyKey = key;
             let p = allPatientsData[key];
@@ -1590,27 +1565,26 @@
             let prFormatted = formatPrWithRedColor(p.vitalSign.pr);
 
             container.innerHTML = `
-                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; background:#133326; padding:8px; border-radius:8px; border:1px solid #204e3b;">
-                    <img src="${p.avatar}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-green);">
+                <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px; background:#fff; padding:10px; border-radius:8px; border:1px solid var(--card-border);">
+                    <img src="${p.avatar}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid #cbd5e1;">
                     <div style="flex-grow:1;">
-                        <h3 style="margin:0; color:#34d399; font-size:15px;">${p.pname} (HN: ${p.hn})</h3>
-                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#38bdf8;">${p.rightScheme}</b> | การรักษา: <b>${tList}</b></p>
+                        <h3 style="margin:0; color:var(--primary-color); font-size:15px;">${p.pname} (HN: ${p.hn})</h3>
+                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#0284c7;">${p.rightScheme}</b> | การรักษา: <b>${tList}</b></p>
                     </div>
                 </div>
 
-                <!-- แสดง Vital Sign และโรคประจำตัวในห้องยา -->
-                <div style="background:#071711; border:1px solid #204e3b; padding:8px; border-radius:6px; margin-bottom:6px; display:grid; grid-template-columns: repeat(4, 1fr); text-align:center; font-size:12px;">
+                <div style="background:#fff; border:1px solid var(--card-border); padding:8px; border-radius:6px; margin-bottom:6px; display:grid; grid-template-columns: repeat(4, 1fr); text-align:center; font-size:12px;">
                     <div>BP: <b>${bpFormatted}</b></div>
                     <div>PR: <b>${prFormatted}</b></div>
-                    <div>Temp: <b style="color:var(--accent-green);">${p.vitalSign.temp}</b></div>
-                    <div>นน./ส.: <b style="color:var(--accent-green);">${wtDisplay}</b></div>
+                    <div>Temp: <b style="color:var(--text-main);">${p.vitalSign.temp}</b></div>
+                    <div>นน./ส.: <b style="color:var(--text-main);">${wtDisplay}</b></div>
                 </div>
 
-                <div style="background:rgba(239, 68, 68, 0.1); border:1px solid #ef4444; padding:6px 10px; border-radius:6px; margin-bottom:10px; font-size:12px; color:#fca5a5;">
-                    <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> <b>โรคประจำตัว:</b> <span style="color:#fff; font-weight:bold;">${p.diseases || 'ไม่มี'}</span>
+                <div style="background:#fef2f2; border:1px solid #fecaca; padding:6px 10px; border-radius:6px; margin-bottom:10px; font-size:12px; color:#991b1b;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> <b>โรคประจำตัว:</b> <span style="color:#dc2626; font-weight:bold;">${p.diseases || 'ไม่มี'}</span>
                 </div>
 
-                <label style="color:#34d399; margin-bottom:6px; font-size:13px;"><i class="fa-solid fa-bolt"></i> พรีเซตกลุ่มอาการ (คลิกเลือกเพื่อเพิ่มยาและบวกค่าใช้จ่ายอัตโนมัติ)</label>
+                <label style="color:var(--primary-color); margin-bottom:6px; font-size:13px;"><i class="fa-solid fa-bolt"></i> พรีเซตกลุ่มอาการ (คลิกเลือกเพื่อเพิ่มยาและบวกค่าใช้จ่ายอัตโนมัติ)</label>
                 <div class="preset-syndrome-group" id="syndrome-preset-container">
                     <div class="btn-syndrome" data-type="muscle" onclick="applySyndromePreset(this, 'muscle', 150)">1. โรคกล้ามเนื้อ (+150฿)</div>
                     <div class="btn-syndrome" data-type="gastro" onclick="applySyndromePreset(this, 'gastro', 100)">2. ทางเดินอาหาร (+100฿)</div>
@@ -1619,13 +1593,13 @@
                     <div class="btn-syndrome" data-type="cannabis" onclick="applySyndromePreset(this, 'cannabis', 600)">5. ยากัญชา (+600฿)</div>
                 </div>
 
-                <label style="color:#34d399; margin-bottom:4px; font-size:13px;">จัดการรายการยา (เพิ่ม / แก้ไข / ลบ)</label>
+                <label style="color:var(--primary-color); margin-bottom:4px; font-size:13px;">จัดการรายการยา (เพิ่ม / แก้ไข / ลบ)</label>
                 <div id="pharmacy-drug-rows-container"></div>
                 <button type="button" class="btn-row-add" onclick="addPharmacyDrugRow('', '', null)">+ เพิ่มรายการยา</button>
 
                 <div style="display:flex; gap:8px; margin-top:14px;">
                     <button class="btn-action-main" style="flex:1; padding:10px; font-size:14px;" onclick="savePharmacyData('${key}', 'จ่ายยาแล้ว')"><i class="fa-solid fa-check"></i> ยืนยันจ่ายยา</button>
-                    <button class="btn-action-warning" style="flex:1; background:#b91c1c; padding:10px; font-size:14px;" onclick="savePharmacyData('${key}', 'แพ้ยา ขอแก้ไขรายการสั่งยา')"><i class="fa-solid fa-triangle-exclamation"></i> แจ้งแก้ไขยา</button>
+                    <button class="btn-action-warning" style="flex:1; background:#dc2626; padding:10px; font-size:14px;" onclick="savePharmacyData('${key}', 'แพ้ยา ขอแก้ไขรายการสั่งยา')"><i class="fa-solid fa-triangle-exclamation"></i> แจ้งแก้ไขยา</button>
                 </div>
             `;
 
@@ -1672,15 +1646,15 @@
             let div = document.createElement('div');
             div.className = 'pharmacy-drug-row';
             div.innerHTML = `
-                <select class="ph-drug-name" style="padding:6px; font-size:13px;" onchange="onDrugSelectChange(this)">
+                <select class="ph-drug-name" style="padding:6px; font-size:13px; background:#fff;" onchange="onDrugSelectChange(this)">
                     <option value="">-- เลือกยาสมุนไพร --</option>
                     ${drugOptsHtml}
                 </select>
-                <select class="ph-drug-inst" style="padding:6px; font-size:13px;">
+                <select class="ph-drug-inst" style="padding:6px; font-size:13px; background:#fff;">
                     <option value="">-- วิธีรับประทาน --</option>
                     ${instOptsHtml}
                 </select>
-                <input type="number" class="ph-drug-qty" placeholder="จำนวน" min="1" value="${defaultQty}" style="padding:6px; font-size:13px;">
+                <input type="number" class="ph-drug-qty" placeholder="จำนวน" min="1" value="${defaultQty}" style="padding:6px; font-size:13px; background:#fff;">
                 <button type="button" class="btn-row-del" onclick="this.parentElement.remove()">✕</button>
             `;
             rowsContainer.appendChild(div);
@@ -1761,22 +1735,22 @@
                 let payBtnDisabled = (isFreeScheme || isPaid) ? 'disabled' : '';
 
                 html += `
-                    <div style="border-radius:10px; padding:14px; margin-bottom:12px; display:flex; gap:14px;" class="${cashierClinicClass}">
-                        <img src="${p.avatar}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid var(--accent-green);">
+                    <div style="border-radius:10px; padding:14px; margin-bottom:12px; display:flex; gap:14px; background:#fff; border:1px solid var(--card-border);" class="${cashierClinicClass}">
+                        <img src="${p.avatar}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #cbd5e1;">
                         <div style="flex-grow:1;">
-                            <h4 style="margin:0 0 4px 0; color:#34d399; font-size:16px;">${p.pname} (HN: ${p.hn})</h4>
-                            <p style="margin:0 0 3px 0; font-size:13px; color:var(--text-muted);">คลินิก: <b>${p.clinic}</b> | สิทธิ์: <b style="color:#38bdf8;">${p.rightScheme}</b></p>
+                            <h4 style="margin:0 0 4px 0; color:var(--primary-color); font-size:16px;">${p.pname} (HN: ${p.hn})</h4>
+                            <p style="margin:0 0 3px 0; font-size:13px; color:var(--text-muted);">คลินิก: <b>${p.clinic}</b> | สิทธิ์: <b style="color:#0284c7;">${p.rightScheme}</b></p>
                             <p style="margin:0 0 6px 0; font-size:13px; color:var(--text-muted);">ยา/การรักษา: ${rxText}</p>
                             
                             <div style="display:flex; align-items:center; gap:8px; margin: 8px 0;">
-                                <span style="font-size:14px; font-weight:700; color:#fff;">ยอดรวมสุทธิ:</span>
-                                <input type="number" id="cashier-cost-${key}" value="${p.totalCost !== undefined ? p.totalCost : 300}" style="width:110px; padding:6px 10px; font-size:14px; font-weight:bold; color:#ffb703;">
+                                <span style="font-size:14px; font-weight:700; color:var(--text-main);">ยอดรวมสุทธิ:</span>
+                                <input type="number" id="cashier-cost-${key}" value="${p.totalCost !== undefined ? p.totalCost : 300}" style="width:110px; padding:6px 10px; font-size:14px; font-weight:bold; color:var(--accent-gold); background:#fff;">
                                 <button onclick="updateCost('${key}')" style="background:#d97706; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;"><i class="fa-solid fa-pen"></i> แก้ไข</button>
                             </div>
                             
-                            <div style="background:#133326; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid ${p.rightClosed?'#059669':'#dc2626'}; display:flex; justify-content:space-between; align-items:center;">
-                                <span style="font-size:14px; font-weight:700;">สถานะสิทธิ์: <b style="color:${p.rightClosed?'#34d399':'#f87171'}">${p.rightClosed ? 'ปิดสิทธิ์สมบูรณ์แล้ว ✅' : 'ยังไม่ปิดสิทธิ์ ❌'}</b></span>
-                                <button onclick="toggleRight('${key}', ${!p.rightClosed})" style="background:${p.rightClosed?'#475569':'#2563eb'}; color:#fff; border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:bold; cursor:pointer;">
+                            <div style="background:#f8fafc; padding:10px; border-radius:8px; margin-bottom:10px; border:1px solid var(--card-border); display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:14px; font-weight:700; color:var(--text-main);">สถานะสิทธิ์: <b style="color:${p.rightClosed?'#059669':'#dc2626'}">${p.rightClosed ? 'ปิดสิทธิ์สมบูรณ์แล้ว ✅' : 'ยังไม่ปิดสิทธิ์ ❌'}</b></span>
+                                <button onclick="toggleRight('${key}', ${!p.rightClosed})" style="background:${p.rightClosed?'#64748b':'#0284c7'}; color:#fff; border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:bold; cursor:pointer;">
                                     ${p.rightClosed ? 'ยกเลิกการปิดสิทธิ์' : '🔒 ยืนยันการปิดสิทธิ์'}
                                 </button>
                             </div>
