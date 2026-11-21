@@ -30,13 +30,20 @@
         
         .header-container {
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 24px; background: rgba(30, 15, 45, 0.9); backdrop-filter: blur(20px);
+            margin-bottom: 20px; background: rgba(30, 15, 45, 0.9); backdrop-filter: blur(20px);
             padding: 14px 24px; border-radius: 20px; border: 1px solid var(--app-border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); flex-wrap: wrap; gap: 15px;
         }
 
         .header-title { color: #fff; font-weight: 700; font-size: 22px; display: flex; align-items: center; gap: 12px; margin: 0; }
-        .header-datetime { font-size: 16px; color: #ffab40; font-weight: 600; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 10px; }
+        
+        .view-mode-group { display: flex; gap: 6px; background: rgba(0,0,0,0.4); padding: 4px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .mode-btn {
+            background: transparent; border: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; color: rgba(255,255,255,0.6); transition: 0.2s;
+        }
+        .mode-btn.active { background: var(--app-orange); color: #000; box-shadow: 0 2px 8px rgba(255,122,0,0.4); }
+
+        .header-datetime { font-size: 15px; color: #ffab40; font-weight: 600; background: rgba(0,0,0,0.3); padding: 6px 14px; border-radius: 10px; }
         .header-actions { display: flex; gap: 12px; align-items: center; }
 
         .control-btn {
@@ -103,17 +110,23 @@
         .card-details { font-size: 13px; margin-bottom: 10px; background: rgba(0, 0, 0, 0.25); padding: 8px 12px; border-radius: 10px; }
         .card-details div span { color: rgba(255,255,255,0.5); }
 
-        .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; }
+        .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; gap: 6px; }
         .card-operator { display: flex; align-items: center; gap: 8px; font-size: 14px; }
         .card-operator img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); }
 
+        .card-btn-group { display: flex; gap: 6px; }
+        .btn-call {
+            background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4);
+            padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700;
+        }
+        .btn-call:hover { background: #0ea5e9; color: #fff; }
+
         .btn-done { 
             background: rgba(255, 69, 58, 0.2); color: var(--app-red); border: 1px solid rgba(255, 69, 58, 0.4); 
-            padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700;
+            padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700;
         }
         .btn-done:hover { background: var(--app-red); color: #fff; }
 
-        /* แถบ Waiting List ด้านขวามือ */
         .sidebar-waitlist {
             background: rgba(30, 15, 45, 0.9);
             border: 1px solid rgba(123, 44, 191, 0.4);
@@ -152,7 +165,6 @@
         }
         .btn-start-wait:hover { background: #e56d00; }
 
-        /* ================= Screen Saver Style ================= */
         #screenSaverOverlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: radial-gradient(circle at 50% 50%, #1a0b2e 0%, #0a0410 100%);
@@ -160,38 +172,22 @@
             justify-content: center; align-items: center; text-align: center;
             opacity: 0; pointer-events: none; transition: opacity 0.8s ease-in-out;
         }
-        #screenSaverOverlay.active {
-            opacity: 1; pointer-events: auto;
-        }
-        .saver-content {
-            animation: floatSlow 6s ease-in-out infinite alternate;
-        }
-        .saver-logo {
-            font-size: 70px; color: var(--app-orange); margin-bottom: 20px;
-            text-shadow: 0 0 30px rgba(255, 122, 0, 0.4);
-        }
-        .saver-title {
-            font-size: 42px; font-weight: 800; color: #fff; margin: 0 0 10px 0;
-            letter-spacing: 1px;
-        }
-        .saver-subtitle {
-            font-size: 20px; color: #b794f4; font-weight: 400; margin-bottom: 40px;
-        }
+        #screenSaverOverlay.active { opacity: 1; pointer-events: auto; }
+        .saver-content { animation: floatSlow 6s ease-in-out infinite alternate; }
+        .saver-logo { font-size: 70px; color: var(--app-orange); margin-bottom: 20px; text-shadow: 0 0 30px rgba(255, 122, 0, 0.4); }
+        .saver-title { font-size: 42px; font-weight: 800; color: #fff; margin: 0 0 10px 0; letter-spacing: 1px; }
+        .saver-subtitle { font-size: 20px; color: #b794f4; font-weight: 400; margin-bottom: 40px; }
         .saver-clock {
             font-size: 64px; font-weight: 800; color: #ffab40;
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 15px 40px; border-radius: 20px; backdrop-filter: blur(10px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: inline-block;
         }
-        @keyframes floatSlow {
-            0% { transform: translateY(0px); }
-            100% { transform: translateY(-15px); }
-        }
+        @keyframes floatSlow { 0% { transform: translateY(0px); } 100% { transform: translateY(-15px); } }
     </style>
 </head>
 <body>
 
-    <!-- หน้าจอ Screen Saver (ภาพพักหน้าจอ) -->
     <div id="screenSaverOverlay" onclick="toggleManualScreenSaver()">
         <div class="saver-content">
             <div class="saver-logo"><i class="fa-solid fa-hospital-user"></i></div>
@@ -205,9 +201,14 @@
         <div class="header-title">
             <i class="fa-solid fa-desktop" style="color: var(--app-orange);"></i> Live Treatment Dashboard
         </div>
+
+        <div class="view-mode-group">
+            <button class="mode-btn active" id="modeBtnInside" onclick="switchViewMode('inside')">🏥 ในสถานบริการ</button>
+            <button class="mode-btn" id="modeBtnOutside" onclick="switchViewMode('outside')">🚗 นอกสถานบริการ (นอกพื้นที่)</button>
+        </div>
+
         <div class="header-datetime" id="liveDateTime">กำลังโหลดวันเวลา...</div>
         <div class="header-actions">
-            <!-- ปุ่มเปิด/ปิดภาพพักหน้าจอด้วยมือ -->
             <button class="control-btn saver-btn" onclick="toggleManualScreenSaver()">
                 <i class="fa-solid fa-moon"></i> พักหน้าจอ
             </button>
@@ -218,10 +219,8 @@
     </div>
 
     <div class="main-layout">
-        <!-- ฝั่งซ้าย: มอนิเตอร์หลัก (แสดงสูงสุด 5 เตียง) -->
         <div class="monitor-container" id="monitorQueue"></div>
 
-        <!-- ฝั่งขวา: Waiting List (คิวรอ) -->
         <div class="sidebar-waitlist">
             <div class="sidebar-title">
                 <span><i class="fa-solid fa-clock-rotate-left"></i> ผู้ป่วยรอคิว (Waiting List)</span>
@@ -235,7 +234,7 @@
 
     <script>
         const firebaseConfig = {
-            	apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -249,9 +248,11 @@
         const queueRef = database.ref('patientQueue');
 
         let previousKeys = [];
+        let notifiedTimeUpKeys = [];
         let soundEnabled = false;
-        let currentData = {};
-        let manualSaverActive = false; // ตัวแปรเช็คสถานะกดพักหน้าจอด้วยมือ
+        let currentQueueData = {};
+        let currentViewMode = 'inside';
+        let manualSaverActive = false;
 
         function updateDateTime() {
             const now = new Date();
@@ -288,7 +289,13 @@
             }
         }
 
-        // ฟังก์ชันเปิด/ปิดภาพพักหน้าจอด้วยมือ
+        // ฟังก์ชันกดปุ่มเรียกคิวซ้ำด้วยเสียง
+        function repeatCallPatient(pname, bed, operator, queueNo) {
+            let qStr = queueNo ? `หมายเลขคิว ${queueNo}` : '';
+            let announcement = `ขอเชิญ ${qStr} คุณ ${pname}, ที่ ${bed}, ผู้ปฏิบัติงาน ${operator}`;
+            speakText(announcement);
+        }
+
         function toggleManualScreenSaver() {
             manualSaverActive = !manualSaverActive;
             const screenSaver = document.getElementById('screenSaverOverlay');
@@ -297,6 +304,21 @@
             } else {
                 screenSaver.classList.remove('active');
             }
+        }
+
+        function switchViewMode(mode) {
+            currentViewMode = mode;
+            const btnInside = document.getElementById('modeBtnInside');
+            const btnOutside = document.getElementById('modeBtnOutside');
+
+            if (mode === 'inside') {
+                btnInside.classList.add('active');
+                btnOutside.classList.remove('active');
+            } else {
+                btnOutside.classList.add('active');
+                btnInside.classList.remove('active');
+            }
+            renderDashboard();
         }
 
         function removePatient(key) {
@@ -309,29 +331,41 @@
                 timestamp: 0 - Date.now(),
                 endTime: Date.now() + (30 * 60 * 1000)
             });
-            // หากกดเริ่มทำจากคิวรอ ให้ปลดล็อกหน้าจอพักอัตโนมัติด้วย
             manualSaverActive = false;
         }
 
         queueRef.orderByChild('timestamp').on('value', (snapshot) => {
-            currentData = snapshot.val() || {};
+            currentQueueData = snapshot.val() || {};
+            renderDashboard();
+        });
+
+        function renderDashboard() {
             const container = document.getElementById('monitorQueue');
             const waitlistContainer = document.getElementById('waitlistContainer');
             const screenSaver = document.getElementById('screenSaverOverlay');
             
-            let keys = Object.keys(currentData);
+            let keys = Object.keys(currentQueueData);
 
             keys.sort((a, b) => {
-                let timeA = currentData[a].timestamp || 0;
-                let timeB = currentData[b].timestamp || 0;
+                let timeA = currentQueueData[a].timestamp || 0;
+                let timeB = currentQueueData[b].timestamp || 0;
                 return timeA - timeB;
             });
 
-            let activeKeys = keys.filter(k => currentData[k].status === 'active' || !currentData[k].status);
-            let waitingKeys = keys.filter(k => currentData[k].status === 'waiting');
+            let allActiveKeys = keys.filter(k => currentQueueData[k].status === 'active' || !currentQueueData[k].status);
+            let waitingKeys = keys.filter(k => currentQueueData[k].status === 'waiting');
 
-            // เงื่อนไขเปิด Screen Saver: เปิดอัตโนมัติเมื่อไม่มีเคส หรือเปิดผ่านปุ่มกดมือ
-            if ((activeKeys.length === 0 && waitingKeys.length === 0) || manualSaverActive) {
+            let activeKeys = allActiveKeys.filter(k => {
+                let p = currentQueueData[k];
+                let isOutsideBed = (p.bed === 'นอกพื้นที่');
+                if (currentViewMode === 'inside') {
+                    return !isOutsideBed;
+                } else {
+                    return isOutsideBed;
+                }
+            });
+
+            if ((allActiveKeys.length === 0 && waitingKeys.length === 0) || manualSaverActive) {
                 screenSaver.classList.add('active');
             } else {
                 screenSaver.classList.remove('active');
@@ -339,40 +373,50 @@
 
             document.getElementById('waitCount').innerText = `(${waitingKeys.length})`;
 
-            if (soundEnabled && activeKeys.length > 0) {
-                let newActive = activeKeys.filter(k => !previousKeys.includes(k));
+            if (soundEnabled && allActiveKeys.length > 0) {
+                let newActive = allActiveKeys.filter(k => !previousKeys.includes(k));
                 if (newActive.length > 0) {
                     let latestKey = newActive[0];
-                    let p = currentData[latestKey];
-                    let announcement = `ผู้ป่วย ${p.pname}, ที่ ${p.bed}, ผู้ปฏิบัติงาน ${p.operator}`;
+                    let p = currentQueueData[latestKey];
+                    let qStr = p.queueNo ? `คิว ${p.queueNo}` : '';
+                    let announcement = `${qStr} ผู้ป่วย ${p.pname}, ที่ ${p.bed}, ผู้ปฏิบัติงาน ${p.operator}`;
                     setTimeout(() => { speakText(announcement); }, 500);
                 }
             }
             previousKeys = [...keys];
 
-            let displayActiveKeys = activeKeys.slice(0, 5);
-
-            if (displayActiveKeys.length === 0) {
+            if (activeKeys.length === 0) {
                 container.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; color: rgba(255,255,255,0.3); background: rgba(30, 15, 45, 0.8); border-radius: 24px; border: 2px dashed rgba(255, 122, 0, 0.2); font-size: 18px; padding: 50px;">
                         <i class="fa-solid fa-bed-pulse fa-3x" style="margin-bottom: 15px; color: var(--app-orange);"></i><br>
-                        ไม่มีเคสกำลังทำหัตถการ (สามารถกดปุ่ม "พักหน้าจอ" ด้านบนขวาได้ตลอดเวลา)
+                        ไม่มีเคสกำลังทำหัตถการในโหมด (${currentViewMode === 'inside' ? 'ในสถานบริการ' : 'นอกสถานบริการ / นอกพื้นที่'})
                     </div>`;
             } else {
                 let html = '';
-                displayActiveKeys.forEach((key) => {
-                    let p = currentData[key];
+                activeKeys.forEach((key) => {
+                    let p = currentQueueData[key];
                     let timeLeftMs = p.endTime - Date.now();
                     let isTimeUp = timeLeftMs <= 0;
-                    let minutes = Math.floor(Math.max(0, timeLeftMs) / 60000);
-                    let seconds = Math.floor((Math.max(0, timeLeftMs) % 60000) / 1000);
-                    let timeStr = isTimeUp ? "หมดเวลาทำหัตถการ!" : `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} นาที`;
+                    
+                    let timeStr = "";
+                    if (!isTimeUp) {
+                        let minutes = Math.floor(timeLeftMs / 60000);
+                        let seconds = Math.floor((timeLeftMs % 60000) / 1000);
+                        timeStr = `คงเหลือ: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} นาที`;
+                    } else {
+                        let overdueMs = Math.abs(timeLeftMs);
+                        let ovMinutes = Math.floor(overdueMs / 60000);
+                        let ovSeconds = Math.floor((overdueMs % 60000) / 1000);
+                        timeStr = `เกินเวลา +${String(ovMinutes).padStart(2, '0')}:${String(ovSeconds).padStart(2, '0')} นาที`;
+                    }
+
+                    let qBadge = p.queueNo ? `<span style="background:var(--app-purple); color:#fff; padding:2px 8px; border-radius:6px; font-size:14px; margin-right:6px;">คิว: ${p.queueNo}</span>` : '';
 
                     html += `
                         <div class="monitor-card" id="card-${key}">
                             <div class="card-top">
                                 <div class="card-patient">
-                                    <h3>${p.pname}</h3>
+                                    <h3>${qBadge} ${p.pname}</h3>
                                     <p>HN: ${p.hn} | วินิจฉัย: <span class="diag-text">${p.diagnosis}</span></p>
                                 </div>
                                 <div class="card-bed">${p.bed}</div>
@@ -383,7 +427,7 @@
                             </div>
 
                             <div class="card-timer ${isTimeUp ? 'time-up' : ''}" id="timer-${key}">
-                                <i class="fa-regular fa-clock"></i> คงเหลือ: ${timeStr}
+                                <i class="fa-regular fa-clock"></i> ${timeStr}
                             </div>
 
                             <div class="card-details">
@@ -396,7 +440,14 @@
                                     <img src="${p.avatar}" alt="Operator">
                                     <span>ผู้ปฏิบัติงาน: <b>${p.operator}</b></span>
                                 </div>
-                                <button class="btn-done" onclick="removePatient('${key}')">เสร็จสิ้น</button>
+                                <div class="card-btn-group">
+                                    <button class="btn-call" onclick="repeatCallPatient('${p.pname}', '${p.bed}', '${p.operator}', '${p.queueNo || ''}')" title="กดเรียกคิวซ้ำ">
+                                        <i class="fa-solid fa-volume-high"></i> เรียก
+                                    </button>
+                                    <button class="btn-done" onclick="removePatient('${key}')">
+                                        <i class="fa-solid fa-check"></i> เสร็จสิ้น
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -409,11 +460,12 @@
             } else {
                 let waitHtml = '';
                 waitingKeys.forEach((key) => {
-                    let p = currentData[key];
+                    let p = currentQueueData[key];
+                    let qBadge = p.queueNo ? `[คิว: ${p.queueNo}]` : '';
                     waitHtml += `
                         <div class="waitlist-card">
                             <div class="waitlist-info">
-                                <h5>${p.pname}</h5>
+                                <h5><span style="color:#ffab40;">${qBadge}</span> ${p.pname}</h5>
                                 <p>เตียง: ${p.bed} | ${p.procedure}</p>
                             </div>
                             <button class="btn-start-wait" onclick="startWaitingPatient('${key}')">เริ่มทำ</button>
@@ -422,23 +474,57 @@
                 });
                 waitlistContainer.innerHTML = waitHtml;
             }
-        });
+        }
 
         setInterval(() => {
-            let keys = Object.keys(currentData);
+            let keys = Object.keys(currentQueueData);
             if (keys.length > 0) {
                 keys.forEach((key) => {
-                    let p = currentData[key];
+                    let p = currentQueueData[key];
                     if (p.status === 'active' || !p.status) {
+                        let timeLeftMs = p.endTime - Date.now();
+                        let isTimeUp = timeLeftMs <= 0;
+
+                        let isDrKrittanat = p.operator && p.operator.includes("นายแพทย์กฤตธนัท วงค์วิเศษ");
+                        if (isTimeUp && isDrKrittanat) {
+                            if (soundEnabled && !notifiedTimeUpKeys.includes(key)) {
+                                speakText(`หมดเวลาหัตถการของแพทย์กฤตธนัท ที่ ${p.bed}`);
+                                notifiedTimeUpKeys.push(key);
+                            }
+                            removePatient(key);
+                            return;
+                        }
+
+                        if (isTimeUp) {
+                            let overdueMs = Math.abs(timeLeftMs);
+                            const gracePeriodMs = 5 * 60 * 1000;
+
+                            if (overdueMs >= gracePeriodMs) {
+                                removePatient(key);
+                                return;
+                            }
+
+                            if (soundEnabled && !notifiedTimeUpKeys.includes(key)) {
+                                speakText(`หมดเวลาทำหัตถการ ที่ ${p.bed}`);
+                                notifiedTimeUpKeys.push(key);
+                            }
+                        }
+
                         let timerEl = document.getElementById(`timer-${key}`);
                         if (timerEl) {
-                            let timeLeftMs = p.endTime - Date.now();
-                            let isTimeUp = timeLeftMs <= 0;
-                            let minutes = Math.floor(Math.max(0, timeLeftMs) / 60000);
-                            let seconds = Math.floor((Math.max(0, timeLeftMs) % 60000) / 1000);
-                            let timeStr = isTimeUp ? "หมดเวลาทำหัตถการ!" : `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} นาที`;
+                            let timeStr = "";
+                            if (!isTimeUp) {
+                                let minutes = Math.floor(timeLeftMs / 60000);
+                                let seconds = Math.floor((timeLeftMs % 60000) / 1000);
+                                timeStr = `คงเหลือ: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} นาที`;
+                            } else {
+                                let overdueMs = Math.abs(timeLeftMs);
+                                let ovMinutes = Math.floor(overdueMs / 60000);
+                                let ovSeconds = Math.floor((overdueMs % 60000) / 1000);
+                                timeStr = `เกินเวลา +${String(ovMinutes).padStart(2, '0')}:${String(ovSeconds).padStart(2, '0')} นาที`;
+                            }
                             
-                            timerEl.innerHTML = `<i class="fa-regular fa-clock"></i> คงเหลือ: ${timeStr}`;
+                            timerEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${timeStr}`;
                             if (isTimeUp) {
                                 timerEl.classList.add('time-up');
                             }

@@ -13,50 +13,50 @@
 
     <style>
         :root {
-            --app-orange: #ff7a00;
-            --app-orange-hover: #e56d00;
-            --app-purple: #3d1c4f;
-            --app-bg: #f4f5f8;
+            --app-orange: #0f766e;
+            --app-orange-hover: #115e59;
+            --app-purple: #0f172a;
+            --app-bg: #f1f5f9;
             --app-card: #ffffff;
-            --app-text: #2d2d2d;
-            --app-gray: #8e8e93;
-            --app-border: #e2e2e8;
+            --app-text: #0f172a;
+            --app-gray: #64748b;
+            --app-border: #cbd5e1;
         }
 
         * { box-sizing: border-box; font-family: 'Prompt', sans-serif; }
-        body { background: var(--app-bg); margin: 0; padding: 25px; min-height: 100vh; color: var(--app-text); }
+        body { background: var(--app-bg); margin: 0; padding: 20px; min-height: 100vh; color: var(--app-text); }
 
         .header-title {
-            text-align: center; margin-bottom: 25px; color: var(--app-purple); font-weight: 700; font-size: 26px;
-            display: flex; align-items: center; justify-content: center; gap: 12px;
+            text-align: center; margin-bottom: 20px; color: var(--app-purple); font-weight: 700; font-size: 24px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
 
-        .main-container { max-width: 1350px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 20px; }
+        .main-container { max-width: 1450px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 16px; }
         @media(max-width: 1100px) { .main-container { grid-template-columns: 1fr; } }
         
         .panel { 
-            background: var(--app-card); padding: 20px; border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(61, 28, 79, 0.06); border: 1px solid var(--app-border);
+            background: var(--app-card); padding: 18px; border-radius: 14px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); border: 1px solid var(--app-border);
         }
 
         .panel-header { 
-            font-size: 17px; font-weight: 600; color: var(--app-purple); margin-bottom: 15px; 
-            border-bottom: 2px solid var(--app-bg); padding-bottom: 10px; 
+            font-size: 16px; font-weight: 600; color: var(--app-purple); margin-bottom: 14px; 
+            border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; 
             display: flex; justify-content: space-between; align-items: center; 
         }
         
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .form-group { margin-bottom: 4px; }
         .form-group.full { grid-column: span 2; }
         
-        label { display: block; font-weight: 500; margin-bottom: 4px; font-size: 12px; color: var(--app-gray); }
+        label { display: block; font-weight: 600; margin-bottom: 4px; font-size: 12px; color: #334155; }
         label i { margin-right: 4px; color: var(--app-orange); }
         
         input, select { 
-            width: 100%; padding: 10px 12px; border: 2px solid var(--app-border); border-radius: 12px; 
-            font-size: 13px; background: #fafafa; color: var(--app-text); outline: none; transition: 0.2s;
+            width: 100%; padding: 9px 12px; border: 1px solid var(--app-border); border-radius: 8px; 
+            font-size: 13px; background: #fff; color: var(--app-text); outline: none; transition: 0.2s;
         }
-        input:focus, select:focus { border-color: var(--app-orange); background: #fff; box-shadow: 0 0 0 4px rgba(255, 122, 0, 0.1); }
+        input:focus, select:focus { border-color: var(--app-orange); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
         
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -64,45 +64,46 @@
 
         .badge-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
         .badge-option { 
-            background: #f0f0f3; border: 1px solid transparent; padding: 6px 10px; border-radius: 12px; 
-            font-size: 12px; cursor: pointer; user-select: none; font-weight: 500; color: #555; transition: 0.2s;
+            background: #f8fafc; border: 1px solid var(--app-border); padding: 6px 10px; border-radius: 8px; 
+            font-size: 12px; cursor: pointer; user-select: none; font-weight: 500; color: #475569; transition: 0.2s;
         }
-        .badge-option:hover { background: #e4e4e9; }
-        .badge-option.selected { background: var(--app-orange); color: white; }
-        .badge-option.danger-badge.selected { background: #ff3b30; color: white; }
-        .badge-option.time-badge.selected { background: var(--app-purple); color: white; }
+        .badge-option:hover { background: #f1f5f9; }
+        .badge-option.selected { background: var(--app-orange); color: white; border-color: var(--app-orange); }
+        .badge-option.danger-badge.selected { background: #dc2626; color: white; border-color: #dc2626; }
+        .badge-option.time-badge.selected { background: #0f172a; color: white; border-color: #0f172a; }
 
-        .btn-group { display: flex; gap: 8px; margin-top: 15px; }
+        .btn-group { display: flex; gap: 8px; margin-top: 14px; }
         .btn-submit { 
-            flex: 1; background: linear-gradient(135deg, var(--app-orange) 0%, var(--app-orange-hover) 100%); 
-            color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 700; 
-            cursor: pointer; box-shadow: 0 4px 15px rgba(255, 122, 0, 0.3); transition: 0.2s;
+            flex: 1; background: var(--app-orange); 
+            color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; 
+            cursor: pointer; box-shadow: 0 2px 6px rgba(15, 118, 110, 0.2); transition: 0.2s;
         }
         .btn-waitlist { 
-            flex: 1; background: linear-gradient(135deg, #6200ee 0%, #3d1c4f 100%); 
-            color: white; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 700; 
-            cursor: pointer; box-shadow: 0 4px 15px rgba(98, 0, 238, 0.3); transition: 0.2s;
+            flex: 1; background: #475569; 
+            color: white; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; 
+            cursor: pointer; transition: 0.2s;
         }
-        .btn-submit:hover, .btn-waitlist:hover { opacity: 0.92; transform: translateY(-1px); }
+        .btn-submit:hover { background: var(--app-orange-hover); }
+        .btn-waitlist:hover { background: #334155; }
         
-        .queue-list { display: flex; flex-direction: column; gap: 10px; max-height: 600px; overflow-y: auto; padding-right: 4px; }
+        .queue-list { display: flex; flex-direction: column; gap: 8px; max-height: 520px; overflow-y: auto; padding-right: 4px; }
         .queue-item { 
-            background: #fafafc; border: 1px solid var(--app-border); border-radius: 14px; padding: 12px; 
+            background: #f8fafc; border: 1px solid var(--app-border); border-radius: 10px; padding: 10px 12px; 
             display: flex; justify-content: space-between; align-items: center; 
         }
-        .queue-info h4 { margin: 0 0 2px 0; color: var(--app-purple); font-size: 15px; font-weight: 700; }
+        .queue-info h4 { margin: 0 0 2px 0; color: var(--app-purple); font-size: 14px; font-weight: 700; }
         .queue-info p { margin: 1px 0; font-size: 12px; color: var(--app-gray); }
         
         .queue-actions { display: flex; gap: 6px; }
-        .btn-action { padding: 6px 10px; border-radius: 8px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .btn-edit { background: rgba(255, 149, 0, 0.15); color: #b26500; }
-        .btn-delete { background: rgba(255, 59, 48, 0.15); color: #d32f2f; }
+        .btn-action { padding: 5px 8px; border-radius: 6px; border: none; cursor: pointer; font-size: 11px; font-weight: 600; }
+        .btn-edit { background: #fef3c7; color: #b45309; }
+        .btn-delete { background: #fee2e2; color: #991b1b; }
 
         .flow-wait-card {
-            background: #e6fffa; border: 1px solid #b2f5ea; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px;
+            background: #f8fafc; border: 1px solid var(--app-border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px;
             cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;
         }
-        .flow-wait-card:hover { background: #ccfbf1; transform: scale(1.01); }
+        .flow-wait-card:hover { border-color: var(--app-orange); background: #f0fdf4; }
 
         .link-monitor { font-size: 13px; color: var(--app-orange); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 4px; }
         .link-monitor:hover { text-decoration: underline; }
@@ -116,12 +117,17 @@
 
     <div class="main-container">
         
-        <!-- ส่วนที่ 1: คิวรอรับบริการจากระบบ Hospital Flow -->
+        <!-- ส่วนที่ 1: แถบผู้ป่วยรอคิวนวด แยก ใน/นอก สถานบริการ -->
         <div class="panel">
             <div class="panel-header">
                 <span><i class="fa-solid fa-user-clock"></i> ผู้ป่วยรอคิวนวด (จาก Flow)</span>
-                <span id="flowWaitCount" style="font-size: 12px; color: var(--app-gray);">(0 คน)</span>
             </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px;">
+                <button type="button" class="btn-action" id="tab-flow-inside" onclick="switchFlowTab('inside')" style="padding: 8px; font-weight: bold; background: #059669; color: #fff; border-radius: 6px; border: none; cursor: pointer;">🏥 ในสถานบริการ (<span id="countFlowInside">0</span>)</button>
+                <button type="button" class="btn-action" id="tab-flow-outside" onclick="switchFlowTab('outside')" style="padding: 8px; font-weight: bold; background: #e2e8f0; color: #475569; border-radius: 6px; border: none; cursor: pointer;">🚗 นอกสถานบริการ (<span id="countFlowOutside">0</span>)</button>
+            </div>
+
             <div class="queue-list" id="flowWaitList">
                 <div style="text-align: center; color: var(--app-gray); padding: 30px; font-size: 13px;">กำลังโหลดคิวจากระบบ...</div>
             </div>
@@ -135,12 +141,14 @@
             </div>
             
             <input type="hidden" id="edit-key" value="">
+            <input type="hidden" id="selected-service-type" value="ในสถานบริการ">
 
             <div class="form-grid">
                 <div class="form-group">
                     <label><i class="fa-solid fa-bed"></i> เลขที่เตียง</label>
                     <select id="input-bed">
                         <option value="" disabled selected>-- เลือกเตียง --</option>
+                        <option value="นอกพื้นที่" id="opt-outside-bed" style="color: #2563eb; font-weight: bold;">🚗 นอกพื้นที่ (นอกสถานบริการ)</option>
                         <optgroup label="General Beds">
                             <option value="BED 1">BED 1</option><option value="BED 2">BED 2</option>
                             <option value="BED 3">BED 3</option><option value="BED 4">BED 4</option>
@@ -211,7 +219,7 @@
                 </div>
 
                 <div class="form-group full">
-                    <label><i class="fa-solid fa-triangle-exclamation" style="color:#ff3b30;"></i> ข้อควรระวังพิเศษ</label>
+                    <label><i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> ข้อควรระวังพิเศษ</label>
                     <div class="badge-selector" id="group-caution">
                         <div class="badge-option danger-badge" onclick="toggleMultiSelect(this)">แพ้ยานวด/สมุนไพร</div>
                         <div class="badge-option danger-badge" onclick="toggleMultiSelect(this)">ระวังเลือดออกง่าย</div>
@@ -297,7 +305,7 @@
 
     <script>
         const firebaseConfig = {
-              	aapiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -306,13 +314,15 @@
     		measurementId: "G-7SXZRHE5F9"
         };
 
+
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const queueRef = database.ref('patientQueue');
-        const hospitalFlowRef = database.ref('hospitalFlowQueryGreenThemeV48'); // ใช้เวอร์ชัน V48 ตรงกัน
+        const hospitalFlowRef = database.ref('hospitalFlowQueryGreenThemeV48');
 
         let currentQueueData = {};
         let flowPatientsData = {};
+        let currentFlowTab = 'inside';
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -333,29 +343,60 @@
             document.getElementById('input-duration').value = minutes;
         }
 
+        function switchFlowTab(tabName) {
+            currentFlowTab = tabName;
+            const btnInside = document.getElementById('tab-flow-inside');
+            const btnOutside = document.getElementById('tab-flow-outside');
+
+            if (tabName === 'inside') {
+                btnInside.style.background = '#059669';
+                btnInside.style.color = '#fff';
+                btnOutside.style.background = '#e2e8f0';
+                btnOutside.style.color = '#475569';
+            } else {
+                btnOutside.style.background = '#2563eb';
+                btnOutside.style.color = '#fff';
+                btnInside.style.background = '#e2e8f0';
+                btnInside.style.color = '#475569';
+            }
+            renderFlowWaitList();
+        }
+
         hospitalFlowRef.on('value', (snapshot) => {
             flowPatientsData = snapshot.val() || {};
+            renderFlowWaitList();
+        });
+
+        function renderFlowWaitList() {
             const flowWaitListEl = document.getElementById('flowWaitList');
             
-            let waitingKeys = Object.keys(flowPatientsData).filter(k => {
+            let allKeys = Object.keys(flowPatientsData).filter(k => {
                 let p = flowPatientsData[k];
                 return p.currentPoint && p.currentPoint !== 'เสร็จสิ้นภารกิจ';
             });
 
-            document.getElementById('flowWaitCount').innerText = `(${waitingKeys.length} คน)`;
+            let insideKeys = allKeys.filter(k => !flowPatientsData[k].serviceType || flowPatientsData[k].serviceType === 'ในสถานบริการ');
+            let outsideKeys = allKeys.filter(k => flowPatientsData[k].serviceType === 'นอกสถานบริการ');
 
-            if (waitingKeys.length === 0) {
-                flowWaitListEl.innerHTML = `<div style="text-align: center; color: var(--app-gray); padding: 20px; font-size: 13px;">ไม่มีคิวรอจากระบบ Flow</div>`;
+            document.getElementById('countFlowInside').innerText = insideKeys.length;
+            document.getElementById('countFlowOutside').innerText = outsideKeys.length;
+
+            let targetKeys = (currentFlowTab === 'inside') ? insideKeys : outsideKeys;
+
+            if (targetKeys.length === 0) {
+                flowWaitListEl.innerHTML = `<div style="text-align: center; color: var(--app-gray); padding: 20px; font-size: 13px;">ไม่มีคิวรอ (${currentFlowTab === 'inside' ? 'ในสถานบริการ' : 'นอกสถานบริการ'})</div>`;
                 return;
             }
 
             let html = '';
-            waitingKeys.reverse().forEach(key => {
+            targetKeys.reverse().forEach(key => {
                 let p = flowPatientsData[key];
+                let genderIcon = p.gender === 'หญิง' ? '🚺' : '🚹';
+                let qBadge = p.queueNo ? `[${p.queueNo}]` : '';
                 html += `
                     <div class="flow-wait-card" onclick="importPatientFromFlow('${key}')">
                         <div>
-                            <h4 style="margin:0 0 2px 0; font-size:14px; color:var(--app-purple);">${p.pname}</h4>
+                            <h4 style="margin:0 0 2px 0; font-size:14px; color:var(--app-purple);"><span style="color:#0f766e;">${qBadge}</span> ${genderIcon} ${p.pname}</h4>
                             <p style="margin:0; font-size:12px; color:var(--app-gray);">HN: ${p.hn} | ${p.clinic}</p>
                         </div>
                         <button style="background:var(--app-orange); color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">ดึงข้อมูล</button>
@@ -363,7 +404,7 @@
                 `;
             });
             flowWaitListEl.innerHTML = html;
-        });
+        }
 
         function importPatientFromFlow(key) {
             let p = flowPatientsData[key];
@@ -371,6 +412,20 @@
 
             document.getElementById('input-hn').value = p.hn || '';
             document.getElementById('input-pname').value = p.pname || '';
+            
+            let sType = p.serviceType || 'ในสถานบริการ';
+            document.getElementById('selected-service-type').value = sType;
+
+            const bedSelect = document.getElementById('input-bed');
+            const outsideOpt = document.getElementById('opt-outside-bed');
+
+            if (sType === 'นอกสถานบริการ') {
+                bedSelect.value = 'นอกพื้นที่';
+                outsideOpt.disabled = false;
+            } else {
+                bedSelect.value = '';
+                outsideOpt.disabled = true; // ล็อกไม่ให้ผู้ป่วยในสถานบริการเลือกเตียงนอกพื้นที่
+            }
 
             if (p.diseases) {
                 document.querySelectorAll('#group-disease .badge-option').forEach(el => {
@@ -380,11 +435,11 @@
                 });
             }
 
-            alert(`ดึงข้อมูลคุณ "${p.pname}" เรียบร้อยแล้ว!`);
+            alert(`ดึงข้อมูลคุณ "${p.pname}" [คิว: ${p.queueNo || '-'}] เรียบร้อยแล้ว!`);
         }
 
         function generateUniqueAvatar(name) {
-            const colors = ['#ff7a00', '#3d1c4f', '#6200ee', '#03dac6', '#cf6679'];
+            const colors = ['#0f766e', '#115e59', '#0284c7', '#7c3aed', '#b45309'];
             const bg = colors[name.length % colors.length];
             const initials = name.replace(/^\d+\./, '').trim().substring(0, 2);
             const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
@@ -402,17 +457,29 @@
 
             Object.values(currentQueueData).forEach(p => {
                 if (p.status === 'active' || !p.status) {
-                    if (p.bed) activeBeds.push(p.bed);
+                    if (p.bed && p.bed !== 'นอกพื้นที่') activeBeds.push(p.bed);
                     if (p.operator) activeOperators.push(p.operator);
                 }
             });
 
             const editKey = document.getElementById('edit-key').value;
             let editingItem = editKey ? currentQueueData[editKey] : null;
+            let currentServiceType = document.getElementById('selected-service-type').value;
 
             const bedSelect = document.getElementById('input-bed');
+            const outsideOpt = document.getElementById('opt-outside-bed');
+
+            if (currentServiceType === 'ในสถานบริการ') {
+                outsideOpt.disabled = true;
+                outsideOpt.style.color = "#94a3b8";
+            } else {
+                outsideOpt.disabled = false;
+                outsideOpt.style.color = "#2563eb";
+            }
+
             for (let option of bedSelect.options) {
-                if (option.value === "") continue;
+                if (option.value === "" || option.value === "นอกพื้นที่") continue;
+
                 let isUsed = activeBeds.includes(option.value);
                 if (editingItem && editingItem.bed === option.value) {
                     isUsed = false;
@@ -429,7 +496,6 @@
             const operatorSelect = document.getElementById('input-operator');
             for (let option of operatorSelect.options) {
                 if (option.value === "") continue;
-                
                 let isRestricted = !option.value.includes("นายแพทย์กฤตธนัท วงค์วิเศษ");
                 let isBusy = activeOperators.includes(option.value);
                 if (editingItem && editingItem.operator === option.value) {
@@ -513,7 +579,7 @@
             let html = '';
             keys.forEach((key) => {
                 let p = currentQueueData[key];
-                let badgeStatus = p.status === 'waiting' ? '<span style="color:#6200ee; font-weight:bold;">[รอคิว]</span>' : '<span style="color:#ff7a00; font-weight:bold;">[ทำหัตถการ]</span>';
+                let badgeStatus = p.status === 'waiting' ? '<span style="color:#6200ee; font-weight:bold;">[รอคิว]</span>' : '<span style="color:#0f766e; font-weight:bold;">[ทำหัตถการ]</span>';
                 html += `
                     <div class="queue-item">
                         <div class="queue-info">
@@ -557,6 +623,7 @@
             document.getElementById('input-proc-organ').selectedIndex = 0;
             document.getElementById('input-operator').selectedIndex = 0;
             document.getElementById('edit-key').value = "";
+            document.getElementById('selected-service-type').value = "ในสถานบริการ";
             document.querySelectorAll('.badge-option').forEach(el => el.classList.remove('selected'));
             document.querySelector('.time-badge').classList.add('selected');
             document.getElementById('input-duration').value = "30";
