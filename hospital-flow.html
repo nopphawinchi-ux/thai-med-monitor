@@ -31,15 +31,9 @@
             font-size: 14px;
         }
 
-        /* ซ่อนลูกศรขึ้นลงของช่อง input number */
         input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
 
         .agency-banner {
             background: linear-gradient(135deg, #0f3829 0%, #1b5e3f 100%);
@@ -679,7 +673,7 @@
 
     <script>
         const firebaseConfig = {
-              apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -690,7 +684,7 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const sysRef = database.ref('hospitalFlowQueryGreenThemeV47');
+        const sysRef = database.ref('hospitalFlowQueryGreenThemeV48'); // ใช้เวอร์ชัน V48 ตรงกัน
 
         let allPatientsData = {};
         let selectedDoctorKey = null;
@@ -1180,7 +1174,6 @@
             renderAdminSummaryTable();
         }
 
-        // หน้าสรุปรายวัน มีปุ่ม รายละเอียด, แก้ไข และ ลบ ครบถ้วน
         function renderAdminSummaryTable() {
             const tbody = document.getElementById('adminSummaryTableBody');
             const selectedDate = document.getElementById('admin-filter-date').value;
