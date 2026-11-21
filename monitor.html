@@ -111,8 +111,25 @@
         .card-details div span { color: rgba(255,255,255,0.5); }
 
         .card-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; gap: 6px; }
-        .card-operator { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-        .card-operator img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); }
+        
+        /* สไตล์กรอบและรูปผู้ทำหัตถการ (Blended Avatar - ใช้พื้นที่ 50% ของกรอบวงกลมกลืนกับพื้นหลัง) */
+        .card-operator { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+        .operator-avatar-frame {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: rgba(123, 44, 191, 0.3);
+            border: 1px solid rgba(255, 122, 0, 0.4);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden; flex-shrink: 0;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .operator-avatar-frame img {
+            width: 50%; height: 50%; object-fit: cover; border-radius: 50%;
+            mix-blend-mode: luminosity; opacity: 0.85;
+            transition: 0.3s ease;
+        }
+        .card-operator:hover .operator-avatar-frame img {
+            mix-blend-mode: normal; opacity: 1; transform: scale(1.1);
+        }
 
         .card-btn-group { display: flex; gap: 6px; }
         .btn-call {
@@ -254,6 +271,22 @@
         let currentViewMode = 'inside';
         let manualSaverActive = false;
 
+        // แมปชื่อผู้ปฏิบัติงานกับไฟล์รูปภาพในโฟลเดอร์ imsges/staff-1.jpg ถึง staff-12.jpg
+        const operatorStaffList = [
+            "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
+            "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
+            "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"
+        ];
+
+        function getStaffImagePath(operatorName) {
+            let cleanName = operatorName.replace(/^\d+\./, '').trim();
+            let index = operatorStaffList.findIndex(s => s.includes(cleanName) || cleanName.includes(s));
+            if (index !== -1) {
+                return `imsges/staff-${index + 1}.jpg`;
+            }
+            return ''; // ถ้าไม่พบจะให้ระบบใช้ fallback รูปวาด SVG เดิม
+        }
+
         function updateDateTime() {
             const now = new Date();
             const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
@@ -289,7 +322,6 @@
             }
         }
 
-        // ฟังก์ชันกดปุ่มเรียกคิวซ้ำด้วยเสียง
         function repeatCallPatient(pname, bed, operator, queueNo) {
             let qStr = queueNo ? `หมายเลขคิว ${queueNo}` : '';
             let announcement = `ขอเชิญ ${qStr} คุณ ${pname}, ที่ ${bed}, ผู้ปฏิบัติงาน ${operator}`;
@@ -411,6 +443,12 @@
                     }
 
                     let qBadge = p.queueNo ? `<span style="background:var(--app-purple); color:#fff; padding:2px 8px; border-radius:6px; font-size:14px; margin-right:6px;">คิว: ${p.queueNo}</span>` : '';
+                    let staffImgPath = getStaffImagePath(p.operator);
+
+                    // สร้าง Tag รูปภาพ หรือ fallback เป็น SVG หากยังไม่มีไฟล์ใน folder imsges
+                    let avatarHtml = staffImgPath 
+                        ? `<img src="${staffImgPath}" alt="${p.operator}" onerror="this.onerror=null; this.src='${p.avatar}';">`
+                        : `<img src="${p.avatar}" alt="${p.operator}">`;
 
                     html += `
                         <div class="monitor-card" id="card-${key}">
@@ -437,7 +475,9 @@
 
                             <div class="card-footer">
                                 <div class="card-operator">
-                                    <img src="${p.avatar}" alt="Operator">
+                                    <div class="operator-avatar-frame">
+                                        ${avatarHtml}
+                                    </div>
                                     <span>ผู้ปฏิบัติงาน: <b>${p.operator}</b></span>
                                 </div>
                                 <div class="card-btn-group">
