@@ -42,7 +42,7 @@
             .mobile-container { border-radius: 32px; border: 8px solid rgba(255,255,255,0.2); height: 95vh; }
         }
 
-        /* 🔒 ปุ่มเจ้าหน้าที่ย้ายมาไว้ล่างขวาสุด */
+        /* 🔒 ปุ่มเจ้าหน้าที่ลอยอยู่มุมล่างขวาสุด */
         .staff-portal-btn-floating {
             position: absolute; right: 12px; bottom: 12px; z-index: 99;
             background: rgba(15, 118, 110, 0.85); border: 1.5px solid rgba(255, 255, 255, 0.5); 
@@ -500,7 +500,7 @@
             }
         }
 
-        // 🔍 ตรวจสอบคิวซ้ำ (แจ้งเตือนให้ไปสแกนคิวใหม่)
+        // 🔍 ตรวจสอบคิวซ้ำ
         flowRef.on('value', (snapshot) => {
             let data = snapshot.val() || {};
             let todayStr = new Date().toISOString().split('T')[0];
@@ -610,7 +610,8 @@
                 });
             });
         }
-	        function loadPatientStatusView(key, qNo) {
+
+        function loadPatientStatusView(key, qNo) {
             document.getElementById('viewKioskRegister').classList.remove('active');
             document.getElementById('viewPatientStatus').classList.add('active');
             document.getElementById('myQueueNo').innerText = qNo;
@@ -658,22 +659,32 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // 🔔 นำระบบ Pop-up แจ้งเตือนเมื่อถึงคิว ("พร้อมทำหัตถการ") กลับมาตรงนี้ครับ
-                if (p.currentPoint === 'พร้อมทำหัตถการ' || p.triggerAlert === true) {
-                    let trigTime = p.triggerTime || 0;
-                    if (trigTime !== lastTriggerTime) {
+                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว ("พร้อมทำหัตถการ")
+                if (p.currentPoint === 'พร้อมทำหัตถการ') {
+                    let modalState = document.getElementById('callQueueModal').style.display;
+                    if (modalState !== 'flex') {
                         document.getElementById('callQueueModal').style.display = 'flex';
                         playSoftChimeSound();
-                        lastTriggerTime = trigTime;
                     }
                 }
             });
 
-            // 🖼️ ดึงภาพ staff (staff-1.jpg ถึง staff-12.jpg) ตามรายชื่อผู้ปฏิบัติงานจริง (operator)
-            const staffMasterList = [
-                "พรสิน เฮียงราช", "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด",
-                "ฉัตรลดา หงษ์วิลัย", "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์"
+            // 🖼️ ดึงภาพ Staff จาก imsges/staff-1.jpg ถึง staff-12.jpg ให้ตรงกับหน้า Monitor
+            const operatorStaffList = [
+                "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
+                "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
+                "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"
             ];
+
+            function getStaffImagePath(operatorName) {
+                if (!operatorName) return '';
+                let cleanName = operatorName.replace(/^(พท\.|พทป\.|นายแพทย์|ดร\.|นพ\.)/g, '').trim();
+                let index = operatorStaffList.findIndex(s => s.includes(cleanName) || cleanName.includes(s));
+                if (index !== -1) {
+                    return `imsges/staff-${index + 1}.jpg`;
+                }
+                return '';
+            }
 
             queueRef.on('value', (snap) => {
                 let queues = snap.val() || {};
@@ -687,24 +698,27 @@
                 document.getElementById('modalStaffName').innerText = operatorName;
                 document.getElementById('modalBedAssigned').innerText = `เตียง: ${bed}`;
 
-                let staffIndex = staffMasterList.findIndex(name => operatorName.includes(name));
-                let staffImageIndex = staffIndex !== -1 ? (staffIndex % 12) + 1 : 1;
-                let dynamicStaffImgPath = `images/staff-${staffImageIndex}.jpg`;
-
+                let staffImgPath = getStaffImagePath(operatorName);
                 let bgImg = document.getElementById('staffBgImg');
                 let modalAvatar = document.getElementById('modalStaffAvatar');
 
-                let testImg = new Image();
-                testImg.src = dynamicStaffImgPath;
-                testImg.onload = function() {
-                    bgImg.src = dynamicStaffImgPath;
-                    modalAvatar.src = dynamicStaffImgPath;
-                };
-                testImg.onerror = function() {
+                if (staffImgPath) {
+                    let testImg = new Image();
+                    testImg.src = staffImgPath;
+                    testImg.onload = function() {
+                        bgImg.src = staffImgPath;
+                        modalAvatar.src = staffImgPath;
+                    };
+                    testImg.onerror = function() {
+                        let fallbackAvatar = (matched && matched.avatar && matched.avatar.trim() !== '') ? matched.avatar : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                        bgImg.src = fallbackAvatar;
+                        modalAvatar.src = fallbackAvatar;
+                    };
+                } else {
                     let fallbackAvatar = (matched && matched.avatar && matched.avatar.trim() !== '') ? matched.avatar : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
                     bgImg.src = fallbackAvatar;
                     modalAvatar.src = fallbackAvatar;
-                };
+                }
             });
         }
 
@@ -749,6 +763,14 @@
                 osc.start(now);
                 osc.stop(now + 1.2);
             } catch(e) {}
+        }
+
+        function closeLockedCallModal() {
+            document.getElementById('callQueueModal').style.display = 'none';
+        }
+
+        function closeFinishedModal() {
+            document.getElementById('finishedModal').style.display = 'none';
         }
 
         function callStaffEmergency() {
