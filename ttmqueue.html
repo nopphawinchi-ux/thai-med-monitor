@@ -220,7 +220,7 @@
         </div>
     </div>
 
-    <!-- Modal แจ้งเตือนเมื่อถึงคิว -->
+    <!-- Modal แจ้งเตือนเมื่อถึงคิว (กดปิดแล้วไม่เด้งซ้ำ เว้นแต่มีการกดเรียกใหม่) -->
     <div id="callQueueModal" class="modal-overlay" style="background: rgba(4, 120, 87, 0.75); z-index: 99999;">
         <div class="modal-content" style="border: 3px solid #047857;">
             <div style="font-size: 48px; color: var(--primary); margin-bottom: 8px;"><i class="fa-solid fa-bell-concierge fa-bounce"></i></div>
@@ -345,7 +345,7 @@
                         <div class="queue-number" id="myQueueNo">A01</div>
                         <div class="queue-status-text" id="myStatusText">กำลังรอเรียกเข้ารับบริการ</div>
                         
-                        <!-- ⏱️ นับเวลาถอยหลัง (แสดงเฉพาะเมื่อสถานะเป็น "รอทำหัตถการ" เท่านั้น) -->
+                        <!-- ⏱️ นับเวลาถอยหลัง (รองรับทุกสถานะที่มีคำว่า "รอทำหัตถการ") -->
                         <div id="countdownBox" class="countdown-badge" style="display: none;">
                             <i class="fa-solid fa-stopwatch"></i> เวลารอโดยประมาณ: <span id="countdownTimer">--:--</span> นาที
                         </div>
@@ -360,20 +360,20 @@
                                 <div id="bedAssigned" class="staff-bed-label">เตียง: รอกำหนด</div>
                             </div>
                         </div>
-                        <div class="staff-right-col">
-                            <div class="info-row">
+                        <div class="staff-right-col" id="staffRightColContent">
+                            <div class="info-row" id="rowVitalSign">
                                 <span class="info-label">Vital Sign:</span>
                                 <span class="info-value" id="valVitalSign">-</span>
                             </div>
-                            <div class="info-row">
+                            <div class="info-row" id="rowRight">
                                 <span class="info-label">สิทธิ์การรักษา:</span>
                                 <span class="info-value" id="valRight">-</span>
                             </div>
-                            <div class="info-row">
+                            <div class="info-row" id="rowProcedure">
                                 <span class="info-label">หัตถการ:</span>
                                 <span class="info-value" id="valProcedure">นวดรักษา / สปาบำบัด</span>
                             </div>
-                            <div class="info-row">
+                            <div class="info-row" id="rowPrice">
                                 <span class="info-label">ค่าใช้จ่าย:</span>
                                 <span class="info-value" id="valPrice">0.00 บาท</span>
                             </div>
@@ -415,11 +415,14 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
+        const queueRef = database.ref('patientQueue');
 
         let capturedBase64Image = '';
         let countdownInterval = null;
         let hasShownFinishedPopup = false;
         let audioCtxUnlocked = false;
+        let hasAcknowledgedAlert = false; // ป้องกันป๊อปอัปเด้งซ้ำหลังกดปิด
+        let lastTriggerTime = 0;
 
         function unlockAudioContext() {
             try {
@@ -536,7 +539,7 @@
                     chiefComplaint: `มารับบริการคลินิก${clinic}ตามคิว QR Code`,
                     treatmentTypes: [clinic === 'แพทย์แผนไทย' ? 'นวดรักษาแผนไทย' : 'สปาบำบัดเพื่อสุขภาพ'],
                     prescriptions: [],
-                    totalCost: 0, // ค่าใช้จ่ายเริ่มต้นเป็น 0
+                    totalCost: 0,
                     timestamp: nowObj.getTime()
                 };
 
@@ -545,6 +548,23 @@
                         alert(`ลงทะเบียนสำเร็จ! คิวของคุณคือ ${newQueueNo} (${clinic})`);
                         localStorage.setItem('ttmPatientKey', newKey);
                         localStorage.setItem('ttmQueueNo', newQueueNo);
+
+                        let qPayload = {
+                            queueNo: newQueueNo,
+                            pname: pname,
+                            hn: hn,
+                            operator: '',
+                            bed: 'สำรองเตียง',
+                            avatar: payload.avatar,
+                            status: 'active',
+                            waitingMinutes: 30,
+                            diagnosis: 'หัตถการคลินิก',
+                            procedure: clinic,
+                            timestamp: 0 - Date.now(),
+                            endTime: Date.now() + (30 * 60 * 1000)
+                        };
+                        queueRef.push(qPayload);
+
                         loadPatientStatusView(newKey, newQueueNo);
                     } else {
                         alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
@@ -563,14 +583,10 @@
                 let p = snap.val();
                 if(!p) return;
                 document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'จุดลงทะเบียน'}`;
-                document.getElementById('valClinic').innerText = p.clinic || 'แพทย์แผนไทย';
                 
-                // ดึง Vital Sign และสิทธิ์การรักษา
                 let bpVal = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : '-';
                 document.getElementById('valVitalSign').innerText = bpVal;
                 document.getElementById('valRight').innerText = p.rightScheme || '-';
-
-                // 🛠️ ดึงค่าใช้จ่ายสุทธิจาก Firebase มาแสดงผล
                 document.getElementById('valPrice').innerText = `${(p.totalCost || 0).toFixed(2)} บาท`;
 
                 let normalContainer = document.getElementById('normalStatusContainer');
@@ -588,11 +604,11 @@
                     ratingCard.style.display = (p.currentPoint === 'จุดที่ 4: การเงิน') ? 'block' : 'none';
                 }
 
-                // ⏱️ นับเวลาถอยหลัง (เริ่มนับเฉพาะเมื่อสถานะเป็น "รอทำหัตถการ" เท่านั้น)
+                // ⏱️ นับเวลาถอยหลัง (รองรับทุกสถานะที่มีคำว่า "รอทำหัตถการ")
                 let countdownBox = document.getElementById('countdownBox');
                 let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 30;
                 
-                if (p.currentPoint === 'รอทำหัตถการ') {
+                if (p.currentPoint && p.currentPoint.includes('รอทำหัตถการ')) {
                     countdownBox.style.display = 'inline-flex';
                     startPatientCountdown(waitMins);
                 } else {
@@ -600,23 +616,29 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว (ขึ้นเฉพาะเมื่อสถานะเป็น "พร้อมทำหัตถการ")
+                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว (ตรวจสอบการกดเรียกซ้ำและปุ่มปิด)
                 if (p.currentPoint === 'พร้อมทำหัตถการ') {
-                    let modalState = document.getElementById('callQueueModal').style.display;
-                    if (modalState !== 'flex') {
-                        document.getElementById('callQueueModal').style.display = 'flex';
-                        playSoftChimeSound();
+                    if (p.triggerTime && p.triggerTime !== lastTriggerTime) {
+                        hasAcknowledgedAlert = false; // มีการกดเรียกใหม่จากแอดมิน ให้เปิดป๊อปอัป
+                        lastTriggerTime = p.triggerTime;
+                    }
+
+                    if (!hasAcknowledgedAlert) {
+                        let modalState = document.getElementById('callQueueModal').style.display;
+                        if (modalState !== 'flex') {
+                            document.getElementById('callQueueModal').style.display = 'flex';
+                            playSoftChimeSound();
+                        }
                     }
                 }
 
-                // อัปเดตข้อมูลผู้รับผิดชอบเมื่อถูกกำหนดจาก Admin Monitor แล้ว
+                // อัปเดตข้อมูลผู้รับผิดชอบเมื่อถูกกำหนดจาก Admin Monitor พร้อมดึงรูปภาพ
                 if (p.operator && p.operator.trim() !== '') {
                     document.getElementById('staffName').innerText = p.operator;
                     document.getElementById('modalStaffName').innerText = p.operator;
                     document.getElementById('bedAssigned').innerText = `เตียง: ${p.bed || 'สำรองเตียง'}`;
                     document.getElementById('modalBedAssigned').innerText = `เตียง: ${p.bed || 'สำรองเตียง'}`;
                     
-                    // ดึงรูปเจ้าหน้าที่ตามรายชื่อ 12 คน
                     const staffList = ["กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช", "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย", "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"];
                     let cleanOp = p.operator.replace(/^\d+\./, '').trim();
                     let idx = staffList.findIndex(s => s.includes(cleanOp) || cleanOp.includes(s));
@@ -662,7 +684,11 @@
             } catch(e) {}
         }
 
-        function closeLockedCallModal() { document.getElementById('callQueueModal').style.display = 'none'; }
+        function closeLockedCallModal() { 
+            document.getElementById('callQueueModal').style.display = 'none'; 
+            hasAcknowledgedAlert = true; // ล็อกไม่ให้เด้งซ้ำจนกว่าจะมีคนกดเรียกใหม่
+        }
+
         function closeFinishedModal() { document.getElementById('finishedModal').style.display = 'none'; }
 
         function callStaffEmergency() {
@@ -712,7 +738,10 @@
         function simSetStatus(statusText) {
             let key = localStorage.getItem('ttmPatientKey');
             if(!key) { alert('กรุณาลงทะเบียนรับบัตรคิวก่อนครับ'); return; }
-            flowRef.child(key).update({ currentPoint: statusText }, () => {
+            flowRef.child(key).update({ 
+                currentPoint: statusText,
+                triggerTime: Date.now() // อัปเดตเวลาเพื่อให้ป๊อปอัปแจ้งเตือนทำงานเมื่อถูกเรียก
+            }, () => {
                 document.getElementById('staffPortalModal').style.display = 'none';
                 alert(`จำลองเปลี่ยนสถานะเป็น: "${statusText}" เรียบร้อย`);
             });
