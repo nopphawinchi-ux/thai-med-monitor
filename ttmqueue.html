@@ -492,7 +492,7 @@
             });
         }
 
-        // 🏥 บันทึกข้อมูลคิว A ลง Firebase (ตั้งค่า: จุดลงทะเบียน, สิทธิ์ว่าง, Vital Sign ว่าง, operator ว่าง)
+        // 🏥 บันทึกข้อมูลคิว A ลง Firebase
         function submitQueueA(e) {
             e.preventDefault();
             let clinic = document.getElementById('inputClinic').value;
@@ -520,23 +520,23 @@
                     gender: gender,
                     avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                     staffRegis: 'สแกน QR Code หน้าโต๊ะ',
-                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' }, // ว่าง รอจุดลงทะเบียนกรอก
+                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' },
                     diseases: 'ไม่มี',
-                    rightScheme: '', // ว่าง รอจุดลงทะเบียนกรอก
+                    rightScheme: '',
                     clinic: clinic,
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
                     status: 'จุดลงทะเบียน',
-                    currentPoint: 'จุดลงทะเบียน', // บังคับเริ่มที่จุดลงทะเบียน
+                    currentPoint: 'จุดลงทะเบียน',
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
-                    operator: '', // 🔓 ปล่อยว่างไว้ตามเงื่อนไข จนกว่า Admin จะกำหนด
-                    bed: 'สำรองเตียง',   // 🔓 ปล่อยว่างไว้รอ Admin จัดสรรเตียง
+                    operator: '',
+                    bed: 'สำรองเตียง',
                     chiefComplaint: `มารับบริการคลินิก${clinic}ตามคิว QR Code`,
                     treatmentTypes: [clinic === 'แพทย์แผนไทย' ? 'นวดรักษาแผนไทย' : 'สปาบำบัดเพื่อสุขภาพ'],
                     prescriptions: [],
-                    totalCount: 0,
+                    totalCost: 0, // ค่าใช้จ่ายเริ่มต้นเป็น 0
                     timestamp: nowObj.getTime()
                 };
 
@@ -563,11 +563,15 @@
                 let p = snap.val();
                 if(!p) return;
                 document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'จุดลงทะเบียน'}`;
+                document.getElementById('valClinic').innerText = p.clinic || 'แพทย์แผนไทย';
                 
-                // แสดง Vital Sign และสิทธิ์ (แสดงว่างถ้ายังไม่ถูกกรอก)
+                // ดึง Vital Sign และสิทธิ์การรักษา
                 let bpVal = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : '-';
                 document.getElementById('valVitalSign').innerText = bpVal;
                 document.getElementById('valRight').innerText = p.rightScheme || '-';
+
+                // 🛠️ ดึงค่าใช้จ่ายสุทธิจาก Firebase มาแสดงผล
+                document.getElementById('valPrice').innerText = `${(p.totalCost || 0).toFixed(2)} บาท`;
 
                 let normalContainer = document.getElementById('normalStatusContainer');
                 let ratingCard = document.getElementById('ratingCard');
