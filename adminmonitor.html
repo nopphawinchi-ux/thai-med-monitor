@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Monitor - ระบบจัดการคิวและสถานะรวม</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --app-primary: #0f766e;
+            --app-bg: #f8fafc;
+            --app-card: #ffffff;
+            --app-text: #1e293b;
+            --app-border: #cbd5e1;
+            --accent: #f59e0b;
+        }
+        * { box-sizing: border-box; font-family: 'Prompt', sans-serif; }
+        body { background: var(--app-bg); margin: 0; padding: 20px; color: var(--app-text); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #fff; padding: 15px 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .header h2 { margin: 0; color: var(--app-primary); font-size: 20px; }
+
+        .emergency-modal {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(153, 27, 27, 0.9); z-index: 99999; display: none;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .emergency-content {
+            background: #fff; width: 100%; max-width: 450px; border-radius: 20px; padding: 30px; text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 4px solid #ef4444; animation: scaleUp 0.3s ease;
+        }
+        @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .filter-bar {
+            background: #fff; padding: 14px 20px; border-radius: 12px; margin-bottom: 16px;
+            display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border: 1px solid var(--app-border);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .filter-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 160px; }
+        .filter-group label { font-size: 11px; font-weight: 700; color: #475569; }
+        .filter-group input, .filter-group select { padding: 8px 10px; font-size: 13px; }
+
+        .container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        @media(max-width: 1100px) { .container { grid-template-columns: 1fr; } }
+
+        .panel { background: var(--app-card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--app-border); }
+        .panel-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; color: var(--app-primary); }
+
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--app-border); border-radius: 8px; font-size: 14px; }
+        input:disabled, select:disabled { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+
+        .time-btn-group { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; margin-top: 4px; }
+        .time-badge-btn {
+            background: #f1f5f9; border: 1px solid var(--app-border); padding: 8px 0; border-radius: 6px;
+            font-size: 12px; font-weight: 700; color: #475569; cursor: pointer; text-align: center; transition: 0.2s;
+        }
+        .time-badge-btn:hover { background: #e2e8f0; }
+        .time-badge-btn.selected { background: var(--app-primary); color: #fff; border-color: var(--app-primary); }
+
+        .btn { background: var(--app-primary); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; }
+        .btn:hover { opacity: 0.9; }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        th { background: #f1f5f9; color: #475569; }
+
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+        .badge-q { background: #fef3c7; color: #b45309; }
+        .badge-status { background: #d1fae5; color: #047857; }
+        .badge-rating { background: #e0f2fe; color: #0369a1; }
+
+        .action-btns { display: flex; gap: 6px; }
+        .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 4px; border: none; cursor: pointer; }
+        .btn-edit { background: #fef3c7; color: #b45309; }
+        .btn-del { background: #fee2e2; color: #dc2626; }
+
+        .staff-status-pill {
+            font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .staff-status-pill.present { background: #d1fae5; color: #047857; border: 1px solid #34d399; }
+        .staff-status-pill.absent { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+        .staff-status-pill.busy { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+    </style>
+</head>
+<body>
+
+    <div id="emergencyModal" class="emergency-modal">
+        <div class="emergency-content">
+            <div style="font-size: 60px; color: #dc2626; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation fa-bounce"></i></div>
+            <h2 style="color: #991b1b; margin: 0 0 10px 0; font-size: 24px;">แจ้งเตือนขอความช่วยเหลือด่วน!</h2>
+            <div style="background: #fef2f2; padding: 16px; border-radius: 12px; border: 2px solid #f87171; margin-bottom: 20px; font-size: 16px; color: #7f1d1d; text-align: left;">
+                <div><b>หมายเลขคิว:</b> <span id="modalAlertQueueNo" style="font-size: 18px; color: #dc2626;">--</span></div>
+                <div><b>ชื่อผู้ป่วย:</b> <span id="modalAlertPatientName">--</span></div>
+            </div>
+            <button class="btn" style="background: #dc2626; padding: 14px; font-size: 16px;" onclick="dismissEmergencyModal()">รับทราบและปิดการแจ้งเตือน</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <h2><i class="fa-solid fa-gauge-high"></i> Admin Monitor - จัดการคิวและผู้ให้บริการ</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="docqueue.html" target="_blank" style="background: #0284c7; color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:700;"><i class="fa-solid fa-user-doctor"></i> ไปหน้า DocQueue</a>
+            <div style="font-size: 14px; font-weight: 600; color: #64748b;">รพ.พระอาจารย์มั่น ภูริทัตโต</div>
+        </div>
+    </div>
+
+    <!-- แถบแสดงสถานะเจ้าหน้าที่ 12 คน -->
+    <div style="background:#fff; border-radius:12px; padding:16px; margin-bottom:20px; border:1px solid var(--app-border); box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+        <h3 style="margin:0 0 12px 0; font-size:15px; color:var(--app-primary); display:flex; justify-content:space-between; align-items:center;">
+            <span><i class="fa-solid fa-user-doctor"></i> สถานะผู้ปฏิบัติงานในระบบ (12 ท่าน)</span>
+            <span id="adminApprovalAlertBadge" style="font-size:11px; background:#ef4444; color:#fff; padding:3px 10px; border-radius:10px; display:none;">มีคำขออนุมัติรับเคส!</span>
+        </h3>
+        <div id="adminStaffGridList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;"></div>
+    </div>
+
+    <!-- แถบอนุมัติรับเคสสำหรับ Admin (มีปุ่ม อนุมัติ / ปฏิเสธ) -->
+    <div id="adminApprovalSection" style="background:#fef3c7; border-radius:12px; padding:16px; margin-bottom:20px; border:2px solid #f59e0b; display:none;">
+        <h3 style="margin:0 0 10px 0; font-size:15px; color:#92400e;"><i class="fa-solid fa-bell fa-shake"></i> คำขออนุมัติรับเคสจากเจ้าหน้าที่</h3>
+        <div id="adminApprovalList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+    </div>
+
+    <div class="container">
+        <div class="panel">
+            <div class="panel-title" id="formTitle">➕ เพิ่ม/แก้ไขข้อมูลคิว</div>
+            <input type="hidden" id="editKey">
+            <input type="hidden" id="inputWaitingMinutes" value="30">
+
+            <div class="form-group" style="background: #f1f5f9; padding: 10px; border-radius: 8px; border: 1px dashed var(--app-border);">
+                <label style="color: var(--app-primary);"><i class="fa-solid fa-magnifying-glass"></i> ค้นหา/เลือกผู้ป่วยจากระบบลงทะเบียน</label>
+                <select id="selectRegisteredPatient" onchange="fillPatientDataFromSearch(this)">
+                    <option value="">-- พิมพ์หรือเลือกรายชื่อผู้ป่วยในระบบวันนี้ --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>หมายเลขคิว</label>
+                <input type="text" id="inputQueueNo" placeholder="เช่น C01 หรือ A01" oninput="updateBedOptions()">
+            </div>
+            <div class="form-group">
+                <label>ชื่อ-นามสกุล ผู้ป่วย</label>
+                <input type="text" id="inputPName" placeholder="ชื่อ นามสกุล">
+            </div>
+            <div class="form-group">
+                <label>HN</label>
+                <input type="text" id="inputHN" placeholder="เลข HN">
+            </div>
+            <div class="form-group">
+                <label>ประเภทผู้ป่วย</label>
+                <select id="inputServiceType">
+                    <option value="ในสถานบริการ">ในสถานบริการ</option>
+                    <option value="นอกสถานบริการ">นอกสถานบริการ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>คลินิกบริการ</label>
+                <select id="inputClinic" onchange="updateRegisteredPatientDropdown(); updateBedOptions(); handleStatusChange();">
+                    <option value="" disabled selected>-- เลือกคลินิก --</option>
+                    <option value="แพทย์แผนจีน">แพทย์แผนจีน</option>
+                    <option value="แพทย์แผนไทย">แพทย์แผนไทย</option>
+                    <option value="สปาเพื่อสุขภาพ">สปาเพื่อสุขภาพ</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>จุดให้บริการหลัก</label>
+                <select id="inputServicePoint">
+                    <option value="1">1. ลงทะเบียน</option>
+                    <option value="2">2. ตรวจรักษา</option>
+                    <option value="3">3. จ่ายยา</option>
+                    <option value="4">4. การเงิน</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>สถานะคิว</label>
+                <select id="inputCurrentPoint" onchange="handleStatusChange()">
+                    <option value="จุดลงทะเบียน">จุดลงทะเบียน</option>
+                    <option value="รอทำหัตถการ">รอทำหัตถการ</option>
+                    <option value="พร้อมทำหัตถการ">พร้อมทำหัตถการ</option>
+                    <option value="กำลังทำหัตถการ">กำลังทำหัตถการ</option>
+                    <option value="เสร็จสิ้นภารกิจ">เสร็จสิ้นภารกิจ</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="waitingTimeContainer" style="display: none;">
+                <label><i class="fa-solid fa-stopwatch" style="color:var(--accent);"></i> กำหนดเวลานับถอยหลัง (รอทำหัตถการ)</label>
+                <div class="time-btn-group">
+                    <div class="time-badge-btn" onclick="selectWaitingTime(10, this)">10 น.</div>
+                    <div class="time-badge-btn" onclick="selectWaitingTime(20, this)">20 น.</div>
+                    <div class="time-badge-btn selected" onclick="selectWaitingTime(30, this)">30 น.</div>
+                    <div class="time-badge-btn" onclick="selectWaitingTime(40, this)">40 น.</div>
+                    <div class="time-badge-btn" onclick="selectWaitingTime(50, this)">50 น.</div>
+                    <div class="time-badge-btn" onclick="selectWaitingTime(60, this)">60 น.</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ผู้ปฏิบัติงาน</label>
+                <select id="inputOperator">
+                    <option value="" disabled selected>-- เลือกผู้ปฏิบัติงาน --</option>
+                    <option value="กรชกร พองผาลา">กรชกร พองผาลา</option>
+                    <option value="สุประภา มาละอินทร์">สุประภา มาละอินทร์</option>
+                    <option value="พรวินิจ แก้วอัคฮาด">พรวินิจ แก้วอัคฮาด</option>
+                    <option value="พรสิน เฮียงราช">พรสิน เฮียงราช</option>
+                    <option value="พฤษาพันธ์ บุบผาลา">พฤษาพันธ์ บุบผาลา</option>
+                    <option value="จิรวัฒณ์ สีตาแสน">จิรวัฒณ์ สีตาแสน</option>
+                    <option value="ฐิติมา บุญแฮด">ฐิติมา บุญแฮด</option>
+                    <option value="ฉัตรลดา หงษ์วิลัย">ฉัตรลดา หงษ์วิลัย</option>
+                    <option value="ประกายรัตน์ กาลสุข">ประกายรัตน์ กาลสุข</option>
+                    <option value="นพวินทร์ จิรศศิภิรมย์">นพวินทร์ จิรศศิภิรมย์</option>
+                    <option value="สุนิสา อินทะเสย์">สุนิสา อินทะเสย์</option>
+                    <option value="นายแพทย์กฤตธนัท วงค์วิเศษ">นายแพทย์กฤตธนัท วงค์วิเศษ</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label id="bedLabel">เลือกเตียงบริการ</label>
+                <select id="inputBed">
+                    <option value="สำรองเตียง">สำรองเตียง (ค่าเริ่มต้น)</option>
+                    <optgroup label="เตียงสำรอง (1-5)">
+                        <option value="เตียง 1">เตียง 1</option><option value="เตียง 2">เตียง 2</option>
+                        <option value="เตียง 3">เตียง 3</option><option value="เตียง 4">เตียง 4</option>
+                        <option value="เตียง 5">เตียง 5</option>
+                    </optgroup>
+                    <optgroup label="General Beds (BED 1-5 สำหรับแพทย์แผนจีน C1-C10)">
+                        <option value="BED 1">BED 1</option><option value="BED 2">BED 2</option>
+                        <option value="BED 3">BED 3</option><option value="BED 4">BED 4</option>
+                        <option value="BED 5">BED 5</option>
+                    </optgroup>
+                    <optgroup label="General Beds อื่นๆ (BED 6-8)">
+                        <option value="BED 6">BED 6</option><option value="BED 7">BED 7</option><option value="BED 8">BED 8</option>
+                    </optgroup>
+                    <optgroup label="VIP & SPA Beds">
+                        <option value="VIP 1">VIP 1</option><option value="VIP 2">VIP 2</option>
+                        <option value="SPA 1">SPA 1</option><option value="SPA 2">SPA 2</option>
+                    </optgroup>
+                </select>
+            </div>
+            <button class="btn" onclick="saveAdminQueue()">บันทึกข้อมูลและอัปเดตระบบ</button>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title"><i class="fa-solid fa-list"></i> รายการคิวและคะแนนความพึงพอใจทั้งหมด (Real-time)</div>
+            
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>กรองตามวันที่</label>
+                    <input type="date" id="filterDate" onchange="renderAdminTable()">
+                </div>
+                <div class="filter-group">
+                    <label>ประเภทผู้ป่วย</label>
+                    <select id="filterServiceType" onchange="renderAdminTable()">
+                        <option value="">-- ทั้งหมด --</option>
+                        <option value="ในสถานบริการ">ในสถานบริการ</option>
+                        <option value="นอกสถานบริการ">นอกสถานบริการ</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>คลินิก</label>
+                    <select id="filterClinic" onchange="renderAdminTable()">
+                        <option value="">-- ทุกคลินิก --</option>
+                        <option value="แพทย์แผนไทย">แพทย์แผนไทย</option>
+                        <option value="แพทย์แผนจีน">แพทย์แผนจีน</option>
+                        <option value="สปาเพื่อสุขภาพ">สปาเพื่อสุขภาพ</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>คิว</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>ประเภท / คลินิก</th>
+                            <th>สถานะ / เตียง</th>
+                            <th>ผู้ปฏิบัติงาน</th>
+                            <th>ความพึงพอใจ</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <tr><td colspan="7" style="text-align:center; color:#64748b;">กำลังโหลดข้อมูล...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "***************************************",
+            authDomain: "thai-med-monitor.firebaseapp.com",
+            projectId: "thai-med-monitor",
+            storageBucket: "thai-med-monitor.firebasestorage.app",
+            messagingSenderId: "894864632905",
+            appId: "1:894864632905:web:521452d40ea00653a72398",
+            measurementId: "G-7SXZRHE5F9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
+        const queueRef = database.ref('patientQueue');
+
+        const adminStaffList = [
+            { id: 1, name: "กรชกร พองผาลา" }, { id: 2, name: "สุประภา มาละอินทร์" },
+            { id: 3, name: "พรวินิจ แก้วอัคฮาด" }, { id: 4, name: "พรสิน เฮียงราช" },
+            { id: 5, name: "พฤษาพันธ์ บุบผาลา" }, { id: 6, name: "จิรวัฒณ์ สีตาแสน" },
+            { id: 7, name: "ฐิติมา บุญแฮด" }, { id: 8, name: "ฉัตรลดา หงษ์วิลัย" },
+            { id: 9, name: "ประกายรัตน์ กาลสุข" }, { id: 10, name: "นพวินทร์ จิรศศิภิรมย์" },
+            { id: 11, name: "สุนิสา อินทะเสย์" }, { id: 12, name: "นายแพทย์กฤตธนัท วงค์วิเศษ" }
+        ];
+
+        let allFlowData = {};
+        let allQueueData = {};
+        let activeEmergencyKey = null;
+        let hasAlertedModal = false;
+
+        function selectWaitingTime(mins, el) {
+            document.querySelectorAll('.time-badge-btn').forEach(btn => btn.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('inputWaitingMinutes').value = mins;
+        }
+
+        function handleStatusChange() {
+            let status = document.getElementById('inputCurrentPoint').value;
+            let clinic = document.getElementById('inputClinic').value;
+            let waitingContainer = document.getElementById('waitingTimeContainer');
+            let operatorSelect = document.getElementById('inputOperator');
+
+            if (status === 'รอทำหัตถการ') {
+                waitingContainer.style.display = 'block';
+            } else {
+                waitingContainer.style.display = 'none';
+            }
+
+            if (clinic === 'แพทย์แผนจีน' && (status === 'พร้อมทำหัตถการ' || status === 'เรียกคิว')) {
+                operatorSelect.value = "นายแพทย์กฤตธนัท วงค์วิเศษ";
+                operatorSelect.disabled = true;
+            } else {
+                operatorSelect.disabled = false;
+            }
+
+            updateBedOptions();
+        }
+
+        function updateBedOptions() {
+            let status = document.getElementById('inputCurrentPoint').value;
+            let clinic = document.getElementById('inputClinic').value;
+            let qNo = document.getElementById('inputQueueNo').value.trim().toUpperCase();
+            let bedSelect = document.getElementById('inputBed');
+            let activeBeds = Object.values(allQueueData).map(q => q.bed);
+
+            let isAcupunctureC = (clinic === 'แพทย์แผนจีน' && (qNo.startsWith('C') || (parseInt(qNo.replace(/\D/g,'')) >= 1 && parseInt(qNo.replace(/\D/g,'')) <= 10)));
+
+            for (let option of bedSelect.options) {
+                let val = option.value;
+                let isAllowedReadyBed = (val === "BED 1" || val === "BED 2" || val === "BED 3" || val === "BED 4" || val === "BED 5");
+
+                if (status === 'พร้อมทำหัตถการ' && isAcupunctureC && !isAllowedReadyBed) {
+                    option.disabled = true;
+                    continue;
+                }
+
+                let isUsed = activeBeds.includes(val);
+                option.disabled = isUsed;
+                option.style.color = isUsed ? "#b0b0b0" : "#000";
+                option.innerText = isUsed ? `${val} (ไม่ว่าง)` : val;
+            }
+        }
+
+        function updateRegisteredPatientDropdown() {
+            let clinicSelect = document.getElementById('inputClinic').value;
+            let dropdown = document.getElementById('selectRegisteredPatient');
+            dropdown.innerHTML = `<option value="">-- พิมพ์หรือเลือกรายชื่อผู้ป่วยในระบบวันนี้ --</option>`;
+
+            let todayStr = new Date().toISOString().split('T')[0];
+            Object.keys(allFlowData).forEach(key => {
+                let p = allFlowData[key];
+                let pDate = p.timestamp ? new Date(p.timestamp).toISOString().split('T')[0] : '';
+                
+                if (pDate === todayStr) {
+                    if (!clinicSelect || p.clinic === clinicSelect) {
+                        let opt = document.createElement('option');
+                        opt.value = key;
+                        opt.textContent = `[${p.queueNo || '-'}] ${p.pname || '-'} (${p.clinic || 'แพทย์แผนจีน'})`;
+                        dropdown.appendChild(opt);
+                    }
+                }
+            });
+        }
+
+        function fillPatientDataFromSearch(selectEl) {
+            let key = selectEl.value;
+            if (!key) return;
+            let p = allFlowData[key];
+            if (!p) return;
+
+            document.getElementById('editKey').value = key;
+            document.getElementById('inputQueueNo').value = p.queueNo || '';
+            document.getElementById('inputPName').value = p.pname || '';
+            document.getElementById('inputHN').value = p.hn || '';
+            document.getElementById('inputServiceType').value = p.serviceType || 'ในสถานบริการ';
+            document.getElementById('inputClinic').value = p.clinic || 'แพทย์แผนจีน';
+            document.getElementById('inputCurrentPoint').value = p.currentPoint || 'จุดลงทะเบียน';
+            document.getElementById('inputOperator').value = p.operator || '';
+            document.getElementById('inputBed').value = p.bed || 'สำรองเตียง';
+
+            handleStatusChange();
+            updateBedOptions();
+            document.getElementById('formTitle').innerText = '✏️ แก้ไขข้อมูลคิว (ดึงจากผู้ป่วยที่ลงทะเบียน)';
+        }
+
+        flowRef.on('value', (snapshot) => {
+            allFlowData = snapshot.val() || {};
+            updateRegisteredPatientDropdown();
+            renderAdminTable();
+            checkEmergencyAlerts();
+            updateAdminStaffStatusAndApprovals(allFlowData);
+        });
+
+        queueRef.on('value', (snapshot) => {
+            allQueueData = snapshot.val() || {};
+            updateBedOptions();
+            renderAdminTable();
+        });
+
+        function updateAdminStaffStatusAndApprovals(flowData) {
+            let todayStr = new Date().toISOString().split('T')[0];
+            let busyStaff = [];
+            let pendingApprovals = [];
+            let loggedInStaffName = localStorage.getItem('docCurrentLoggedInStaff') || "";
+
+            Object.keys(flowData).forEach(key => {
+                let p = flowData[key];
+                let pDate = p.timestamp ? new Date(p.timestamp).toISOString().split('T')[0] : '';
+                if (pDate === todayStr) {
+                    if ((p.currentPoint === 'กำลังทำหัตถการ' || p.approvalStatus === 'approved') && p.operator) {
+                        busyStaff.push(p.operator.trim());
+                    }
+                    if (p.approvalStatus === 'pending' && p.currentPoint !== 'เสร็จสิ้นภารกิจ') {
+                        pendingApprovals.push({ key, ...p });
+                    }
+                }
+            });
+
+            let gridHtml = '';
+            adminStaffList.forEach(staff => {
+                let isPresent = (loggedInStaffName === staff.name);
+                let isBusy = busyStaff.some(name => name.includes(staff.name));
+                let statusBadge = "";
+                let avatarUrl = `images/staff-${staff.id}.jpg`;
+
+                if (!isPresent) {
+                    statusBadge = `<span class="staff-status-pill absent"><i class="fa-solid fa-circle" style="font-size:6px;"></i> ไม่อยู่</span>`;
+                } else if (isBusy) {
+                    statusBadge = `<span class="staff-status-pill busy"><i class="fa-solid fa-circle" style="font-size:6px;"></i> ติดเคส</span>`;
+                } else {
+                    statusBadge = `<span class="staff-status-pill present"><i class="fa-solid fa-circle" style="font-size:6px;"></i> อยู่</span>`;
+                }
+
+                gridHtml += `
+                    <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:8px; border-radius:10px; border:1px solid #e2e8f0;">
+                        <img src="${avatarUrl}" style="width:34px; height:34px; border-radius:50%; object-fit:cover;" onerror="this.src='images/default.jpg'">
+                        <div style="font-size:12px; line-height:1.3; overflow:hidden; flex:1;">
+                            <div style="font-weight:700; color:#1e293b; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${staff.name}</div>
+                            <div>${statusBadge}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('adminStaffGridList').innerHTML = gridHtml;
+
+            let approvalContainer = document.getElementById('adminApprovalSection');
+            let approvalListEl = document.getElementById('adminApprovalList');
+            let badgeAlert = document.getElementById('adminApprovalAlertBadge');
+
+            if (pendingApprovals.length > 0) {
+                approvalContainer.style.display = 'block';
+                badgeAlert.style.display = 'inline-block';
+                let appHtml = '';
+                pendingApprovals.forEach(p => {
+                    appHtml += `
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 14px; border-radius:8px; border:1px solid #fcd34d; gap: 10px; flex-wrap: wrap;">
+                            <div>
+                                <b>[คิว ${p.queueNo}]</b> ${p.pname} 
+                                <span style="color:#047857; font-weight:700;">(ขอรับเคสโดย: ${p.operator || 'เจ้าหน้าที่'})</span>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <button onclick="adminApproveCase('${p.key}', '${p.operator}')" style="background:#059669; color:#fff; border:none; padding:6px 14px; border-radius:6px; font-weight:700; cursor:pointer;">
+                                    <i class="fa-solid fa-check"></i> อนุมัติ
+                                </button>
+                                <button onclick="adminRejectCase('${p.key}')" style="background:#dc2626; color:#fff; border:none; padding:6px 14px; border-radius:6px; font-weight:700; cursor:pointer;">
+                                    <i class="fa-solid fa-xmark"></i> ปฏิเสธ
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                approvalListEl.innerHTML = appHtml;
+            } else {
+                approvalContainer.style.display = 'none';
+                badgeAlert.style.display = 'none';
+            }
+        }
+
+        function adminApproveCase(key, staffName) {
+            flowRef.child(key).update({
+                approvalStatus: 'approved',
+                currentPoint: 'กำลังทำหัตถการ',
+                operator: staffName
+            }, () => {
+                alert(`อนุมัติเคสให้ "${staffName}" เรียบร้อยแล้ว`);
+            });
+        }
+
+        function adminRejectCase(key) {
+            if (confirm('คุณต้องการปฏิเสธคำขอรับเคสนี้ใช่หรือไม่?')) {
+                flowRef.child(key).update({
+                    approvalStatus: 'rejected',
+                    operator: ''
+                }, () => {
+                    alert('ปฏิเสธคำขอรับเคสเรียบร้อยแล้ว');
+                });
+            }
+        }
+
+        function renderAdminTable() {
+            let tbody = document.getElementById('adminTableBody');
+            let keys = Object.keys(allFlowData);
+
+            if(keys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b;">ไม่มีข้อมูลคิวในระบบ</td></tr>`;
+                return;
+            }
+
+            let fDate = document.getElementById('filterDate').value;
+            let fServiceType = document.getElementById('filterServiceType').value;
+            let fClinic = document.getElementById('filterClinic').value;
+
+            let html = '';
+            keys.reverse().forEach(key => {
+                let p = allFlowData[key];
+
+                if (fServiceType && p.serviceType !== fServiceType) return;
+                if (fClinic && p.clinic !== fClinic) return;
+                if (fDate && p.timestamp) {
+                    let itemDate = new Date(p.timestamp).toISOString().split('T')[0];
+                    if (itemDate !== fDate) return;
+                }
+
+                let sType = p.serviceType || 'ในสถานบริการ';
+                let clinicName = p.clinic || 'แพทย์แผนจีน';
+                let ratingText = p.rating || 'ไม่ได้ประเมิน';
+
+                let matchedQ = Object.values(allQueueData).find(q => q.queueNo === p.queueNo);
+                let bedInfo = matchedQ ? matchedQ.bed : (p.bed || 'สำรองเตียง');
+
+                html += `
+                    <tr>
+                        <td><span class="badge badge-q">${p.queueNo || '-'}</span></td>
+                        <td><b>${p.pname || '-'}</b><br><small style="color:#64748b">${p.hn || ''}</small></td>
+                        <td><small><b>${sType}</b><br>${clinicName}</small></td>
+                        <td><span class="badge badge-status">${p.currentPoint || 'รอคิว'}</span><br><small style="color:var(--accent); font-weight:bold;">${bedInfo}</small></td>
+                        <td><small>${matchedQ ? matchedQ.operator : (p.operator || 'ยังไม่ระบุ')}</small></td>
+                        <td><span class="badge badge-rating">${ratingText}</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn-sm btn-edit" onclick="editQueue('${key}')">แก้ไข</button>
+                                <button class="btn-sm btn-del" onclick="deleteQueue('${key}')">ลบ</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html || `<tr><td colspan="7" style="text-align:center; color:#64748b;">ไม่พบข้อมูลตามเงื่อนไขที่กรอง</td></tr>`;
+        }
+
+        function checkEmergencyAlerts() {
+            let emergencyFound = null;
+            let foundKey = null;
+            Object.keys(allFlowData).forEach(key => {
+                if(allFlowData[key].emergencyAlert) {
+                    emergencyFound = allFlowData[key];
+                    foundKey = key;
+                }
+            });
+
+            let modal = document.getElementById('emergencyModal');
+            if(emergencyFound) {
+                activeEmergencyKey = foundKey;
+                document.getElementById('modalAlertQueueNo').innerText = emergencyFound.queueNo;
+                document.getElementById('modalAlertPatientName').innerText = emergencyFound.pname;
+                modal.style.display = 'flex';
+
+                if(!hasAlertedModal) {
+                    playEmergencySound();
+                    hasAlertedModal = true;
+                }
+            } else {
+                modal.style.display = 'none';
+                hasAlertedModal = false;
+            }
+        }
+
+        function playEmergencySound() {
+            try {
+                let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.value = 600;
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.8);
+            } catch(e) {}
+        }
+
+        function dismissEmergencyModal() {
+            if(activeEmergencyKey) {
+                flowRef.child(activeEmergencyKey).update({ emergencyAlert: false });
+            }
+            document.getElementById('emergencyModal').style.display = 'none';
+            hasAlertedModal = false;
+        }
+
+        function saveAdminQueue() {
+            let key = document.getElementById('editKey').value;
+            let queueNo = document.getElementById('inputQueueNo').value.trim();
+            let pname = document.getElementById('inputPName').value.trim();
+            let hn = document.getElementById('inputHN').value.trim();
+            let serviceType = document.getElementById('inputServiceType').value;
+            let clinic = document.getElementById('inputClinic').value;
+            let currentPoint = document.getElementById('inputCurrentPoint').value;
+            let waitingMinutes = (currentPoint === 'รอทำหัตถการ') ? (parseInt(document.getElementById('inputWaitingMinutes').value) || 30) : 0;
+            let operator = document.getElementById('inputOperator').value;
+            let bed = document.getElementById('inputBed').value;
+
+            if(!queueNo || !pname || !operator) {
+                alert('กรุณากรอกข้อมูลสำคัญ (คิว, ชื่อ, ผู้ปฏิบัติงาน) ให้ครบถ้วน');
+                return;
+            }
+
+            let payload = {
+                queueNo, pname, hn, serviceType, clinic, servicePoint: 1, currentPoint, waitingMinutes, operator, bed,
+                triggerAlert: (currentPoint === 'พร้อมทำหัตถการ' || currentPoint === 'เรียกคิว'),
+                triggerTime: Date.now(),
+                timestamp: Date.now()
+            };
+
+            if(key) {
+                flowRef.child(key).update(payload, () => {
+                    syncQueueDataToMonitor(queueNo, pname, hn, operator, bed, currentPoint, waitingMinutes);
+                    alert('อัปเดตข้อมูลสำเร็จ');
+                    resetAdminForm();
+                });
+            } else {
+                let newKey = flowRef.push().key;
+                flowRef.child(newKey).set({ ...payload, rating: 'ไม่ได้ประเมิน' }, () => {
+                    syncQueueDataToMonitor(queueNo, pname, hn, operator, bed, currentPoint, waitingMinutes);
+                    alert('เพิ่มคิวสำเร็จ');
+                    resetAdminForm();
+                });
+            }
+        }
+
+        const operatorStaffList = [
+            "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
+            "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
+            "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"
+        ];
+
+        function syncQueueDataToMonitor(queueNo, pname, hn, operator, bed, currentPoint, waitingMinutes) {
+            queueRef.once('value', (snap) => {
+                let queues = snap.val() || {};
+                let existingKey = Object.keys(queues).find(k => queues[k].queueNo === queueNo);
+                
+                let cleanName = operator.replace(/^\d+\./, '').trim();
+                let index = operatorStaffList.findIndex(s => s.includes(cleanName) || cleanName.includes(s));
+                let avatarUrl = index !== -1 ? `images/staff-${index + 1}.jpg` : 'images/default.jpg';
+
+                let qStatus = (currentPoint === 'รอทำหัตถการ') ? 'waiting' : 'active';
+
+                let qPayload = {
+                    queueNo: queueNo,
+                    pname: pname,
+                    hn: hn || '-----',
+                    operator: operator,
+                    bed: bed,
+                    avatar: avatarUrl,
+                    status: qStatus,
+                    waitingMinutes: waitingMinutes,
+                    diagnosis: 'หัตถการคลินิก',
+                    procedure: 'รักษาตามอาการ',
+                    timestamp: 0 - Date.now(),
+                    endTime: Date.now() + ((waitingMinutes || 30) * 60 * 1000)
+                };
+
+                if(existingKey) {
+                    queueRef.child(existingKey).update(qPayload);
+                } else {
+                    queueRef.push(qPayload);
+                }
+            });
+        }
+
+        function editQueue(key) {
+            let p = allFlowData[key];
+            if(!p) return;
+            document.getElementById('editKey').value = key;
+            document.getElementById('inputQueueNo').value = p.queueNo || '';
+            document.getElementById('inputPName').value = p.pname || '';
+            document.getElementById('inputHN').value = p.hn || '';
+            document.getElementById('inputServiceType').value = p.serviceType || 'ในสถานบริการ';
+            document.getElementById('inputClinic').value = p.clinic || 'แพทย์แผนจีน';
+            document.getElementById('inputCurrentPoint').value = p.currentPoint || 'จุดลงทะเบียน';
+            document.getElementById('inputOperator').value = p.operator || '';
+            document.getElementById('inputBed').value = p.bed || 'สำรองเตียง';
+
+            handleStatusChange();
+            updateBedOptions();
+            document.getElementById('formTitle').innerText = '✏️ แก้ไขข้อมูลคิว';
+        }
+
+        function deleteQueue(key) {
+            if(confirm('คุณต้องการลบคิวนี้ใช่หรือไม่?')) {
+                flowRef.child(key).remove();
+            }
+        }
+
+        function resetAdminForm() {
+            document.getElementById('editKey').value = '';
+            document.getElementById('inputQueueNo').value = '';
+            document.getElementById('inputPName').value = '';
+            document.getElementById('inputHN').value = '';
+            document.getElementById('inputBed').value = 'สำรองเตียง';
+            document.getElementById('selectRegisteredPatient').value = '';
+            document.getElementById('formTitle').innerText = '➕ เพิ่ม/แก้ไขข้อมูลคิว';
+            handleStatusChange();
+        }
+    </script>
+</body>
+</html>

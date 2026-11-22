@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบริหารจัดการคิวและปฏิบัติงาน - โรงพยาบาลพระอาจารย์มั่น ภูริทัตโต</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #0f766e;
+            --primary-hover: #115e59;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-sub: #475569;
+            --border: #cbd5e1;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; font-family: 'Prompt', sans-serif; }
+        body { background: var(--bg-color); margin: 0; padding: 16px; color: var(--text-main); font-size: 16px; }
+
+        .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+
+        .sound-permission-bar {
+            background: #fef3c7; border: 2px solid #f59e0b; color: #92400e;
+            padding: 12px 18px; border-radius: 12px; font-size: 15px; font-weight: 700; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 4px;
+        }
+        .sound-permission-bar button {
+            background: #d97706; color: #fff; border: none; padding: 8px 16px;
+            border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            color: #fff; padding: 20px 24px; border-radius: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+            flex-wrap: wrap; gap: 15px;
+        }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; }
+        .header p { margin: 4px 0 0 0; font-size: 14px; color: #d1fae5; }
+
+        .main-layout {
+            display: grid; grid-template-columns: 320px 1fr; gap: 20px;
+        }
+        @media(max-width: 1024px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+
+        .staff-sidebar {
+            background: #fff; border-radius: 16px; border: 2px solid var(--border);
+            padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            display: flex; flex-direction: column; gap: 12px; height: fit-content;
+        }
+        .sidebar-title {
+            font-size: 16px; font-weight: 700; color: var(--primary);
+            border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .staff-list-container { display: flex; flex-direction: column; gap: 8px; max-height: 750px; overflow-y: auto; }
+        
+        .staff-item-card {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px; border-radius: 12px; border: 1.5px solid #e2e8f0; background: #f8fafc;
+            cursor: pointer; transition: 0.2s;
+        }
+        .staff-item-card:hover { background: #f1f5f9; border-color: var(--primary); }
+        .staff-item-card.active-login { background: #f0fdf4; border-color: #059669; box-shadow: 0 2px 6px rgba(5,150,105,0.15); }
+
+        .staff-item-left { display: flex; align-items: center; gap: 10px; }
+        .staff-item-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #cbd5e1; }
+        .staff-item-name { font-size: 13px; font-weight: 700; color: #1e293b; line-height: 1.2; }
+
+        .status-dot-badge {
+            font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; color: #fff;
+            display: flex; align-items: center; gap: 4px;
+        }
+        .dot-offline { background: #94a3b8; } 
+        .dot-ready { background: #10b981; }   
+        .dot-busy { background: #ef4444; }    
+
+        .right-stack-container {
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .section-card {
+            background: #fff; border-radius: 16px; border: 2px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04); overflow: hidden; display: flex; flex-direction: column;
+        }
+        .section-header {
+            padding: 14px 18px; font-size: 16px; font-weight: 700; color: #fff;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .bg-admin { background: #be185d; }      
+        .bg-mine { background: #7c3aed; }       
+        .bg-ready { background: #059669; }     
+        .bg-progress { background: #d97706; }  
+        .bg-done { background: #475569; }      
+
+        .section-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+        .type-switch-bar {
+            display: flex; gap: 10px; margin-bottom: 4px;
+        }
+        .btn-switch {
+            flex: 1; padding: 10px; font-size: 14px; font-weight: 700; border: 2px solid var(--border);
+            border-radius: 10px; background: #f1f5f9; color: #475569; cursor: pointer; transition: 0.2s;
+            text-align: center;
+        }
+        .btn-switch.active {
+            background: var(--primary); color: #fff; border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(15, 118, 110, 0.3);
+        }
+
+        .patient-row-card {
+            background: #f8fafc; border-radius: 12px; border: 1.5px solid #e2e8f0; padding: 14px;
+            display: grid; grid-template-columns: 100px 1fr 180px; gap: 16px; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        @media(max-width: 768px) {
+            .patient-row-card { grid-template-columns: 1fr; }
+        }
+
+        .row-left-info { display: flex; align-items: center; gap: 12px; }
+        .row-avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .row-qbadge { font-size: 18px; font-weight: 800; color: var(--primary); }
+
+        .row-middle-details { font-size: 13px; color: var(--text-main); display: flex; flex-direction: column; gap: 3px; }
+        .row-name { font-size: 15px; font-weight: 800; color: #0f172a; }
+
+        .row-right-actions { display: flex; flex-direction: column; gap: 6px; }
+
+        .btn-action {
+            width: 100%; padding: 8px 12px; font-size: 13px; font-weight: 700; border: none; border-radius: 8px;
+            cursor: pointer; color: #fff; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-accept { background: #059669; }
+        .btn-accept:hover { background: #047857; }
+        .btn-reject { background: #dc2626; }
+        .btn-reject:hover { background: #b91c1c; }
+        .btn-finish { background: #2563eb; }
+        .btn-finish:hover { background: #1d4ed8; }
+        .btn-call { background: #0284c7; }
+        .btn-call:hover { background: #0369a1; }
+        .btn-pending { background: #f59e0b; color: #fff; cursor: default; }
+
+        .status-badge-view {
+            background: #fef3c7; color: #b45309; border: 1px solid #fde68a;
+            padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center;
+        }
+
+        .done-compact-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+            font-size: 14px;
+        }
+        .btn-details-toggle {
+            background: #e2e8f0; color: #334155; border: none; padding: 4px 10px; border-radius: 6px;
+            font-size: 12px; font-weight: 700; cursor: pointer;
+        }
+        .done-details-box {
+            background: #fff; padding: 10px; border-radius: 8px; border: 1px dashed #cbd5e1;
+            font-size: 12px; color: var(--text-sub); display: none; margin-top: -6px; margin-bottom: 6px;
+        }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7); z-index: 99999; display: none;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal-content {
+            background: #fff; width: 100%; max-width: 380px; border-radius: 20px; padding: 24px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4); animation: scaleUp 0.3s ease;
+        }
+        @keyframes scaleUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <!-- Modal Passcode -->
+    <div id="passcodeModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="color: var(--primary); margin-top: 0;"><i class="fa-solid fa-lock"></i> ลงชื่อเข้าปฏิบัติงาน</h3>
+            <p id="modalStaffPromptName" style="font-size: 14px; font-weight: 700; color: #334155;">กรุณากรอกรหัสผ่าน</p>
+            <div style="margin: 16px 0;">
+                <input type="password" id="passcodeInput" placeholder="กรอกรหัสผ่าน" style="width: 100%; padding: 12px; font-size: 18px; text-align: center; border: 2px solid var(--border); border-radius: 10px; outline: none;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-action btn-accept" onclick="verifyStaffPasscode()">ยืนยันลงชื่อ</button>
+                <button class="btn-action" style="background: #64748b;" onclick="document.getElementById('passcodeModal').style.display='none'">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup แจ้งเตือนเฉพาะตัวเจ้าหน้าที่ -->
+    <div id="personalNotifyModal" class="modal-overlay" style="background: rgba(5, 150, 105, 0.85); z-index: 99999;">
+        <div class="modal-content" style="border: 3px solid #10b981;">
+            <div style="font-size: 42px; color: #059669; margin-bottom: 5px;"><i class="fa-solid fa-bell fa-bounce"></i></div>
+            <h3 style="color: #065f46; margin: 0 0 5px 0; font-size: 19px;">มีคนไข้เข้าสู่ระบบรอคิวสำหรับคุณ!</h3>
+            <div style="background: #ecfdf5; padding: 12px; border-radius: 12px; border: 2px solid #34d399; margin: 14px 0; display: flex; align-items: center; gap: 12px; text-align: left;">
+                <img id="notifyPatientAvatar" src="" alt="Patient" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #059669;" onerror="this.src='https://via.placeholder.com/60'">
+                <div>
+                    <div style="font-size: 11px; color: #065f46; font-weight: 700;">หมายเลขคิว: <span id="notifyQueueNo" style="font-size: 15px; font-weight: 800;">--</span></div>
+                    <div id="notifyPatientName" style="font-size: 16px; font-weight: 800; color: #064e3b;">-</div>
+                    <div style="font-size: 12px; color: #047857;" id="notifyServiceType">-</div>
+                </div>
+            </div>
+            <button class="btn-action btn-accept" onclick="closePersonalNotifyModal()" style="padding: 12px; font-size: 15px;">รับทราบ / ปิดหน้าต่าง</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- แถบปลดล็อกเสียง -->
+        <div id="soundPermissionBar" class="sound-permission-bar">
+            <span><i class="fa-solid fa-volume-xmark"></i> กรุณากดปุ่มเพื่อเปิดใช้งานเสียงแจ้งเตือนระบบ</span>
+            <button onclick="unlockAudioContext()">เปิดเสียงระบบ</button>
+        </div>
+
+        <div class="header">
+            <div>
+                <h1><i class="fa-solid fa-hospital-user"></i> ระบบบริหารจัดการคิวและปฏิบัติงาน (DocQueue)</h1>
+                <p>กลุ่มงานการแพทย์แผนไทยและการแพทย์ทางเลือก รพ.พระอาจารย์มั่น ภูริทัตโต</p>
+            </div>
+            <div style="font-size: 14px; background: rgba(255,255,255,0.2); padding: 8px 14px; border-radius: 10px; font-weight: 700;">
+                <i class="fa-solid fa-calendar-day"></i> <span id="currentDateText">--/--/----</span>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            <!-- Sidebar รายชื่อเจ้าหน้าที่ 12 คน -->
+            <div class="staff-sidebar">
+                <div class="sidebar-title">
+                    <span><i class="fa-solid fa-users"></i> ผู้ปฏิบัติงานทั้ง 12 คน</span>
+                    <span style="font-size: 12px; color: var(--primary); font-weight: 800;" id="loggedInStaffDisplay">สถานะ: ยังไม่เข้าสู่ระบบ</span>
+                </div>
+                <div class="staff-list-container" id="staffSidebarList"></div>
+                <div style="font-size: 11px; color: var(--text-sub); text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                    คลิกเพื่อลงชื่อเข้าใช้งาน
+                </div>
+            </div>
+
+            <div class="right-stack-container">
+                
+                <!-- แถบพิเศษสำหรับ Admin: จัดการคำขออนุมัติรับเคส -->
+                <div class="section-card" id="adminApprovalCard" style="display: none;">
+                    <div class="section-header bg-admin">
+                        <span><i class="fa-solid fa-user-shield"></i> รายการรอ Admin อนุมัติรับเคส (<span id="countApproval">0</span>)</span>
+                    </div>
+                    <div class="section-body" id="listApprovalQueue">
+                        <div style="text-align: center; color: var(--text-sub); padding: 20px;">ไม่มีรายการรออนุมัติ</div>
+                    </div>
+                </div>
+
+                <!-- แถบใหม่: เคสของคุณในวันนี้ (เฉพาะเจ้าตัวเห็น มีปุ่มกดเสร็จสิ้นภารกิจ) -->
+                <div class="section-card" id="myCasesCard" style="display: none;">
+                    <div class="section-header bg-mine">
+                        <span><i class="fa-solid fa-user-check"></i> เคสของคุณในวันนี้ (<span id="countMyCases">0</span>)</span>
+                    </div>
+                    <div class="section-body" id="listMyCasesQueue">
+                        <div style="text-align: center; color: var(--text-sub); padding: 20px;">ไม่มีเคสที่คุณรับผิดชอบในขณะนี้</div>
+                    </div>
+                </div>
+
+                <!-- แถบที่ 1: เคสพร้อมรับ / รอเรียกคิว -->
+                <div class="section-card">
+                    <div class="section-header bg-ready">
+                        <span><i class="fa-solid fa-bullhorn"></i> เคสพร้อมรับ / รอเรียกคิว (เชื่อมโยงจาก Flow)</span>
+                    </div>
+                    <div class="section-body">
+                        <div class="type-switch-bar">
+                            <button id="btnSwitchInside" class="btn-switch active" onclick="switchQueueType('inside')">
+                                <i class="fa-solid fa-house-medical"></i> ในสถานบริการ (<span id="countInside">0</span>)
+                            </button>
+                            <button id="btnSwitchOutside" class="btn-switch" onclick="switchQueueType('outside')">
+                                <i class="fa-solid fa-car"></i> นอกสถานบริการ (<span id="countOutside">0</span>)
+                            </button>
+                        </div>
+                        <div id="listSelectedQueue">
+                            <div style="text-align: center; color: var(--text-sub); padding: 20px;">กำลังโหลดข้อมูลจากระบบ...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- แถบที่ 2: เคสกำลังปฏิบัติงาน / ทำหัตถการ (แสดงภาพรวมทั่วโรงพยาบาล ไม่มีปุ่มกด) -->
+                <div class="section-card">
+                    <div class="section-header bg-progress">
+                        <span><i class="fa-solid fa-spinner fa-spin"></i> เคสกำลังปฏิบัติงาน / ทำหัตถการทั่วโรงพยาบาล (<span id="countProgress">0</span>)</span>
+                    </div>
+                    <div class="section-body" id="listProgressQueue">
+                        <div style="text-align: center; color: var(--text-sub); padding: 20px;">ไม่มีเคสที่กำลังปฏิบัติงาน</div>
+                    </div>
+                </div>
+
+                <!-- แถบที่ 3: เคสที่เสร็จสิ้นภารกิจแล้ววันนี้ -->
+                <div class="section-card">
+                    <div class="section-header bg-done">
+                        <span><i class="fa-solid fa-circle-check"></i> เคสที่เสร็จสิ้นภารกิจแล้ววันนี้ (<span id="countDone">0</span>)</span>
+                    </div>
+                    <div class="section-body" id="listDoneQueue">
+                        <div style="text-align: center; color: var(--text-sub); padding: 20px;">ยังไม่มีเคสที่เสร็จสิ้นภารกิจวันนี้</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "***************************************",
+            authDomain: "thai-med-monitor.firebaseapp.com",
+            projectId: "thai-med-monitor",
+            storageBucket: "thai-med-monitor.firebasestorage.app",
+            messagingSenderId: "894864632905",
+            appId: "1:894864632905:web:521452d40ea00653a72398",
+            measurementId: "G-7SXZRHE5F9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
+
+        const staffDatabase = [
+            { id: 1, name: "กรชกร พองผาลา", pass: "nick123" },
+            { id: 2, name: "สุประภา มาละอินทร์", pass: "tukta123" },
+            { id: 3, name: "พรวินิจ แก้วอัคฮาด", pass: "van123" },
+            { id: 4, name: "พรสิน เฮียงราช", pass: "nid123" },
+            { id: 5, name: "พฤษาพันธ์ บุบผาลา", pass: "am123" },
+            { id: 6, name: "จิรวัฒณ์ สีตาแสน", pass: "bas123" },
+            { id: 7, name: "ฐิติมา บุญแฮด", pass: "bee123" },
+            { id: 8, name: "ฉัตรลดา หงษ์วิลัย", pass: "jan123" },
+            { id: 9, name: "ประกายรัตน์ กาลสุข", pass: "yee123" },
+            { id: 10, name: "นพวินทร์ จิรศศิภิรมย์", pass: "dream9win" },
+            { id: 11, name: "สุนิสา อินทะเสย์", pass: "kukkik" },
+            { id: 12, name: "นายแพทย์กฤตธนัท วงค์วิเศษ", pass: "" }
+        ];
+
+        const adminNames = ["นพวินทร์ จิรศศิภิรมย์", "นายแพทย์กฤตธนัท วงค์วิเศษ", "จิรวัฒณ์ สีตาแสน"];
+
+        let currentLoggedInStaff = localStorage.getItem('docCurrentLoggedInStaff') || "";
+        let activeStaffForPasscode = null;
+        let lastNotifiedQueueKey = "";
+        let currentSelectedType = "inside";
+        let globalInsideList = [];
+        let globalOutsideList = [];
+        let audioCtxUnlocked = false;
+        let audioContextInstance = null;
+
+        function unlockAudioContext() {
+            try {
+                audioContextInstance = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioContextInstance.state === 'suspended') { audioContextInstance.resume(); }
+                audioCtxUnlocked = true;
+                document.getElementById('soundPermissionBar').style.display = 'none';
+            } catch(e) {
+                document.getElementById('soundPermissionBar').style.display = 'none';
+            }
+        }
+
+        document.getElementById('currentDateText').innerText = new Date().toLocaleDateString('th-TH', { 
+            year: 'numeric', month: 'long', day: 'numeric' 
+        });
+
+        function renderStaffSidebar(busyStaffNames = []) {
+            let container = document.getElementById('staffSidebarList');
+            let html = '';
+            let displayHeader = document.getElementById('loggedInStaffDisplay');
+
+            if (currentLoggedInStaff) {
+                let badgeAdmin = adminNames.includes(currentLoggedInStaff) ? ' <span style="color:#be185d;">(Admin)</span>' : '';
+                displayHeader.innerHTML = `ใช้งานโดย: <span style="color:#059669;">${currentLoggedInStaff}</span>${badgeAdmin}`;
+            } else {
+                displayHeader.innerHTML = `สถานะ: <span style="color:#ef4444;">ยังไม่เข้าสู่ระบบ</span>`;
+            }
+
+            staffDatabase.forEach(staff => {
+                let isLoggedIn = (currentLoggedInStaff === staff.name);
+                let isBusy = busyStaffNames.includes(staff.name);
+                let avatarUrl = `images/staff-${staff.id}.jpg`;
+
+                let statusBadge = `<span class="status-dot-badge dot-offline"><i class="fa-solid fa-circle"></i> ปิดระบบ</span>`;
+                if (isLoggedIn) {
+                    if (isBusy) {
+                        statusBadge = `<span class="status-dot-badge dot-busy"><i class="fa-solid fa-circle"></i> ติดเคส</span>`;
+                    } else {
+                        statusBadge = `<span class="status-dot-badge dot-ready"><i class="fa-solid fa-circle"></i> พร้อม</span>`;
+                    }
+                }
+
+                html += `
+                    <div class="staff-item-card ${isLoggedIn ? 'active-login' : ''}" onclick="clickStaffItem('${staff.name}', ${isLoggedIn})">
+                        <div class="staff-item-left">
+                            <img src="${avatarUrl}" class="staff-item-avatar" onerror="this.src='images/default.jpg'">
+                            <div class="staff-item-name">${staff.id}. ${staff.name}</div>
+                        </div>
+                        <div>${statusBadge}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function clickStaffItem(staffName, isLoggedIn) {
+            if (isLoggedIn) {
+                if (confirm(`ต้องการลงชื่อออกจากการปฏิบัติงานของ "${staffName}" ใช่หรือไม่?`)) {
+                    currentLoggedInStaff = "";
+                    localStorage.removeItem('docCurrentLoggedInStaff');
+                    renderStaffSidebar();
+                    location.reload();
+                }
+            } else {
+                if (currentLoggedInStaff) {
+                    alert(`เครื่องนี้ได้ลงชื่อเข้าใช้ด้วยบัญชี "${currentLoggedInStaff}" อยู่แล้ว`);
+                    return;
+                }
+                activeStaffForPasscode = staffName;
+                if (staffName === "นายแพทย์กฤตธนัท วงค์วิเศษ") {
+                    currentLoggedInStaff = staffName;
+                    localStorage.setItem('docCurrentLoggedInStaff', currentLoggedInStaff);
+                    renderStaffSidebar();
+                    location.reload();
+                } else {
+                    document.getElementById('modalStaffPromptName').innerText = `รหัสผ่านสำหรับ: ${staffName}`;
+                    document.getElementById('passcodeInput').value = '';
+                    document.getElementById('passcodeModal').style.display = 'flex';
+                    document.getElementById('passcodeInput').focus();
+                }
+            }
+        }
+
+        function verifyStaffPasscode() {
+            let inputPass = document.getElementById('passcodeInput').value.trim();
+            let targetStaff = staffDatabase.find(s => s.name === activeStaffForPasscode);
+
+            if (targetStaff && inputPass === targetStaff.pass) {
+                document.getElementById('passcodeModal').style.display = 'none';
+                currentLoggedInStaff = targetStaff.name;
+                localStorage.setItem('docCurrentLoggedInStaff', currentLoggedInStaff);
+                renderStaffSidebar();
+                location.reload();
+            } else {
+                alert('รหัสผ่านไม่ถูกต้อง');
+                document.getElementById('passcodeInput').value = '';
+                document.getElementById('passcodeInput').focus();
+            }
+        }
+
+        function switchQueueType(type) {
+            currentSelectedType = type;
+            if (type === 'inside') {
+                document.getElementById('btnSwitchInside').className = "btn-switch active";
+                document.getElementById('btnSwitchOutside').className = "btn-switch";
+                renderSelectedQueueSection(globalInsideList);
+            } else {
+                document.getElementById('btnSwitchInside').className = "btn-switch";
+                document.getElementById('btnSwitchOutside').className = "btn-switch active";
+                renderSelectedQueueSection(globalOutsideList);
+            }
+        }
+
+        flowRef.on('value', (snapshot) => {
+            let data = snapshot.val() || {};
+            let todayStr = new Date().toISOString().split('T')[0];
+
+            globalOutsideList = [];
+            globalInsideList = [];
+            let progressList = [];
+            let doneList = [];
+            let myCasesList = [];
+            let approvalList = [];
+            let busyStaffNames = [];
+
+            Object.keys(data).forEach(key => {
+                let p = data[key];
+                let pDate = p.entryDate || (p.timestamp ? new Date(p.timestamp).toISOString().split('T')[0] : '');
+                
+                if (pDate === todayStr || !p.entryDate) {
+                    let point = p.currentPoint || '';
+                    let assignedOp = p.operator ? p.operator.trim() : '';
+                    let isPending = (p.approvalStatus === 'pending');
+                    let isProgress = (point === 'พร้อมทำหัตถการ' || point === 'กำลังทำหัตถการ' || point.includes('ทำหัตถการ') || p.approvalStatus === 'approved');
+
+                    if (isPending) {
+                        approvalList.push({ key, ...p });
+                    }
+
+                    if (isProgress && assignedOp && !point.includes('เสร็จสิ้น') && !point.includes('กลับบ้าน')) {
+                        busyStaffNames.push(assignedOp);
+                    }
+
+                    if (currentLoggedInStaff && assignedOp === currentLoggedInStaff && (point === 'พร้อมทำหัตถการ')) {
+                        if (key !== lastNotifiedQueueKey && p.triggerAlert) {
+                            showPersonalNotify(p);
+                            lastNotifiedQueueKey = key;
+                        }
+                    }
+
+                    let isDone = (point.includes('เสร็จสิ้น') || point.includes('กลับบ้าน') || p.status === 'กลับบ้านแล้ว');
+
+                    if (isDone) {
+                        doneList.push({ key, ...p });
+                    } else if (isProgress) {
+                        progressList.push({ key, ...p });
+                        if (currentLoggedInStaff && assignedOp.includes(currentLoggedInStaff)) {
+                            myCasesList.push({ key, ...p });
+                        }
+                    } else {
+                        let isWaitingPoint = (!point || point.includes('ลงทะเบียน') || point.includes('รอตรวจ') || point.includes('จุดที่ 2: ห้องตรวจ'));
+                        if (isWaitingPoint) {
+                            if (p.serviceType === 'นอกสถานบริการ') {
+                                globalOutsideList.push({ key, ...p });
+                            } else {
+                                globalInsideList.push({ key, ...p });
+                            }
+                        }
+                    }
+                }
+            });
+
+            renderStaffSidebar(busyStaffNames);
+
+            let adminCard = document.getElementById('adminApprovalCard');
+            let isAdmin = adminNames.includes(currentLoggedInStaff);
+            if (isAdmin && approvalList.length > 0) {
+                adminCard.style.display = 'block';
+                document.getElementById('countApproval').innerText = approvalList.length;
+                renderAdminApprovalSection(approvalList);
+            } else {
+                adminCard.style.display = 'none';
+            }
+
+            let myCasesCard = document.getElementById('myCasesCard');
+            if (currentLoggedInStaff) {
+                myCasesCard.style.display = 'block';
+                document.getElementById('countMyCases').innerText = myCasesList.length;
+                renderMyCasesSection(myCasesList);
+            } else {
+                myCasesCard.style.display = 'none';
+            }
+
+            document.getElementById('countInside').innerText = globalInsideList.length;
+            document.getElementById('countOutside').innerText = globalOutsideList.length;
+            document.getElementById('countProgress').innerText = progressList.length;
+            document.getElementById('countDone').innerText = doneList.length;
+
+            if (currentSelectedType === 'inside') {
+                renderSelectedQueueSection(globalInsideList);
+            } else {
+                renderSelectedQueueSection(globalOutsideList);
+            }
+
+            renderProgressSection(progressList);
+            renderDoneSection(doneList);
+        });
+
+        function showPersonalNotify(p) {
+            document.getElementById('notifyQueueNo').innerText = p.queueNo || '-';
+            document.getElementById('notifyPatientName').innerText = p.pname || '-';
+            document.getElementById('notifyServiceType').innerText = `ประเภท: ${p.serviceType || 'ในสถานบริการ'} (${p.clinic || 'แพทย์แผนไทย'})`;
+            document.getElementById('notifyPatientAvatar').src = p.avatar || 'https://via.placeholder.com/60';
+            document.getElementById('personalNotifyModal').style.display = 'flex';
+            playChimeSound();
+        }
+
+        function closePersonalNotifyModal() {
+            document.getElementById('personalNotifyModal').style.display = 'none';
+        }
+
+        function playChimeSound() {
+            try {
+                if (!audioCtxUnlocked || !audioContextInstance) {
+                    audioContextInstance = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContextInstance.state === 'suspended') { audioContextInstance.resume(); }
+                let now = audioContextInstance.currentTime;
+                let osc = audioContextInstance.createOscillator();
+                let gain = audioContextInstance.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.4);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+                osc.connect(gain);
+                gain.connect(audioContextInstance.destination);
+                osc.start(now);
+                osc.stop(now + 1.2);
+            } catch(e) {}
+        }
+
+        function renderAdminApprovalSection(items) {
+            let container = document.getElementById('listApprovalQueue');
+            let html = '';
+            items.forEach(p => {
+                let avatar = p.avatar || 'https://via.placeholder.com/55';
+                html += `
+                    <div class="patient-row-card" style="margin-bottom: 10px; border-color: #be185d; background: #fdf2f8;">
+                        <div class="row-left-info">
+                            <img src="${avatar}" class="row-avatar" onerror="this.src='https://via.placeholder.com/55'">
+                            <div>
+                                <div class="row-qbadge">${p.queueNo || '-'}</div>
+                                <div style="font-size: 11px; font-weight:700; color:#be185d;">รออนุมัติ</div>
+                            </div>
+                        </div>
+                        <div class="row-middle-details">
+                            <span class="row-name">${p.pname || 'ไม่ระบุชื่อ'}</span>
+                            <span><b>ผู้ขอรับเคส:</b> <span style="color:#be185d; font-weight:800;">${p.operator || '-'}</span></span>
+                            <span><b>คลินิก:</b> ${p.clinic || '-'}</span>
+                        </div>
+                        <div class="row-right-actions">
+                            <button class="btn-action btn-accept" onclick="adminApproveCase('${p.key}', '${p.operator}')"><i class="fa-solid fa-check"></i> อนุมัติ</button>
+                            <button class="btn-action btn-reject" onclick="adminRejectCase('${p.key}')"><i class="fa-solid fa-xmark"></i> ปฏิเสธ</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function adminApproveCase(key, staffName) {
+            flowRef.child(key).update({
+                approvalStatus: 'approved',
+                currentPoint: 'พร้อมทำหัตถการ',
+                operator: staffName
+            }, () => {
+                alert(`อนุมัติเคสให้ "${staffName}" เรียบร้อยแล้ว`);
+            });
+        }
+
+        function adminRejectCase(key) {
+            if (confirm('คุณต้องการปฏิเสธคำขอรับเคสนี้ใช่หรือไม่?')) {
+                flowRef.child(key).update({
+                    approvalStatus: 'rejected',
+                    operator: ''
+                }, () => {
+                    alert('ปฏิเสธคำขอรับเคสเรียบร้อยแล้ว');
+                });
+            }
+        }
+
+        function renderMyCasesSection(items) {
+            let container = document.getElementById('listMyCasesQueue');
+            if (items.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">ไม่มีเคสที่คุณรับผิดชอบในขณะนี้</div>`;
+                return;
+            }
+
+            let html = '';
+            items.forEach(p => {
+                let avatar = p.avatar || 'https://via.placeholder.com/55';
+                html += `
+                    <div class="patient-row-card" style="margin-bottom: 10px; border-color: #7c3aed; background: #faf5ff;">
+                        <div class="row-left-info">
+                            <img src="${avatar}" class="row-avatar" onerror="this.src='https://via.placeholder.com/55'">
+                            <div>
+                                <div class="row-qbadge">${p.queueNo || '-'}</div>
+                                <div style="font-size: 11px; font-weight:700; color:#7c3aed;">เคสของคุณ</div>
+                            </div>
+                        </div>
+                        <div class="row-middle-details">
+                            <span class="row-name">${p.pname || 'ไม่ระบุชื่อ'}</span>
+                            <span><b>HN:</b> ${p.hn || '-'} | <b>คลินิก:</b> ${p.clinic || '-'}</span>
+                            <span><b>สถานะ:</b> <span style="color:#d97706; font-weight:700;">${p.currentPoint}</span></span>
+                        </div>
+                        <div class="row-right-actions">
+                            <button class="btn-action btn-finish" onclick="finishPatientCase('${p.key}')"><i class="fa-solid fa-flag-checkered"></i> เสร็จสิ้นภารกิจ</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderSelectedQueueSection(items) {
+            let container = document.getElementById('listSelectedQueue');
+            if (items.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">ไม่มีเคสรอคิวในหมวดหมู่นี้</div>`;
+                return;
+            }
+
+            let html = '';
+            items.forEach(p => {
+                let avatar = p.avatar || 'https://via.placeholder.com/55';
+                let isPendingApproval = (p.approvalStatus === 'pending');
+                let assignedOperator = p.operator ? p.operator.trim() : "";
+
+                html += `
+                    <div class="patient-row-card" style="margin-bottom: 10px;">
+                        <div class="row-left-info">
+                            <img src="${avatar}" class="row-avatar" onerror="this.src='https://via.placeholder.com/55'">
+                            <div>
+                                <div class="row-qbadge">${p.queueNo || '-'}</div>
+                                <div style="font-size: 11px; font-weight:700; color:#047857;">${p.clinic || 'แพทย์แผนไทย'}</div>
+                            </div>
+                        </div>
+                        <div class="row-middle-details">
+                            <span class="row-name">${p.pname || 'ไม่ระบุชื่อ'}</span>
+                            <span><b>HN:</b> ${p.hn || '-'} | <b>สิทธิ์:</b> ${p.rightScheme || '-'}</span>
+                            <span><b>สถานะ:</b> ${p.currentPoint || 'รอตรวจ'} | <b>ผู้รับผิดชอบ:</b> ${assignedOperator || 'ยังไม่มี'}</span>
+                        </div>
+                        <div class="row-right-actions">
+                            <button class="btn-action btn-call" onclick="callPatientQueue('${p.key}', '${p.queueNo || '-'}')">
+                                <i class="fa-solid fa-bullhorn"></i> เรียกคิว
+                            </button>
+                `;
+
+                if (isPendingApproval) {
+                    html += `<button class="btn-action btn-pending" disabled><i class="fa-solid fa-clock"></i> รอ Admin อนุมัติ</button>`;
+                } else {
+                    html += `<button class="btn-action btn-accept" onclick="requestAcceptCase('${p.key}', '${assignedOperator}')"><i class="fa-solid fa-user-check"></i> ขออนุมัติรับเคส</button>`;
+                }
+
+                html += `</div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // แถบที่ 2: เคสกำลังปฏิบัติงานทั่วโรงพยาบาล (แสดงข้อมูลและชื่อผู้รับผิดชอบ ไม่มีปุ่มกดกระทำใดๆ)
+        function renderProgressSection(items) {
+            let container = document.getElementById('listProgressQueue');
+            if (items.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">ไม่มีเคสที่กำลังปฏิบัติงาน</div>`;
+                return;
+            }
+
+            let html = '';
+            items.forEach(p => {
+                let avatar = p.avatar || 'https://via.placeholder.com/55';
+                let assignedStaff = p.operator || p.staffRegis || "เจ้าหน้าที่";
+
+                html += `
+                    <div class="patient-row-card" style="margin-bottom: 10px;">
+                        <div class="row-left-info">
+                            <img src="${avatar}" class="row-avatar" onerror="this.src='https://via.placeholder.com/55'">
+                            <div>
+                                <div class="row-qbadge">${p.queueNo || '-'}</div>
+                                <div style="font-size: 11px; font-weight:700; color:#d97706;">กำลังทำหัตถการ</div>
+                            </div>
+                        </div>
+                        <div class="row-middle-details">
+                            <span class="row-name">${p.pname || 'ไม่ระบุชื่อ'}</span>
+                            <span><b>ผู้รับผิดชอบ:</b> <span style="color:#0f766e; font-weight:800;">${assignedStaff}</span></span>
+                            <span><b>คลินิก:</b> ${p.clinic || '-'}</span>
+                        </div>
+                        <div class="row-right-actions">
+                            <div class="status-badge-view"><i class="fa-solid fa-user-nurse"></i> กำลังปฏิบัติงาน</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderDoneSection(items) {
+            let container = document.getElementById('listDoneQueue');
+            if (items.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-sub); padding: 20px;">ยังไม่มีเคสที่เสร็จสิ้นภารกิจวันนี้</div>`;
+                return;
+            }
+
+            let html = '';
+            items.forEach((p, index) => {
+                let detailId = `doneDetails_${index}`;
+                html += `
+                    <div>
+                        <div class="done-compact-row">
+                            <div><b>[${p.queueNo || '-'}]</b> ${p.pname || '-'} <span style="color:#64748b; font-size:12px;">(ผู้ปฏิบัติงาน: ${p.operator || '-'})</span></div>
+                            <button class="btn-details-toggle" onclick="toggleDoneDetails('${detailId}')">แสดงรายละเอียด</button>
+                        </div>
+                        <div id="${detailId}" class="done-details-box">
+                            <div><b>HN:</b> ${p.hn || '-'} | <b>สิทธิ์:</b> ${p.rightScheme || '-'}</div>
+                            <div><b>คลินิก:</b> ${p.clinic || '-'} | <b>ค่าใช้จ่าย:</b> ${p.totalCost || '0'} บาท</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleDoneDetails(elementId) {
+            let el = document.getElementById(elementId);
+            el.style.display = (el.style.display === 'block') ? 'none' : 'block';
+        }
+
+        function callPatientQueue(key, queueNo) {
+            if (!currentLoggedInStaff) {
+                alert('กรุณาลงชื่อเข้าปฏิบัติงานก่อนทำการเรียกคิวครับ');
+                return;
+            }
+            flowRef.child(key).update({
+                currentPoint: 'พร้อมทำหัตถการ',
+                operator: currentLoggedInStaff,
+                triggerAlert: true,
+                triggerTime: Date.now()
+            }, () => {
+                alert(`ส่งสัญญาณเรียกลำดับคิว ${queueNo} เรียบร้อยแล้ว`);
+            });
+        }
+
+        function requestAcceptCase(key, assignedOperator) {
+            if (!currentLoggedInStaff) {
+                alert('กรุณาลงชื่อเข้าปฏิบัติงานก่อนขออนุมัติรับเคสครับ');
+                return;
+            }
+
+            if (assignedOperator && assignedOperator.includes(currentLoggedInStaff)) {
+                alert(`ℹ️ แจ้งเตือน: เคสนี้เป็นความรับผิดชอบของคุณ ("${currentLoggedInStaff}") อยู่แล้วครับ!`);
+                return;
+            }
+
+            flowRef.child(key).update({
+                approvalStatus: 'pending',
+                operator: currentLoggedInStaff
+            }, () => {
+                alert('ส่งคำขออนุมัติรับเคสไปยังระบบเรียบร้อยแล้ว');
+            });
+        }
+
+        function finishPatientCase(key) {
+            if (confirm('ยืนยันว่าเสร็จสิ้นภารกิจสำหรับเคสนี้ใช่หรือไม่?')) {
+                flowRef.child(key).update({
+                    currentPoint: 'เสร็จสิ้นภารกิจ',
+                    status: 'กลับบ้านแล้ว'
+                }, () => {
+                    alert('บันทึกเสร็จสิ้นภารกิจเรียบร้อยแล้ว');
+                });
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderStaffSidebar();
+        });
+    </script>
+</body>
+</html>
