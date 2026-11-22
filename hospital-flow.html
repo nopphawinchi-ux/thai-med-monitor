@@ -64,35 +64,38 @@
         .nav-tab-admin { background: #fce7f3; border-color: #fbcfe8; color: #be185d; }
         .nav-tab-admin.active { background: #db2777; color: #fff; border-color: #f472b6; }
 
-        /* Workspace ปรับให้รองรับการพับ Slide Bar ไปด้านข้าง */
-        .workspace { display: grid; grid-template-columns: 1fr 400px; gap: 14px; max-width: 1800px; margin: 0 auto; transition: 0.3s ease; }
-        .workspace.sidebar-collapsed { grid-template-columns: 1fr 50px !important; }
+        .workspace { display: grid; grid-template-columns: 1fr 400px; gap: 14px; max-width: 1800px; margin: 0 auto; transition: all 0.3s ease; }
+        .workspace.admin-full-mode { grid-template-columns: 1fr; }
         @media(max-width: 1100px) { .workspace { grid-template-columns: 1fr; } }
 
         .content-panel {
             background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 20px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.04); min-height: 75vh; position: relative; padding-bottom: 60px;
+            transition: all 0.3s ease;
         }
+        .content-panel.collapsed .panel-body-content { display: none; }
+
         .panel-title {
             font-size: 17px; font-weight: 700; color: var(--primary-teal); margin-bottom: 14px;
             border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
         }
+        .content-panel.collapsed .panel-title { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
 
-        /* Slide Bar ด้านข้าง พร้อมปุ่มพับเก็บไปด้านข้าง */
+        .btn-toggle-panel {
+            background: #e2e8f0; border: none; width: 28px; height: 28px; border-radius: 6px;
+            cursor: pointer; font-weight: bold; color: #334155; display: flex; align-items: center; justify-content: center;
+        }
+        .btn-toggle-panel:hover { background: #cbd5e1; }
+
         .status-sidebar {
             background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px;
             max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-            overflow-y: auto; transition: 0.3s ease; position: relative;
+            overflow-y: auto; transition: all 0.3s ease;
         }
-        .workspace.sidebar-collapsed .status-sidebar { padding: 10px 4px; overflow: hidden; }
-        .workspace.sidebar-collapsed .status-sidebar .sidebar-content-wrap { display: none; }
-
-        .sidebar-toggle-btn {
-            background: var(--primary-teal); color: #fff; border: none; padding: 4px 8px; border-radius: 6px;
-            font-size: 12px; cursor: pointer; font-weight: bold; transition: 0.2s;
-        }
-        .sidebar-toggle-btn:hover { background: var(--primary-hover); }
+        .status-sidebar.collapsed .sidebar-body-content { display: none; }
+        .status-sidebar.collapsed { max-height: 60px; overflow: hidden; }
+        .status-sidebar.hidden-mode { display: none !important; }
 
         .sidebar-section-title {
             font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 6px; margin: 8px 0 6px 0;
@@ -156,7 +159,7 @@
         .btn-clinic.selected { font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .clinic-thai.selected { background: #d1fae5; color: #065f46; border-color: #10b981; }
         .clinic-china.selected { background: #dbeafe; color: #1e40af; border-color: #3b82f6; }
-        .clinic-spa.selected { background: #fce7f3; color: #be185d; border-color: #ec4899; }
+        .clinic-spa.selected { background: #fdf4f8; color: #be185d; border-color: #ec4899; }
 
         .service-type-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
         .btn-service-type {
@@ -248,18 +251,17 @@
         .btn-row-add { background: #0284c7; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 4px; font-size: 13px; }
         .btn-row-del { background: #dc2626; color: #fff; border: none; padding: 4px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 34px; font-size: 12px; }
 
-        /* จุดที่ 5: ตารางสรุปรายวัน ปรับบรรทัดชิด ช่องไฟน้อยลง เพื่อความกระชับ */
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--card-border); }
-        .admin-table th, .admin-table td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 5px 8px; text-align: left; color: var(--text-main); line-height: 1.25; }
-        .admin-table th { background: #f8fafc; color: var(--primary-teal); font-weight: 700; padding: 6px 8px; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--card-border); }
+        .admin-table th, .admin-table td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 10px 12px; text-align: left; color: var(--text-main); }
+        .admin-table th { background: #f8fafc; color: var(--primary-teal); font-weight: 700; }
         .admin-table tr:hover { background: #f8fafc; }
         
-        .btn-detail-toggle { background: #0284c7; color: #fff; border: none; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; margin-right: 2px; }
-        .btn-admin-edit { background: #d97706; color: #fff; border: none; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; margin-right: 2px; }
-        .btn-admin-del { background: #dc2626; color: #fff; border: none; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-size: 10px; font-weight: bold; }
+        .btn-detail-toggle { background: #0284c7; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-right: 3px; }
+        .btn-admin-edit { background: #d97706; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-right: 3px; }
+        .btn-admin-del { background: #dc2626; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        .filter-btn-group { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-        .btn-filter { background: #fff; border: 1px solid #cbd5e1; color: #475569; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .filter-btn-group { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+        .btn-filter { background: #fff; border: 1px solid #cbd5e1; color: #475569; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-filter.active { background: var(--primary-teal); color: #fff; border-color: var(--primary-teal); font-weight: 700; }
 
         .modal-overlay {
@@ -316,222 +318,229 @@
         </div>
     </div>
 
-    <div class="workspace" id="mainWorkspace">
+    <div class="workspace" id="mainWorkspaceContainer">
         
-        <div class="content-panel">
+        <div class="content-panel" id="mainContentPanel">
 
             <!-- จุดที่ 0: หน้า Log In ระบบหลัก -->
             <div id="view-0" class="section-view active">
-                <div class="panel-title"><i class="fa-solid fa-lock" style="color:var(--primary-teal);"></i> จุดที่ 0: เข้าสู่ระบบการใช้งาน (System Log In)</div>
+                <div class="panel-title">
+                    <span><i class="fa-solid fa-lock" style="color:var(--primary-teal);"></i> จุดที่ 0: เข้าสู่ระบบการใช้งาน (System Log In)</span>
+                    <button class="btn-toggle-panel" onclick="toggleMainPanel()">-</button>
+                </div>
                 
-                <div style="max-width: 420px; margin: 40px auto; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 14px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); text-align: center;">
-                    <div style="font-size: 48px; color: var(--primary-teal); margin-bottom: 12px;"><i class="fa-solid fa-hospital-user"></i></div>
-                    <h3 style="color: var(--text-main); margin-top: 0; margin-bottom: 6px;">TTM PMH Flow System</h3>
-                    <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">กรุณากรอก User และ Passcode เพื่อปลดล็อกเข้าสู่ระบบบริการ</p>
-                    
-                    <div class="form-group" style="text-align: left; margin-bottom: 12px;">
-                        <label><i class="fa-solid fa-user"></i> Username</label>
-                        <input type="text" id="login-user-input" placeholder="ระบุ User (TTMPMH)">
-                    </div>
+                <div class="panel-body-content">
+                    <div style="max-width: 420px; margin: 40px auto; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 14px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); text-align: center;">
+                        <div style="font-size: 48px; color: var(--primary-teal); margin-bottom: 12px;"><i class="fa-solid fa-hospital-user"></i></div>
+                        <h3 style="color: var(--text-main); margin-top: 0; margin-bottom: 6px;">TTM PMH Flow System</h3>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 20px;">กรุณากรอก User และ Passcode เพื่อปลดล็อกเข้าสู่ระบบบริการ</p>
+                        
+                        <div class="form-group" style="text-align: left; margin-bottom: 12px;">
+                            <label><i class="fa-solid fa-user"></i> Username</label>
+                            <input type="text" id="login-user-input" placeholder="ระบุ User (TTMPMH)">
+                        </div>
 
-                    <div class="form-group" style="text-align: left; margin-bottom: 18px;">
-                        <label><i class="fa-solid fa-key"></i> Passcode</label>
-                        <input type="password" id="login-pass-input" placeholder="ระบุ Passcode (11097)">
-                    </div>
+                        <div class="form-group" style="text-align: left; margin-bottom: 18px;">
+                            <label><i class="fa-solid fa-key"></i> Passcode</label>
+                            <input type="password" id="login-pass-input" placeholder="ระบุ Passcode (11097)">
+                        </div>
 
-                    <button class="btn-action-main" onclick="handleSystemLogin()" style="padding: 12px; font-size: 15px;"><i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ</button>
-                    
-                    <div id="login-success-msg" style="margin-top: 12px; color: #059669; font-weight: bold; font-size: 13px; display: none;">
-                        <i class="fa-solid fa-circle-check"></i> เข้าสู่ระบบสำเร็จ! ปลดล็อกทุกจุดบริการแล้ว
+                        <button class="btn-action-main" onclick="handleSystemLogin()" style="padding: 12px; font-size: 15px;"><i class="fa-solid fa-right-to-bracket"></i> เข้าสู่ระบบ</button>
+                        
+                        <div id="login-success-msg" style="margin-top: 12px; color: #059669; font-weight: bold; font-size: 13px; display: none;">
+                            <i class="fa-solid fa-circle-check"></i> เข้าสู่ระบบสำเร็จ! ปลดล็อกทุกจุดบริการแล้ว
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- จุดที่ 1: ลงทะเบียน -->
             <div id="view-1" class="section-view">
-                <div class="panel-title"><i class="fa-solid fa-user-plus" style="color:var(--primary-teal);"></i> จุดที่ 1: ลงทะเบียนผู้ป่วย & คัดกรอง Vital Sign</div>
+                <div class="panel-title">
+                    <span><i class="fa-solid fa-user-plus" style="color:var(--primary-teal);"></i> จุดที่ 1: ลงทะเบียนผู้ป่วย & คัดกรอง Vital Sign</span>
+                    <button class="btn-toggle-panel" onclick="toggleMainPanel()">-</button>
+                </div>
                 
-                <div class="form-group full" style="margin-bottom: 12px;">
-                    <label><i class="fa-solid fa-user-tie"></i> เจ้าหน้าที่ผู้ปฏิบัติงาน (User) *</label>
-                    <select id="user-point-1" style="border-color: #cbd5e1;">
-                        <option value="">-- กรุณาเลือกเจ้าหน้าที่ผู้ปฏิบัติงาน --</option>
-                    </select>
-                </div>
-
-                <div class="form-group full">
-                    <label><i class="fa-solid fa-map-location-dot"></i> ประเภทสถานที่บริการ *</label>
-                    <div class="service-type-group">
-                        <div class="btn-service-type selected" id="btn-service-inside" onclick="selectServiceType('ในสถานบริการ')">🏥 ในสถานบริการ</div>
-                        <div class="btn-service-type" id="btn-service-outside" onclick="selectServiceType('นอกสถานบริการ')">🚗 นอกสถานบริการ (นอกพื้นที่)</div>
-                    </div>
-                    <input type="hidden" id="reg-service-type" value="ในสถานบริการ">
-                </div>
-
-                <div class="camera-box-container">
-                    <img id="scannedAvatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="crop-avatar-preview" alt="Patient Card Preview" style="object-fit: contain;">
-                    <div style="color: var(--primary-teal); font-weight: 700; font-size: 13px; margin-bottom: 6px;">
-                        <i class="fa-solid fa-camera"></i> ถ่ายรูปหรืออัปโหลดภาพ (ตัดครอบกรอบสี่เหลี่ยมผืนผ้า)
-                    </div>
-                    
-                    <div class="camera-btn-row">
-                        <button type="button" class="btn-cam" onclick="document.getElementById('cameraInput').click()">
-                            <i class="fa-solid fa-camera-retro"></i> ถ่ายรูปจากกล้อง
-                        </button>
-                        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImageUploadAndCompress(event)">
-
-                        <button type="button" class="btn-cam" onclick="document.getElementById('fileUploadInput').click()">
-                            <i class="fa-solid fa-folder-open"></i> เลือกรูปภาพ
-                        </button>
-                        <input type="file" id="fileUploadInput" accept="image/*" style="display:none" onchange="handleImageUploadAndCompress(event)">
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>เลขประจำตัวประชาชน (13 หลัก)</label>
-                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-idcard" placeholder="ระบุเลขบัตร 13 หลัก" maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                    </div>
-                    <div class="form-group">
-                        <label>HN (รหัสผู้ป่วย)</label>
-                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-hn" placeholder="ระบุเลข HN" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                    </div>
-                    <div class="form-group full">
-                        <label>ชื่อ-นามสกุล ผู้ป่วย (พิมพ์คำนำหน้า นาย / นาง / นางสาว)</label>
-                        <input type="text" id="reg-pname" placeholder="ชื่อ นามสกุล" oninput="autoDetectGender(this.value)">
-                    </div>
-                    
-                    <div class="form-group full">
-                        <label>เพศผู้ป่วย *</label>
-                        <div class="gender-btn-group">
-                            <div class="btn-gender selected" id="gender-male" onclick="selectGender('ชาย')">🚹 ชาย</div>
-                            <div class="btn-gender" id="gender-female" onclick="selectGender('หญิง')">🚺 หญิง</div>
-                        </div>
-                        <input type="hidden" id="reg-gender" value="ชาย">
-                    </div>
-
-                    <div class="form-group">
-                        <label>ความดันโลหิต (SYS / DIA mmHg)</label>
-                        <div style="display: flex; gap: 6px; align-items: center;">
-                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-sys" placeholder="SYS" style="text-align: center;" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeydown="handleVitalEnter(event, 'reg-dia')">
-                            <span style="font-weight: bold; color: var(--primary-teal);">/</span>
-                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-dia" placeholder="DIA" style="text-align: center;" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeydown="handleVitalEnter(event, 'reg-pr')">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>ชีพจร (PR ครั้ง/นาที)</label>
-                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-pr" placeholder="72" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeydown="handleVitalEnter(event, 'reg-temp')">
-                    </div>
-                    <div class="form-group full">
-                        <label>อุณหภูมิ (°C)</label>
-                        <input type="text" inputmode="decimal" id="reg-temp" placeholder="36.5" maxlength="4" oninput="this.value = this.value.replace(/[^0-9.]/g, '')" onkeydown="handleVitalEnter(event, 'reg-weight')">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>น้ำหนัก (kg) [จำกัด 3 หลัก]</label>
-                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-weight" placeholder="60" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeydown="handleVitalEnter(event, 'reg-height')">
-                    </div>
-                    <div class="form-group">
-                        <label>ส่วนสูง (cm) [จำกัด 3 หลัก]</label>
-                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-height" placeholder="170" maxlength="3" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeydown="handleVitalEnter(event, 'reg-phone')">
-                    </div>
-
-                    <div class="form-group full">
-                        <label>เบอร์โทรศัพท์ (10 หลัก) *</label>
-                        <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-phone" placeholder="08xxxxxxxx" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" onkeydown="handleVitalEnter(event, 'reg-right')">
-                    </div>
-
-                    <div class="form-group full">
-                        <label>โรคประจำตัว (เลือกได้มากกว่า 1)</label>
-                        <div class="disease-badge-group">
-                            <div class="disease-badge" onclick="toggleDiseaseBadge(this)">เบาหวาน</div>
-                            <div class="disease-badge" onclick="toggleDiseaseBadge(this)">ไขมันในเลือดสูง</div>
-                            <div class="disease-badge" onclick="toggleDiseaseBadge(this)">ความดันโลหิตสูง</div>
-                            <div class="disease-badge" onclick="toggleDiseaseBadge(this)">โรคหัวใจ</div>
-                            <div class="disease-badge" onclick="toggleDiseaseBadge(this)">โรคหลอดเลือดสมอง</div>
-                            <div class="disease-badge" onclick="toggleDiseaseBadge(this)" style="border-color: #ef4444; color: #dc2626;">โรคไตเรื้อรัง</div>
-                        </div>
-                    </div>
-
-                    <div class="form-group"><label>สิทธิ์การรักษา *</label>
-                        <select id="reg-right" onchange="checkRightSchemeValidation()">
-                            <option value="">-- กรุณาเลือกสิทธิ์การรักษา --</option>
-                            <option value="บัตรทอง">1. บัตรทอง</option>
-                            <option value="บัตรทอง 30 บาท">2. บัตรทอง 30 บาท</option>
-                            <option value="ประกันสังคม ใน สกลนคร">3. ประกันสังคม ใน สกลนคร</option>
-                            <option value="ประกันสังคม รพ.อื่น">4. ประกันสังคม รพ.อื่น</option>
-                            <option value="จ่ายตรงกรมบัญชีกลาง">5. จ่ายตรงกรมบัญชีกลาง</option>
-                            <option value="การปกครองส่วนท้องถิ่น">6. การปกครองส่วนท้องถิ่น</option>
-                            <option value="สำรองจ่าย/รัฐวิสาหกิจ">7. สำรองจ่าย/รัฐวิสาหกิจ</option>
-                            <option value="ชำระเงินเอง">8. ชำระเงินเอง</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>รูปแบบการชำระเงิน <span id="req-payment-label" style="color:var(--accent-red); display:none;">*</span></label>
-                        <select id="reg-payment-method">
-                            <option value="">-- กรุณาเลือก --</option>
-                            <option value="เงินสด">เงินสด</option>
-                            <option value="QR Code Payment">QR Code Payment</option>
+                <div class="panel-body-content">
+                    <div class="form-group full" style="margin-bottom: 12px;">
+                        <label><i class="fa-solid fa-user-tie"></i> เจ้าหน้าที่ผู้ปฏิบัติงาน (User) *</label>
+                        <select id="user-point-1" style="border-color: #cbd5e1;">
+                            <option value="">-- กรุณาเลือกเจ้าหน้าที่ผู้ปฏิบัติงาน --</option>
                         </select>
                     </div>
 
                     <div class="form-group full">
-                        <label>สถานะการชำระเงิน <span id="req-status-label" style="color:var(--accent-red); display:none;">*</span></label>
-                        <div class="pay-status-group" id="pay-status-group-box">
-                            <div class="btn-pay-status pay-unpaid" onclick="selectPayStatusBtn(this, 'ยังไม่ชำระ')">ยังไม่ชำระ</div>
-                            <div class="btn-pay-status pay-paid" onclick="selectPayStatusBtn(this, 'ชำระแล้ว')">ชำระแล้ว</div>
+                        <label><i class="fa-solid fa-map-location-dot"></i> ประเภทสถานที่บริการ *</label>
+                        <div class="service-type-group">
+                            <div class="btn-service-type selected" id="btn-service-inside" onclick="selectServiceType('ในสถานบริการ')">🏥 ในสถานบริการ</div>
+                            <div class="btn-service-type" id="btn-service-outside" onclick="selectServiceType('นอกสถานบริการ')">🚗 นอกสถานบริการ (นอกพื้นที่)</div>
                         </div>
-                        <input type="hidden" id="reg-pay-status" value="">
+                        <input type="hidden" id="reg-service-type" value="ในสถานบริการ">
                     </div>
 
-                    <div class="form-group full">
-                        <label>เลือกคลินิกรับบริการ</label>
-                        <div class="clinic-btn-group" id="reg-clinic-group-box">
-                            <div class="btn-clinic clinic-thai selected" onclick="selectClinic(this, 'แพทย์แผนไทย')"><i class="fa-solid fa-leaf"></i> แพทย์แผนไทย</div>
-                            <div class="btn-clinic clinic-china" onclick="selectClinic(this, 'แพทย์แผนจีน')"><i class="fa-solid fa-yin-yang"></i> แพทย์แผนจีน</div>
-                            <div class="btn-clinic clinic-spa" onclick="selectClinic(this, 'สปาเพื่อสุขภาพ')"><i class="fa-solid fa-spa"></i> สปาเพื่อสุขภาพ</div>
+                    <div class="camera-box-container">
+                        <img id="scannedAvatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="crop-avatar-preview" alt="Patient Card Preview" style="object-fit: contain;">
+                        <div style="color: var(--primary-teal); font-weight: 700; font-size: 13px; margin-bottom: 6px;">
+                            <i class="fa-solid fa-camera"></i> ถ่ายรูปหรืออัปโหลดภาพ (ตัดครอบกรอบสี่เหลี่ยมผืนผ้า)
                         </div>
-                        <input type="hidden" id="reg-clinic" value="แพทย์แผนไทย">
+                        
+                        <div class="camera-btn-row">
+                            <button type="button" class="btn-cam" onclick="document.getElementById('cameraInput').click()">
+                                <i class="fa-solid fa-camera-retro"></i> ถ่ายรูปจากกล้อง
+                            </button>
+                            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImageUploadAndCompress(event)">
+
+                            <button type="button" class="btn-cam" onclick="document.getElementById('fileUploadInput').click()">
+                                <i class="fa-solid fa-folder-open"></i> เลือกรูปภาพ
+                            </button>
+                            <input type="file" id="fileUploadInput" accept="image/*" style="display:none" onchange="handleImageUploadAndCompress(event)">
+                        </div>
                     </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>เลขประจำตัวประชาชน (13 หลัก)</label>
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-idcard" placeholder="ระบุเลขบัตร 13 หลัก" maxlength="13" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="form-group">
+                            <label>HN (รหัสผู้ป่วย)</label>
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-hn" placeholder="ระบุเลข HN" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="form-group full">
+                            <label>ชื่อ-นามสกุล ผู้ป่วย (พิมพ์คำนำหน้า นาย / นาง / นางสาว)</label>
+                            <input type="text" id="reg-pname" placeholder="ชื่อ นามสกุล" oninput="autoDetectGender(this.value)">
+                        </div>
+                        
+                        <div class="form-group full">
+                            <label>เพศผู้ป่วย *</label>
+                            <div class="gender-btn-group">
+                                <div class="btn-gender selected" id="gender-male" onclick="selectGender('ชาย')">🚹 ชาย</div>
+                                <div class="btn-gender" id="gender-female" onclick="selectGender('หญิง')">🚺 หญิง</div>
+                            </div>
+                            <input type="hidden" id="reg-gender" value="ชาย">
+                        </div>
+
+                        <div class="form-group">
+                            <label>ความดันโลหิต (SYS / DIA mmHg)</label>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-sys" placeholder="SYS" style="text-align: center;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                <span style="font-weight: bold; color: var(--primary-teal);">/</span>
+                                <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-dia" placeholder="DIA" style="text-align: center;" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>ชีพจร (PR ครั้ง/นาที)</label>
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-pr" placeholder="72" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="form-group full">
+                            <label>อุณหภูมิ (°C)</label>
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-temp" placeholder="365 (เช่น 36.5)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>น้ำหนัก (kg)</label>
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-weight" placeholder="60" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="form-group">
+                            <label>ส่วนสูง (cm)</label>
+                            <input type="tel" inputmode="numeric" pattern="[0-9]*" id="reg-height" placeholder="170" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+
+                        <div class="form-group full">
+                            <label>โรคประจำตัว (เลือกได้มากกว่า 1)</label>
+                            <div class="disease-badge-group">
+                                <div class="disease-badge" onclick="toggleDiseaseBadge(this)">เบาหวาน</div>
+                                <div class="disease-badge" onclick="toggleDiseaseBadge(this)">ไขมันในเลือดสูง</div>
+                                <div class="disease-badge" onclick="toggleDiseaseBadge(this)">ความดันโลหิตสูง</div>
+                                <div class="disease-badge" onclick="toggleDiseaseBadge(this)">โรคหัวใจ</div>
+                                <div class="disease-badge" onclick="toggleDiseaseBadge(this)">โรคหลอดเลือดสมอง</div>
+                                <div class="disease-badge" onclick="toggleDiseaseBadge(this)" style="border-color: #ef4444; color: #dc2626;">โรคไตเรื้อรัง</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group"><label>สิทธิ์การรักษา</label>
+                            <select id="reg-right" onchange="checkRightSchemeValidation()">
+                                <option value="บัตรทอง">1. บัตรทอง</option>
+                                <option value="บัตรทอง 30 บาท">2. บัตรทอง 30 บาท</option>
+                                <option value="ประกันสังคม ใน สกลนคร">3. ประกันสังคม ใน สกลนคร</option>
+                                <option value="ประกันสังคม รพ.อื่น">4. ประกันสังคม รพ.อื่น</option>
+                                <option value="จ่ายตรงกรมบัญชีกลาง">5. จ่ายตรงกรมบัญชีกลาง</option>
+                                <option value="การปกครองส่วนท้องถิ่น">6. การปกครองส่วนท้องถิ่น</option>
+                                <option value="สำรองจ่าย/รัฐวิสาหกิจ">7. สำรองจ่าย/รัฐวิสาหกิจ</option>
+                                <option value="ชำระเงินเอง">8. ชำระเงินเอง</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>รูปแบบการชำระเงิน <span id="req-payment-label" style="color:var(--accent-red); display:none;">*</span></label>
+                            <select id="reg-payment-method">
+                                <option value="">-- กรุณาเลือก --</option>
+                                <option value="เงินสด">เงินสด</option>
+                                <option value="QR Code Payment">QR Code Payment</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full">
+                            <label>สถานะการชำระเงิน <span id="req-status-label" style="color:var(--accent-red); display:none;">*</span></label>
+                            <div class="pay-status-group" id="pay-status-group-box">
+                                <div class="btn-pay-status pay-unpaid" onclick="selectPayStatusBtn(this, 'ยังไม่ชำระ')">ยังไม่ชำระ</div>
+                                <div class="btn-pay-status pay-paid" onclick="selectPayStatusBtn(this, 'ชำระแล้ว')">ชำระแล้ว</div>
+                            </div>
+                            <input type="hidden" id="reg-pay-status" value="">
+                        </div>
+
+                        <div class="form-group full">
+                            <label>เลือกคลินิกรับบริการ</label>
+                            <div class="clinic-btn-group">
+                                <div class="btn-clinic clinic-thai selected" onclick="selectClinic(this, 'แพทย์แผนไทย')"><i class="fa-solid fa-leaf"></i> แพทย์แผนไทย</div>
+                                <div class="btn-clinic clinic-china" onclick="selectClinic(this, 'แพทย์แผนจีน')"><i class="fa-solid fa-yin-yang"></i> แพทย์แผนจีน</div>
+                                <div class="btn-clinic clinic-spa" onclick="selectClinic(this, 'สปาเพื่อสุขภาพ')"><i class="fa-solid fa-spa"></i> สปาเพื่อสุขภาพ</div>
+                            </div>
+                            <input type="hidden" id="reg-clinic" value="แพทย์แผนไทย">
+                        </div>
+                    </div>
+                    <button class="btn-action-main" onclick="submitRegistration()"><i class="fa-solid fa-paper-plane"></i> บันทึกและส่งต่อไปยังห้องตรวจ</button>
+
+                    <button type="button" class="btn-simulate-patient" onclick="fillMockPatientData()">
+                        <i class="fa-solid fa-robot"></i> แบบจำลองผู้ป่วย (ทดสอบ)
+                    </button>
                 </div>
-                <button class="btn-action-main" onclick="submitRegistration()"><i class="fa-solid fa-paper-plane"></i> บันทึกและส่งต่อไปยังห้องตรวจ</button>
-
-                <button type="button" class="btn-simulate-patient" onclick="fillMockPatientData()">
-                    <i class="fa-solid fa-robot"></i> แบบจำลองผู้ป่วย (ทดสอบ)
-                </button>
             </div>
 
             <!-- จุดที่ 2: ห้องตรวจแพทย์ -->
             <div id="view-2" class="section-view">
                 <div class="panel-title" style="margin-bottom:8px;">
                     <span style="font-size:16px;"><i class="fa-solid fa-stethoscope" style="color:var(--primary-teal);"></i> จุดที่ 2: ห้องตรวจแพทย์</span>
-                    <div style="display:flex; gap:6px; flex-wrap: wrap;">
+                    <div style="display:flex; gap:6px; flex-wrap: wrap; align-items:center;">
                         <a href="https://thai-herb-order.netlify.app/" target="_blank" style="background:#0891b2; color:#fff; text-decoration:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700;"><i class="fa-solid fa-capsules"></i> สั่งยาปรุงเฉพาะราย</a>
                         <a href="https://medbank.bmhos.com" target="_blank" style="background:#7c3aed; color:#fff; text-decoration:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:700;"><i class="fa-solid fa-address-card"></i> ตรวจสอบประวัติ</a>
                         <a id="commanderLinkBtn" href="https://nopphawinchi-ux.github.io/thai-med-monitor/" target="_blank" style="background:#4f46e5; color:#fff; text-decoration:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:600;"><i class="fa-solid fa-external-link-alt"></i> สั่งการผ่านหน้าจอ</a>
+                        <button class="btn-toggle-panel" onclick="toggleMainPanel()">-</button>
                     </div>
                 </div>
                 
-                <div class="form-group full" style="margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border);">
-                    <label style="color:var(--primary-teal); font-size: 14px;"><i class="fa-solid fa-user-doctor"></i> เลือกแพทย์ผู้ตรวจก่อนเริ่มปฏิบัติงาน *</label>
-                    <select id="global-doc-select" style="padding:8px 12px; font-size:14px; border-color:#cbd5e1;" onchange="handleDoctorSelection(this)">
-                        <option value="">-- กรุณาเลือกแพทย์ผู้ตรวจ --</option>
-                    </select>
-                </div>
-
-                <div class="doctor-layout">
-                    <div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px;">
-                            <button class="btn-filter active" id="doc-filter-inside" onclick="setDoctorFilter('ในสถานบริการ', this)">🏥 ในสถาน</button>
-                            <button class="btn-filter" id="doc-filter-outside" onclick="setDoctorFilter('นอกสถานบริการ', this)">🚗 นอกสถาน</button>
-                        </div>
-                        <div class="patient-queue-box" id="doctorPatientList">
-                            <div style="color:var(--text-muted); text-align:center; padding:15px; font-size:13px;">ไม่มีผู้ป่วยรอตรวจ</div>
-                        </div>
+                <div class="panel-body-content">
+                    <div class="form-group full" style="margin-bottom: 12px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border);">
+                        <label style="color:var(--primary-teal); font-size: 14px;"><i class="fa-solid fa-user-doctor"></i> เลือกแพทย์ผู้ตรวจก่อนเริ่มปฏิบัติงาน *</label>
+                        <select id="global-doc-select" style="padding:8px 12px; font-size:14px; border-color:#cbd5e1;" onchange="handleDoctorSelection(this)">
+                            <option value="">-- กรุณาเลือกแพทย์ผู้ตรวจ --</option>
+                        </select>
                     </div>
 
-                    <div id="doctorFormContainer" style="background:#f8fafc; border:1px solid var(--card-border); border-radius:10px; padding:14px;">
-                        <div style="text-align:center; color:var(--text-muted); padding:30px; font-size:13px;">กรุณาเลือกแพทย์ด้านบน และคลิกเลือกรายชื่อผู้ป่วยทางซ้ายมือเพื่อทำการตรวจรักษา</div>
+                    <div class="doctor-layout">
+                        <div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px;">
+                                <button class="btn-filter active" id="doc-filter-inside" onclick="setDoctorFilter('ในสถานบริการ', this)">🏥 ในสถาน</button>
+                                <button class="btn-filter" id="doc-filter-outside" onclick="setDoctorFilter('นอกสถานบริการ', this)">🚗 นอกสถาน</button>
+                            </div>
+                            <div class="patient-queue-box" id="doctorPatientList">
+                                <div style="color:var(--text-muted); text-align:center; padding:15px; font-size:13px;">ไม่มีผู้ป่วยรอตรวจ</div>
+                            </div>
+                        </div>
+
+                        <div id="doctorFormContainer" style="background:#f8fafc; border:1px solid var(--card-border); border-radius:10px; padding:14px;">
+                            <div style="text-align:center; color:var(--text-muted); padding:30px; font-size:13px;">กรุณาเลือกแพทย์ด้านบน และคลิกเลือกรายชื่อผู้ป่วยทางซ้ายมือเพื่อทำการตรวจรักษา</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -540,50 +549,58 @@
             <div id="view-3" class="section-view">
                 <div class="panel-title" style="margin-bottom:8px;">
                     <span style="font-size:16px;"><i class="fa-solid fa-pills" style="color:var(--primary-teal);"></i> จุดที่ 3: ห้องยา & จัดยา</span>
-                    <div style="display:flex; gap:6px; flex-wrap: wrap;">
+                    <div style="display:flex; gap:6px; flex-wrap: wrap; align-items:center;">
                         <a href="https://heyzine.com/flip-book/676ad6a271.html?fbclid=IwY2xjawVuL2VleHRuA2FlbQIxMABwZG9mAWJyaWQRMWpyMFF4MGV5RlpWdnl1a3lzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEffQhgBeguzh_zUrLMxyoKIK4r-yX_SVM38uwH9-jEvBFPnYtnGyeXi4BREV0_aem_EPlHg-JisyVDrvv_t9uZUg#page/6" target="_blank" class="btn-cam" style="text-decoration:none; background:#0284c7; border-color:#0284c7;"><i class="fa-solid fa-book-medical"></i> คู่มือยาทั้งหมด</a>
                         <button type="button" class="btn-cam" onclick="openDrugGuideModal()"><i class="fa-solid fa-list"></i> รายการยาทั้งหมด</button>
                         <a href="https://thai-herb-order.netlify.app/" target="_blank" style="background:#0891b2; color:#fff; text-decoration:none; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:5px;"><i class="fa-solid fa-capsules"></i> สั่งยาปรุงเฉพาะราย</a>
+                        <button class="btn-toggle-panel" onclick="toggleMainPanel()">-</button>
                     </div>
                 </div>
 
-                <div class="form-group full" style="margin-bottom: 12px;">
-                    <label><i class="fa-solid fa-user-tie"></i> เจ้าหน้าที่ผู้ปฏิบัติงาน (User) *</label>
-                    <select id="user-point-3" style="border-color: #cbd5e1;">
-                        <option value="">-- กรุณาเลือกเจ้าหน้าที่ผู้ปฏิบัติงาน --</option>
-                    </select>
-                </div>
-                
-                <div class="pharmacy-layout">
-                    <div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px;">
-                            <button class="btn-filter active" id="pharm-filter-inside" onclick="setPharmacyFilter('ในสถานบริการ', this)">🏥 ในสถาน</button>
-                            <button class="btn-filter" id="pharm-filter-outside" onclick="setPharmacyFilter('นอกสถานบริการ', this)">🚗 นอกสถาน</button>
-                        </div>
-                        <div class="patient-queue-box" id="pharmacyPatientList">
-                            <div style="color:var(--text-muted); text-align:center; padding:15px; font-size:13px;">ไม่มีรายการรอจัดยา</div>
-                        </div>
+                <div class="panel-body-content">
+                    <div class="form-group full" style="margin-bottom: 12px;">
+                        <label><i class="fa-solid fa-user-tie"></i> เจ้าหน้าที่ผู้ปฏิบัติงาน (User) *</label>
+                        <select id="user-point-3" style="border-color: #cbd5e1;">
+                            <option value="">-- กรุณาเลือกเจ้าหน้าที่ผู้ปฏิบัติงาน --</option>
+                        </select>
                     </div>
+                    
+                    <div class="pharmacy-layout">
+                        <div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 6px;">
+                                <button class="btn-filter active" id="pharm-filter-inside" onclick="setPharmacyFilter('ในสถานบริการ', this)">🏥 ในสถาน</button>
+                                <button class="btn-filter" id="pharm-filter-outside" onclick="setPharmacyFilter('นอกสถานบริการ', this)">🚗 นอกสถาน</button>
+                            </div>
+                            <div class="patient-queue-box" id="pharmacyPatientList">
+                                <div style="color:var(--text-muted); text-align:center; padding:15px; font-size:13px;">ไม่มีรายการรอจัดยา</div>
+                            </div>
+                        </div>
 
-                    <div id="pharmacyFormContainer" style="background:#f8fafc; border:1px solid var(--card-border); border-radius:10px; padding:14px;">
-                        <div style="text-align:center; color:var(--text-muted); padding:30px; font-size:13px;">กรุณาคลิกเลือกรายชื่อผู้ป่วยทางซ้ายมือเพื่อจัดการจัดยา</div>
+                        <div id="pharmacyFormContainer" style="background:#f8fafc; border:1px solid var(--card-border); border-radius:10px; padding:14px;">
+                            <div style="text-align:center; color:var(--text-muted); padding:30px; font-size:13px;">กรุณาคลิกเลือกรายชื่อผู้ป่วยทางซ้ายมือเพื่อจัดการจัดยา</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- จุดที่ 4: การเงิน -->
             <div id="view-4" class="section-view">
-                <div class="panel-title"><i class="fa-solid fa-cash-register" style="color:var(--primary-teal);"></i> จุดที่ 4: การเงิน (สรุปยอดรวม & ปิดสิทธิ์)</div>
-                
-                <div class="form-group full" style="margin-bottom: 12px;">
-                    <label><i class="fa-solid fa-user-tie"></i> เจ้าหน้าที่ผู้ปฏิบัติงาน (User) *</label>
-                    <select id="user-point-4" style="border-color: #cbd5e1;">
-                        <option value="">-- กรุณาเลือกเจ้าหน้าที่ผู้ปฏิบัติงาน --</option>
-                    </select>
+                <div class="panel-title">
+                    <span><i class="fa-solid fa-cash-register" style="color:var(--primary-teal);"></i> จุดที่ 4: การเงิน (สรุปยอดรวม & ปิดสิทธิ์)</span>
+                    <button class="btn-toggle-panel" onclick="toggleMainPanel()">-</button>
                 </div>
+                
+                <div class="panel-body-content">
+                    <div class="form-group full" style="margin-bottom: 12px;">
+                        <label><i class="fa-solid fa-user-tie"></i> เจ้าหน้าที่ผู้ปฏิบัติงาน (User) *</label>
+                        <select id="user-point-4" style="border-color: #cbd5e1;">
+                            <option value="">-- กรุณาเลือกเจ้าหน้าที่ผู้ปฏิบัติงาน --</option>
+                        </select>
+                    </div>
 
-                <div id="cashier-queue-container">
-                    <div style="text-align:center; color:var(--text-muted); padding:30px; font-size:13px;">ไม่มีรายการรอชำระเงิน</div>
+                    <div id="cashier-queue-container">
+                        <div style="text-align:center; color:var(--text-muted); padding:30px; font-size:13px;">ไม่มีรายการรอชำระเงิน</div>
+                    </div>
                 </div>
             </div>
 
@@ -595,58 +612,60 @@
                         <label style="font-size:12px; color:var(--primary-teal); margin:0;">เลือกวันที่:</label>
                         <input type="date" id="admin-filter-date" style="padding:4px 8px; font-size:13px; width:150px; background:#fff;" onchange="renderAdminSummaryTable()">
                         <button class="btn-cam" onclick="renderAdminSummaryTable()"><i class="fa-solid fa-rotate"></i> โหลด</button>
+                        <button class="btn-toggle-panel" onclick="toggleMainPanel()">-</button>
                     </div>
                 </div>
 
-                <div class="filter-btn-group" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                        <button class="btn-filter active" id="filter-all" onclick="setAdminFilter('all', this)">📌 รวมทั้งหมด</button>
-                        <button class="btn-filter" id="filter-inside" onclick="setAdminFilter('ในสถานบริการ', this)">🏥 ในสถาน</button>
-                        <button class="btn-filter" id="filter-outside" onclick="setAdminFilter('นอกสถานบริการ', this)">🚗 นอกสถาน</button>
-                        <button class="btn-filter" id="filter-thai" onclick="setAdminFilter('แพทย์แผนไทย', this)">🌿 แผนไทย</button>
-                        <button class="btn-filter" id="filter-china" onclick="setAdminFilter('แพทย์แผนจีน', this)">☯️ แผนจีน</button>
-                        <button class="btn-filter" id="filter-spa" onclick="setAdminFilter('สปาเพื่อสุขภาพ', this)">✨ สปา</button>
+                <div class="panel-body-content">
+                    <div class="filter-btn-group" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button class="btn-filter active" id="filter-all" onclick="setAdminFilter('all', this)">📌 สรุปทั้งหมด</button>
+                            <button class="btn-filter" id="filter-inside" onclick="setAdminFilter('ในสถานบริการ', this)">🏥 ในสถาน</button>
+                            <button class="btn-filter" id="filter-outside" onclick="setAdminFilter('นอกสถานบริการ', this)">🚗 นอกสถาน</button>
+                            <button class="btn-filter" id="filter-thai" onclick="setAdminFilter('แพทย์แผนไทย', this)">🌿 แผนไทย</button>
+                            <button class="btn-filter" id="filter-china" onclick="setAdminFilter('แพทย์แผนจีน', this)">☯️ แผนจีน</button>
+                            <button class="btn-filter" id="filter-spa" onclick="setAdminFilter('สปาเพื่อสุขภาพ', this)">✨ สปา</button>
+                        </div>
+                        <button class="btn-cam" onclick="exportTableToExcel()" style="background:#059669; color:#fff; border-color:#059669;"><i class="fa-solid fa-file-excel"></i> Export เป็น Excel</button>
                     </div>
-                    <button class="btn-cam" onclick="exportTableToExcel()" style="background:#059669; color:#fff; border-color:#059669;"><i class="fa-solid fa-file-excel"></i> Export เป็น Excel</button>
-                </div>
 
-                <div style="overflow-x: auto;">
-                    <table class="admin-table" id="summaryExportTable">
-                        <thead>
-                            <tr>
-                                <th>เวลา</th>
-                                <th>คิว</th>
-                                <th>HN / ชื่อ-นามสกุล</th>
-                                <th>ประเภท</th>
-                                <th>คลินิก</th>
-                                <th>สิทธิ์การรักษา</th>
-                                <th>หัตถการ</th>
-                                <th>ยอดสุทธิ</th>
-                                <th>สถานะ</th>
-                                <th>ผู้รับผิดชอบ (ลงทะเบียน ➔ ตรวจ ➔ ยา ➔ การเงิน)</th>
-                                <th>จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminSummaryTableBody">
-                            <tr><td colspan="11" style="text-align:center; color:var(--text-muted);">กำลังโหลดข้อมูลสรุป...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                    <div style="overflow-x: auto;">
+                        <table class="admin-table" id="summaryExportTable">
+                            <thead>
+                                <tr>
+                                    <th>เวลา</th>
+                                    <th>คิว</th>
+                                    <th>HN / ชื่อ-นามสกุล</th>
+                                    <th>ประเภท</th>
+                                    <th>คลินิก</th>
+                                    <th>สิทธิ์การรักษา</th>
+                                    <th>หัตถการ</th>
+                                    <th>ยอดสุทธิ</th>
+                                    <th>สถานะ</th>
+                                    <th>ผู้รับผิดชอบ (ลงทะเบียน ➔ ตรวจ ➔ ยา ➔ การเงิน)</th>
+                                    <th>จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminSummaryTableBody">
+                                <tr><td colspan="11" style="text-align:center; color:var(--text-muted);">กำลังโหลดข้อมูลสรุป...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                <div id="adminSummaryFooterBox" style="margin-top: 10px; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 10px; padding: 10px; font-size: 12px;"></div>
+                    <div id="adminSummaryFooterBox" style="margin-top: 14px; background: #f8fafc; border: 1px solid var(--card-border); border-radius: 10px; padding: 14px; font-size: 13px;"></div>
+                </div>
             </div>
 
         </div>
 
-        <!-- Right Sidebar (ปรับให้มีปุ่มพับเก็บไปด้านข้างได้) -->
-        <div class="status-sidebar" id="rightSidebarPanel">
+        <!-- Right Sidebar (สถานะผู้ป่วยทุกจุด) -->
+        <div class="status-sidebar" id="statusSidebarPanel">
             <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 700; font-size: 14px;">
-                <span class="sidebar-content-wrap"><i class="fa-solid fa-users-line" style="color:var(--primary-teal);"></i> สถานะผู้ป่วย</span>
-                <span id="totalPatientCount" class="sidebar-content-wrap" style="font-size: 13px; color: var(--primary-teal);">(0 คน)</span>
-                <button class="sidebar-toggle-btn" onclick="toggleSidebarCollapse()" id="sidebarToggleBtn" title="ย่อ/ขยาย Sidebar"><i class="fa-solid fa-angles-right"></i></button>
+                <span><i class="fa-solid fa-users-line" style="color:var(--primary-teal);"></i> สถานะผู้ป่วยทุกจุด <span id="totalPatientCount" style="font-size: 13px; color: var(--primary-teal);">(0 คน)</span></span>
+                <button class="btn-toggle-panel" onclick="toggleSidebarPanel()">-</button>
             </div>
             
-            <div class="sidebar-content-wrap" style="display:flex; flex-direction:column; flex-grow:1; overflow-y:auto;">
+            <div class="sidebar-body-content">
                 <div class="sidebar-section-title title-inside">
                     <span>🏥 ในสถานบริการ</span>
                     <span id="countInside" style="font-size:11px;">0 คน</span>
@@ -783,6 +802,20 @@
             "พอกทิ้งไว้ครั้งละ 15 นาที เช้า-เย็น"
         ];
 
+        function toggleMainPanel() {
+            const panel = document.getElementById('mainContentPanel');
+            panel.classList.toggle('collapsed');
+            const btn = panel.querySelector('.btn-toggle-panel');
+            if (btn) btn.innerText = panel.classList.contains('collapsed') ? '+' : '-';
+        }
+
+        function toggleSidebarPanel() {
+            const sidebar = document.getElementById('statusSidebarPanel');
+            sidebar.classList.toggle('collapsed');
+            const btn = sidebar.querySelector('.btn-toggle-panel');
+            if (btn) btn.innerText = sidebar.classList.contains('collapsed') ? '+' : '-';
+        }
+
         function getPresetInstruction(drugName) {
             const group1 = ["ฟ้าทะลายโจร", "ยาปราบชมพูทวีป", "ยาจันทน์ลีลา", "ยาเขียวหอม", "ยาห้าราก (เบญจโลกวิเชียร)", "ยาประสะจันทน์แดง", "ยามันทธาตุ", "ยาวิสัมพยาใหญ่", "ยาธรณีสัณฑะฆาต", "เถาวัลย์เปรียง", "ยาสหัศธารา", "ยากษัยเส้น"];
             const group2 = ["ขมิ้นชัน", "ยาธาตุอบเชย", "ยาประสะกะเพรา", "ยาเหลืองปิดสมุทร"];
@@ -813,30 +846,6 @@
             ];
             if (qtyOneList.includes(drugName)) return 1;
             return 30;
-        }
-
-        // ฟังก์ชันพับเก็บ/ขยาย Sidebar ไปด้านข้าง
-        function toggleSidebarCollapse() {
-            let workspace = document.getElementById('mainWorkspace');
-            let btnIcon = document.getElementById('sidebarToggleBtn').querySelector('i');
-            workspace.classList.toggle('sidebar-collapsed');
-            if (workspace.classList.contains('sidebar-collapsed')) {
-                btnIcon.className = "fa-solid fa-angles-left";
-            } else {
-                btnIcon.className = "fa-solid fa-angles-right";
-            }
-        }
-
-        // ระบบกด Enter เพื่อข้ามไปยังฟิลด์ถัดไป
-        function handleVitalEnter(event, nextFieldId) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                let nextEl = document.getElementById(nextFieldId);
-                if (nextEl) {
-                    nextEl.focus();
-                    if (nextEl.select) nextEl.select();
-                }
-            }
         }
 
         function initStaffDropdowns() {
@@ -899,34 +908,21 @@
         function openDrugGuideModal() { document.getElementById('drugGuideModal').style.display = 'flex'; }
         function closeDrugGuideModal() { document.getElementById('drugGuideModal').style.display = 'none'; }
 
-        function checkAdminAccess(btn) {
-            if (!isSystemLoggedIn) { alert("กรุณาเข้าสู่ระบบ (จุดที่ 0) ก่อนใช้งาน"); return; }
-            let pwd = prompt("กรุณากรอกรหัสความปลอดภัยสำหรับเข้าหน้าสรุปรายวัน:");
-            if (pwd === "29042533") {
-                isAdminLoggedIn = true;
-                switchView('view-5', btn);
-                renderAdminSummaryTable();
-            } else {
-                alert("รหัสความปลอดภัยไม่ถูกต้อง! ไม่อนุญาตให้เข้าถึง");
-            }
-        }
-
         function fillMockPatientData() {
             const sampleNames = ["นายสมชาย ใจดี", "นางสาวสมหญิง รักสงบ", "นายสมศักดิ์ มีสุข", "นางนงเยาว์ ศรีทอง", "นายก้อง ภิรมย์รักษ์"];
             const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
             
             document.getElementById('user-point-1').selectedIndex = 1;
-            document.getElementById('reg-idcard').value = "1103701234567";
+            document.getElementById('reg-idcard').value = "*************";
             document.getElementById('reg-hn').value = "670123";
             document.getElementById('reg-pname').value = randomName;
             autoDetectGender(randomName);
-            document.getElementById('reg-sys').value = "120";
-            document.getElementById('reg-dia').value = "80";
-            document.getElementById('reg-pr').value = "72";
-            document.getElementById('reg-temp').value = "36.5";
-            document.getElementById('reg-weight').value = "60";
-            document.getElementById('reg-height').value = "170";
-            document.getElementById('reg-phone').value = "0812345678";
+            document.getElementById('reg-sys').value = "150";
+            document.getElementById('reg-dia').value = "95";
+            document.getElementById('reg-pr').value = "105";
+            document.getElementById('reg-temp').value = "365";
+            document.getElementById('reg-weight').value = "65";
+            document.getElementById('reg-height').value = "172";
             document.getElementById('reg-right').value = "บัตรทอง 30 บาท";
             checkRightSchemeValidation();
             
@@ -975,7 +971,6 @@
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    
                     canvas.width = img.width;
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
@@ -1022,7 +1017,17 @@
             document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
             btn.classList.add('active');
-            if(viewId === 'view-5') renderAdminSummaryTable();
+
+            const workspaceContainer = document.getElementById('mainWorkspaceContainer');
+            const statusSidebar = document.getElementById('statusSidebarPanel');
+            if (viewId === 'view-5') {
+                workspaceContainer.classList.add('admin-full-mode');
+                statusSidebar.classList.add('hidden-mode');
+                renderAdminSummaryTable();
+            } else {
+                workspaceContainer.classList.remove('admin-full-mode');
+                statusSidebar.classList.remove('hidden-mode');
+            }
         }
 
         function selectClinic(element, clinicName) {
@@ -1045,8 +1050,6 @@
             const payStatusBtns = document.querySelectorAll('.btn-pay-status');
             const reqPaymentLabel = document.getElementById('req-payment-label');
             const reqStatusLabel = document.getElementById('req-status-label');
-
-            if (!rightVal) return;
 
             const isFreeScheme = (rightVal === 'บัตรทอง' || rightVal === 'ประกันสังคม ใน สกลนคร' || rightVal === 'จ่ายตรงกรมบัญชีกลาง' || rightVal === 'การปกครองส่วนท้องถิ่น');
 
@@ -1090,23 +1093,19 @@
             return prefix + String(nextNum).padStart(2, '0');
         }
 
-        // ฟังก์ชันบันทึกและส่งข้อมูล (รองรับทั้งสร้างใหม่และอัปเดตเคสเดิมหลังแก้ไข)
         function submitRegistration() {
             if (!isSystemLoggedIn) { alert("กรุณาเข้าสู่ระบบก่อนบันทึกข้อมูล"); return; }
             const staffUser = document.getElementById('user-point-1').value;
             if(!staffUser) { alert("กรุณาเลือกชื่อเจ้าหน้าที่ผู้ปฏิบัติงาน (User) จุดลงทะเบียนก่อนบันทึก"); return; }
 
-            let serviceType = document.getElementById('reg-service-type').value;
+            const serviceType = document.getElementById('reg-service-type').value;
             const idcard = document.getElementById('reg-idcard').value;
             const hn = document.getElementById('reg-hn').value;
             const pname = document.getElementById('reg-pname').value.trim();
             const gender = document.getElementById('reg-gender').value;
             const rightScheme = document.getElementById('reg-right').value;
-            const phone = document.getElementById('reg-phone').value.trim();
             
             if(!idcard || !hn || !pname) { alert("กรุณากรอกข้อมูลสำคัญให้ครบถ้วน"); return; }
-            if(!rightScheme) { alert("กรุณาเลือกสิทธิ์การรักษา"); return; }
-            if(!phone || phone.length !== 10) { alert("กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก"); return; }
 
             const sysVal = document.getElementById('reg-sys').value;
             const diaVal = document.getElementById('reg-dia').value;
@@ -1136,40 +1135,18 @@
 
             const weightVal = document.getElementById('reg-weight').value || '-';
             const heightVal = document.getElementById('reg-height').value || '-';
-            let selectedGlobalDoc = document.getElementById('global-doc-select').value || doctorListWithTitle[0];
-            let selectedClinicVal = document.getElementById('reg-clinic').value;
-            let assignedQueueNo = generateQueueNumber(serviceType);
-
-            let editingKey = document.getElementById('reg-service-type').dataset.editingKey;
-            let urlParams = new URLSearchParams(window.location.search);
-            let urlQueue = urlParams.get('queue');
-
-            let targetQ = '';
-            if (editingKey && allPatientsData[editingKey]) {
-                targetQ = allPatientsData[editingKey].queueNo || '';
-            } else if (urlQueue) {
-                targetQ = urlQueue;
-            }
-
-            if (targetQ.startsWith('C')) {
-                assignedQueueNo = targetQ;
-                selectedGlobalDoc = doctorListWithTitle[5]; // นายแพทย์กฤตธนัท วงค์วิเศษ
-                selectedClinicVal = 'แพทย์แผนจีน';
-                serviceType = 'ในสถานบริการ';
-            } else if (editingKey && allPatientsData[editingKey]) {
-                assignedQueueNo = allPatientsData[editingKey].queueNo;
-            }
+            const selectedGlobalDoc = document.getElementById('global-doc-select').value || doctorListWithTitle[0];
 
             let initialCost = (rightScheme === 'บัตรทอง 30 บาท') ? 30 : 0;
+            let assignedQueueNo = generateQueueNumber(serviceType);
 
-            const caseData = {
-                serviceType: serviceType,
+            const newCase = {
+                serviceType,
                 queueNo: assignedQueueNo,
                 idcard, hn, pname,
                 gender: gender,
                 avatar: currentAvatarBase64,
                 staffRegis: staffUser,
-                phone: phone,
                 vitalSign: {
                     bp: bpString,
                     pr: document.getElementById('reg-pr').value || '-',
@@ -1180,42 +1157,29 @@
                 },
                 diseases: selectedDiseases.length > 0 ? selectedDiseases.join(', ') : 'ไม่มี',
                 rightScheme: rightScheme,
-                clinic: selectedClinicVal,
+                clinic: document.getElementById('reg-clinic').value,
                 paymentMethod: paymentMethod || 'ตามสิทธิ์',
                 payStatus: payStatus || 'ยังไม่ชำระ',
                 status: 'รอตรวจห้องแพทย์',
-                currentPoint: 'จุดที่ 2: ห้องตรวจ',
+                currentPoint: 'จุดลงทะเบียน', // เริ่มต้นที่จุดลงทะเบียนตามเงื่อนไขที่ต้องการ
                 entryTime: timeString,
                 entryDate: dateString,
                 doctorName: selectedGlobalDoc,
+                operator: '', // กำหนดเป็นค่าว่าง รอ Admin กำหนด
+                bed: '',      // ป้องกันการขึ้นคำว่าสำรองเตียง ตั้งค่าเป็นค่าว่างรอ Admin จัดสรร
+                chiefComplaint: '',
+                treatmentTypes: [],
+                prescriptions: [],
                 totalCost: initialCost,
                 pharmacyFeedback: 'รอจัดยา',
+                rightClosed: false,
+                receiptIssued: false,
                 timestamp: nowObj.getTime()
             };
 
-            if (editingKey) {
-                sysRef.child(editingKey).update(caseData, (error) => {
-                    if (!error) {
-                        alert(`อัปเดตข้อมูลและส่งต่อไปยังห้องตรวจสำเร็จ! หมายเลขคิว [ ${assignedQueueNo} ]`);
-                        delete document.getElementById('reg-service-type').dataset.editingKey;
-                        clearRegistrationForm();
-                    } else {
-                        alert("เกิดข้อผิดพลาดในการอัปเดตข้อมูล: " + error.message);
-                    }
-                });
-            } else {
-                sysRef.push(caseData, (error) => {
-                    if (!error) {
-                        alert(`ลงทะเบียนสำเร็จ! หมายเลขคิวของคุณคือ [ ${assignedQueueNo} ]`);
-                        clearRegistrationForm();
-                    } else {
-                        alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + error.message);
-                    }
-                });
-            }
-        }
-
-        function clearRegistrationForm() {
+            sysRef.push(newCase);
+            alert(`ลงทะเบียนสำเร็จ! หมายเลขคิวของคุณคือ [ ${assignedQueueNo} ]`);
+            
             document.getElementById('reg-idcard').value = '';
             document.getElementById('reg-hn').value = '';
             document.getElementById('reg-pname').value = '';
@@ -1225,11 +1189,12 @@
             document.getElementById('reg-dia').value = '';
             document.getElementById('reg-pr').value = '';
             document.getElementById('reg-temp').value = '';
-            document.getElementById('reg-phone').value = '';
-            document.getElementById('reg-right').value = '';
             document.querySelectorAll('.disease-badge.selected').forEach(b => b.classList.remove('selected'));
+            
             currentAvatarBase64 = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
             document.getElementById('scannedAvatarPreview').src = currentAvatarBase64;
+            document.getElementById('cameraInput').value = '';
+            document.getElementById('fileUploadInput').value = '';
         }
 
         sysRef.on('value', (snapshot) => {
@@ -1362,7 +1327,7 @@
             });
 
             if (totalPatients === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; color:var(--text-muted); padding:15px;">ไม่มีข้อมูลผู้รับบริการในเงื่อนไขที่เลือก</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; color:var(--text-muted); padding:20px;">ไม่มีข้อมูลผู้รับบริการในเงื่อนไขที่เลือก</td></tr>`;
                 footerBox.innerHTML = `<b>สรุปยอดรวม:</b> ไม่พบข้อมูลในเงื่อนไขนี้`;
                 return;
             }
@@ -1386,14 +1351,14 @@
                     <tr>
                         <td style="white-space:nowrap; color:var(--accent-gold); font-weight:600;">${p.entryTime || '-'}</td>
                         <td><b><span style="color:var(--primary-teal);">[${qNo}]</span></b></td>
-                        <td><b>${genderIcon} ${p.pname}</b><br><span style="font-size:10px; color:var(--text-muted);">HN: ${p.hn} | โทร: ${p.phone || '-'}</span></td>
+                        <td><b>${genderIcon} ${p.pname}</b><br><span style="font-size:11px; color:var(--text-muted);">HN: ${p.hn}</span></td>
                         <td>${serviceBadge}</td>
                         <td>${p.clinic}</td>
                         <td>${p.rightScheme}</td>
                         <td>${p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : '-'}</td>
                         <td style="color:var(--accent-gold); font-weight:bold;">${p.totalCost || 0} ฿</td>
-                        <td><span class="badge-point pt-done" style="padding:1px 4px; font-size:9px;">${p.currentPoint}</span></td>
-                        <td style="font-size:10px; color:var(--text-muted);">${auditTrailStr}</td>
+                        <td><span class="badge-point pt-done">${p.currentPoint}</span></td>
+                        <td style="font-size:11px; color:var(--text-muted);">${auditTrailStr}</td>
                         <td style="white-space:nowrap;">
                             <button class="btn-detail-toggle" onclick="openAdminDetailModal('${key}')" title="ดูรายละเอียด"><i class="fa-solid fa-eye"></i></button>
                             <button class="btn-admin-edit" onclick="openEditModal('${key}')" title="แก้ไขข้อมูล"><i class="fa-solid fa-pen"></i></button>
@@ -1406,11 +1371,11 @@
 
             let schemeText = Object.entries(rightSchemeCounts).map(([k, v]) => `${k}: ${v} คน`).join(' | ');
             footerBox.innerHTML = `
-                <div style="font-weight:700; color:var(--primary-teal); margin-bottom: 4px;"><i class="fa-solid fa-chart-pie"></i> แถวสรุปยอดผู้มารับบริการ (รวม ${totalPatients} เคส)</div>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap; color: var(--text-main); font-size: 11px;">
+                <div style="font-weight:700; color:var(--primary-teal); margin-bottom: 6px;"><i class="fa-solid fa-chart-pie"></i> แถวสรุปยอดผู้มารับบริการ (รวม ${totalPatients} เคส)</div>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; color: var(--text-main); font-size: 13px;">
                     <div>👥 <b>เพศ:</b> 🚹 ชาย ${genderCounts['ชาย']} คน, 🚺 หญิง ${genderCounts['หญิง']} คน</div>
                     <div>📋 <b>สิทธิ์การรักษา:</b> ${schemeText}</div>
-                    <div style="margin-left: auto; color: var(--accent-gold); font-size: 13px;">💰 <b>ยอดค่าใช้จ่ายรวมทั้งสิ้น:</b> ${totalCostSum.toLocaleString()} บาท</div>
+                    <div style="margin-left: auto; color: var(--accent-gold); font-size: 15px;">💰 <b>ยอดค่าใช้จ่ายรวมทั้งสิ้น:</b> ${totalCostSum.toLocaleString()} บาท</div>
                 </div>
             `;
         }
@@ -1480,7 +1445,6 @@
                         <h4 style="margin:0 0 6px 0; color:var(--primary-teal); font-size:22px; font-weight:bold; line-height: 1.2;">${genderIcon} ${p.pname} <span style="font-size:16px; color:#d97706;">[คิว: ${qNo}]</span></h4>
                         <p style="margin:3px 0; font-size:15px;"><b>ประเภท:</b> <span style="color:#d97706;">${serviceLabel}</span></p>
                         <p style="margin:3px 0; font-size:15px;"><b>HN:</b> ${p.hn || '-'}</p>
-                        <p style="margin:3px 0; font-size:15px;"><b>เบอร์โทร:</b> ${p.phone || '-'}</p>
                         <p style="margin:3px 0; font-size:15px;"><b>เลขบัตร:</b> ${p.idcard || '-'}</p>
                         <p style="margin:3px 0; font-size:15px;"><b>วันที่:</b> ${p.entryDate || '-'} (${p.entryTime})</p>
                     </div>
@@ -1522,15 +1486,9 @@
             document.getElementById('edit-patient-key').value = key;
             const bodyFields = document.getElementById('modal-body-fields');
 
-            let isCQueue = p.queueNo && p.queueNo.startsWith('C');
-            let qBadgeNotice = isCQueue ? `<div style="background:#fef3c7; color:#b45309; padding:6px; border-radius:6px; margin-bottom:8px; font-size:12px; font-weight:bold;">ℹ️ คิวนี้ (${p.queueNo}) ถูกล็อกคลินิกและแพทย์แผนจีนอัตโนมัติ</div>` : '';
-
             bodyFields.innerHTML = `
-                ${qBadgeNotice}
                 <div class="form-group"><label>ชื่อ-นามสกุล</label><input type="text" id="edit-pname" value="${p.pname}"></div>
                 <div class="form-group"><label>HN</label><input type="text" id="edit-hn" value="${p.hn}"></div>
-                <div class="form-group"><label>เบอร์โทรศัพท์ (10 หลัก)</label><input type="tel" id="edit-phone" maxlength="10" value="${p.phone || ''}" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
-                <div class="form-group"><label>เลขบัตรประชาชน</label><input type="text" id="edit-idcard" maxlength="13" value="${p.idcard || ''}" oninput="this.value = this.value.replace(/[^0-9]/g, '')"></div>
                 <div class="form-group"><label>สิทธิ์การรักษา</label>
                     <select id="edit-right">
                         <option value="บัตรทอง" ${p.rightScheme==='บัตรทอง'?'selected':''}>บัตรทอง</option>
@@ -1543,53 +1501,17 @@
                         <option value="ชำระเงินเอง" ${p.rightScheme==='ชำระเงินเอง'?'selected':''}>ชำระเงินเอง</option>
                     </select>
                 </div>
-                <div class="form-group"><label>สถานะจุดบริการ / ส่งกลับ</label>
+                <div class="form-group"><label>ส่งไปจุดบริการ</label>
                     <select id="edit-point">
-                        <option value="จุดที่ 2: ห้องตรวจ" ${p.currentPoint==='จุดที่ 2: ห้องตรวจ'?'selected':''}>จุดที่ 2: ห้องตรวจ</option>
-                        <option value="จุดที่ 3: ห้องยา" ${p.currentPoint==='จุดที่ 3: ห้องยา'?'selected':''}>จุดที่ 3: ห้องยา</option>
-                        <option value="จุดที่ 4: การเงิน" ${p.currentPoint==='จุดที่ 4: การเงิน'?'selected':''}>จุดที่ 4: การเงิน</option>
-                        <option value="เสร็จสิ้นภารกิจ" ${p.currentPoint==='เสร็จสิ้นภารกิจ'?'selected':''}>เสร็จสิ้นภารกิจ (กลับบ้าน)</option>
+                        <option value="จุดลงทะเบียน">จุดลงทะเบียน</option>
+                        <option value="จุดที่ 2: ห้องตรวจ" selected>จุดที่ 2: ห้องตรวจ (รอตรวจ)</option>
+                        <option value="จุดที่ 3: ห้องยา">จุดที่ 3: ห้องยา</option>
+                        <option value="จุดที่ 4: การเงิน">จุดที่ 4: การเงิน</option>
+                        <option value="เสร็จสิ้นภารกิจ">เสร็จสิ้นภารกิจ (กลับบ้าน)</option>
                     </select>
-                </div>
-                <div style="margin-top:10px;">
-                    <button type="button" class="btn-action-warning" style="background:#0284c7; padding:8px; font-size:13px;" onclick="loadPatientIntoRegistration('${key}')">
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i> ดึงเคสนี้กลับมาที่ฟอร์มจุดที่ 1 (เพื่อกรอก Vital Sign / แก้ไขละเอียด)
-                    </button>
                 </div>
             `;
             document.getElementById('editPatientModal').style.display = 'flex';
-        }
-
-        function loadPatientIntoRegistration(key) {
-            let p = allPatientsData[key];
-            closeEditModal();
-            switchView('view-1', document.getElementById('tab-btn-1'));
-
-            document.getElementById('reg-idcard').value = p.idcard || '';
-            document.getElementById('reg-hn').value = p.hn || '';
-            document.getElementById('reg-pname').value = p.pname || '';
-            document.getElementById('reg-phone').value = p.phone || '';
-            
-            if (p.gender) selectGender(p.gender);
-            if (p.serviceType) selectServiceType(p.serviceType);
-
-            if (p.vitalSign) {
-                let bpParts = (p.vitalSign.bp || '').split('/');
-                if (bpParts.length === 2) {
-                    document.getElementById('reg-sys').value = bpParts[0];
-                    document.getElementById('reg-dia').value = bpParts[1];
-                }
-                document.getElementById('reg-pr').value = p.vitalSign.pr !== '-' ? p.vitalSign.pr : '';
-                document.getElementById('reg-temp').value = p.vitalSign.temp !== '-' ? p.vitalSign.temp : '';
-                document.getElementById('reg-weight').value = p.vitalSign.weight !== '-' ? p.vitalSign.weight : '';
-                document.getElementById('reg-height').value = p.vitalSign.height !== '-' ? p.vitalSign.height : '';
-            }
-
-            document.getElementById('reg-right').value = "";
-            checkRightSchemeValidation();
-
-            document.getElementById('reg-service-type').dataset.editingKey = key;
-            alert(`ดึงข้อมูลของ "${p.pname}" มาที่จุดลงทะเบียนแล้ว!\nกรุณาตรวจสอบ Vital Sign และเลือกสิทธิ์การรักษาใหม่ จากนั้นกด "บันทึกและส่งต่อไปยังห้องตรวจ"`);
         }
 
         function closeEditModal() { document.getElementById('editPatientModal').style.display = 'none'; }
@@ -1601,19 +1523,19 @@
             let updateObj = {
                 pname: document.getElementById('edit-pname').value,
                 hn: document.getElementById('edit-hn').value,
-                phone: document.getElementById('edit-phone').value,
-                idcard: document.getElementById('edit-idcard').value,
                 rightScheme: document.getElementById('edit-right').value,
                 currentPoint: targetPoint
             };
 
-            if (targetPoint === 'จุดที่ 2: ห้องตรวจ') {
+            if (targetPoint === 'จุดลงทะเบียน') {
+                updateObj.status = 'รอลงทะเบียน/แก้ไข';
+            } else if (targetPoint === 'จุดที่ 2: ห้องตรวจ') {
                 updateObj.status = 'รอตรวจห้องแพทย์';
                 updateObj.pharmacyFeedback = 'รอจัดยา';
             }
 
             sysRef.child(key).update(updateObj);
-            alert("บันทึกและอัปเดตข้อมูลผู้ป่วยเรียบร้อย!");
+            alert("บันทึกและอัปเดตสถานะผู้ป่วยเรียบร้อย!");
             closeEditModal();
         }
 
@@ -1628,7 +1550,7 @@
             const container = document.getElementById('doctorPatientList');
             let waitingKeys = Object.keys(allPatientsData).filter(k => {
                 let p = allPatientsData[k];
-                let isWaiting = (p.status === 'รอตรวจห้องแพทย์' || p.pharmacyFeedback.includes('ขอแก้ไข'));
+                let isWaiting = (p.status === 'รอตรวจห้องแพทย์' || p.pharmacyFeedback.includes('ขอแก้ไข') || p.currentPoint === 'จุดลงทะเบียน');
                 if (!isWaiting) return false;
                 let sType = p.serviceType || 'ในสถานบริการ';
                 return sType === currentDoctorFilter;
@@ -1640,7 +1562,7 @@
             }
 
             let html = '';
-            waitingKeys.forEach(key => {
+            waitingKeys.reverse().forEach(key => {
                 let p = allPatientsData[key];
                 let activeClass = (selectedDoctorKey === key) ? 'active' : '';
                 let queueClinicClass = 'clinic-theme-thai';
@@ -1698,7 +1620,7 @@
                     <img src="${p.avatar}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid #cbd5e1;">
                     <div style="flex-grow:1;">
                         <h3 style="margin:0; color:var(--primary-teal); font-size:15px;">${genderIcon} ${p.pname} <span style="font-size:13px; color:#d97706;">${qBadge}</span></h3>
-                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#0284c7;">${p.rightScheme}</b> | คลินิก: <b style="color:#d97706;">${p.clinic}</b> | โทร: <b>${p.phone || '-'}</b></p>
+                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#0284c7;">${p.rightScheme}</b> | คลินิก: <b style="color:#d97706;">${p.clinic}</b></p>
                     </div>
                 </div>
 
@@ -1737,7 +1659,7 @@
                     <input type="number" id="doc-cost" value="${currentTotalCost}" ${isGold30 ? 'readonly' : ''} style="padding:10px 14px; font-size:18px; font-weight:bold; color:var(--accent-gold); text-align:center; background:#f8fafc;">
                 </div>
 
-                <button class="btn-action-warning" onclick="saveDoctorData('${key}', ${isGold30})" style="padding:12px; font-size:15px;"><i class="fa-solid fa-paper-plane"></i> บันทึกผลตรวจและส่งต่อไป</button>
+                <button class="btn-action-warning" onclick="saveDoctorData('${key}', ${isGold30})" style="padding:12px; font-size:15px; width:100%;"><i class="fa-solid fa-paper-plane"></i> บันทึกผลตรวจและส่งต่อไป</button>
             `;
         }
 
@@ -1797,11 +1719,6 @@
                 finalCost = 30;
             }
 
-            if (selectedTreatments.includes('สปาบำบัด') && (!finalCost || finalCost <= (isGold30 ? 30 : 0))) {
-                alert("กรุณาระบุยอดค่าใช้จ่ายให้ถูกต้อง เนื่องจากเลือกหัตถการสปาบำบัด");
-                return;
-            }
-
             let hasHerbPharmacy = selectedTreatments.includes('จ่ายยาสมุนไพร');
             let nextPoint = hasHerbPharmacy ? 'จุดที่ 3: ห้องยา' : 'จุดที่ 4: การเงิน';
             let nextStatus = hasHerbPharmacy ? 'รอจัดยา' : 'รอชำระเงิน';
@@ -1845,7 +1762,7 @@
             }
 
             let html = '';
-            pharmKeys.forEach(key => {
+            pharmKeys.reverse().forEach(key => {
                 let p = allPatientsData[key];
                 let activeClass = (selectedPharmacyKey === key) ? 'active' : '';
                 let queueClinicClass = 'clinic-theme-thai';
@@ -1896,7 +1813,7 @@
                     <img src="${p.avatar}" style="width:45px; height:45px; border-radius:50%; object-fit:cover; border:2px solid #cbd5e1;">
                     <div style="flex-grow:1;">
                         <h3 style="margin:0; color:var(--primary-teal); font-size:15px;">${genderIcon} ${p.pname} <span style="font-size:13px; color:#d97706;">${qBadge}</span></h3>
-                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#0284c7;">${p.rightScheme}</b> | การรักษา: <b>${tList}</b> | โทร: <b>${p.phone || '-'}</b></p>
+                        <p style="margin:2px 0 0 0; font-size:12px; color:var(--text-muted);">สิทธิ์: <b style="color:#0284c7;">${p.rightScheme}</b> | การรักษา: <b>${tList}</b></p>
                     </div>
                 </div>
 
@@ -2052,7 +1969,7 @@
             }
 
             let html = '';
-            cashierKeys.forEach(key => {
+            cashierKeys.reverse().forEach(key => {
                 let p = allPatientsData[key];
                 let cashierClinicClass = 'clinic-theme-thai';
                 if (p.clinic === 'แพทย์แผนจีน') cashierClinicClass = 'clinic-theme-china';
@@ -2074,7 +1991,7 @@
                         <img src="${p.avatar}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid #cbd5e1;">
                         <div style="flex-grow:1;">
                             <h4 style="margin:0 0 4px 0; color:var(--primary-teal); font-size:16px;">${genderIcon} ${p.pname} <span style="font-size:13px; color:#d97706;">${qBadge}</span></h4>
-                            <p style="margin:0 0 3px 0; font-size:13px; color:var(--text-muted);">คลินิก: <b>${p.clinic}</b> | สิทธิ์: <b style="color:#0284c7;">${p.rightScheme}</b> | โทร: <b>${p.phone || '-'}</b></p>
+                            <p style="margin:0 0 3px 0; font-size:13px; color:var(--text-muted);">คลินิก: <b>${p.clinic}</b> | สิทธิ์: <b style="color:#0284c7;">${p.rightScheme}</b></p>
                             <p style="margin:0 0 6px 0; font-size:13px; color:var(--text-muted);">ยา/การรักษา: ${rxText}</p>
                             
                             <div style="display:flex; align-items:center; gap:8px; margin: 8px 0;">
