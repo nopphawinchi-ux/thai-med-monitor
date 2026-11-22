@@ -495,7 +495,7 @@
             });
         }
 
-        // 🏥 บันทึกข้อมูลคิว A ลง Firebase (สถานะเริ่มต้น: จุดลงทะเบียน)
+        // 🏥 บันทึกข้อมูลคิว A ลง Firebase
         function submitQueueA(e) {
             e.preventDefault();
             let clinic = document.getElementById('inputClinic').value;
@@ -523,18 +523,18 @@
                     gender: gender,
                     avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                     staffRegis: 'สแกน QR Code หน้าโต๊ะ',
-                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' },
+                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' }, // กำหนดเป็น "ว่าง"
                     diseases: 'ไม่มี',
-                    rightScheme: '',
+                    rightScheme: '', // กำหนดเป็น "ว่าง"
                     clinic: clinic,
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
                     status: 'จุดลงทะเบียน',
-                    currentPoint: 'จุดลงทะเบียน', // ตั้งค่าสถานะเริ่มต้นเป็น "จุดลงทะเบียน"
+                    currentPoint: 'จุดลงทะเบียน', // ตั้งค่าสถานะเป็น "จุดลงทะเบียน"
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
-                    operator: '',
+                    operator: '', // กำหนดผู้ปฏิบัติงานเป็น "ว่าง" รอ Admin เปลี่ยน
                     bed: 'สำรองเตียง',
                     chiefComplaint: `มารับบริการคลินิก${clinic}ตามคิว QR Code`,
                     treatmentTypes: [clinic === 'แพทย์แผนไทย' ? 'นวดรักษาแผนไทย' : 'สปาบำบัดเพื่อสุขภาพ'],
