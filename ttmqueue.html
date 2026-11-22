@@ -523,19 +523,19 @@
                     gender: gender,
                     avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                     staffRegis: 'สแกน QR Code หน้าโต๊ะ',
-                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' }, // กำหนดเป็น "ว่าง"
+                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' }, // ว่าง
                     diseases: 'ไม่มี',
-                    rightScheme: '', // กำหนดเป็น "ว่าง"
+                    rightScheme: '', // ว่าง
                     clinic: clinic,
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
                     status: 'จุดลงทะเบียน',
-                    currentPoint: 'จุดลงทะเบียน', // ตั้งค่าสถานะเป็น "จุดลงทะเบียน"
+                    currentPoint: 'จุดลงทะเบียน', // จุดลงทะเบียน
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
-                    operator: '', // กำหนดผู้ปฏิบัติงานเป็น "ว่าง" รอ Admin เปลี่ยน
-                    bed: 'สำรองเตียง',
+                    operator: '', // ว่าง (รอ Admin กำหนด)
+                    bed: '',      // ว่าง (รอ Admin กำหนด)
                     chiefComplaint: `มารับบริการคลินิก${clinic}ตามคิว QR Code`,
                     treatmentTypes: [clinic === 'แพทย์แผนไทย' ? 'นวดรักษาแผนไทย' : 'สปาบำบัดเพื่อสุขภาพ'],
                     prescriptions: [],
@@ -553,8 +553,8 @@
                             queueNo: newQueueNo,
                             pname: pname,
                             hn: hn,
-                            operator: '',
-                            bed: 'สำรองเตียง',
+                            operator: '', // ว่าง
+                            bed: '',      // ว่าง
                             avatar: payload.avatar,
                             status: 'active',
                             waitingMinutes: 30,
@@ -633,12 +633,12 @@
                     }
                 }
 
-                // อัปเดตข้อมูลผู้รับผิดชอบเมื่อถูกกำหนดจาก Admin
+                // อัปเดตข้อมูลผู้รับผิดชอบและเตียงเมื่อถูกกำหนดจาก Admin
                 if (p.operator && p.operator.trim() !== '') {
                     document.getElementById('staffName').innerText = p.operator;
                     document.getElementById('modalStaffName').innerText = p.operator;
-                    document.getElementById('bedAssigned').innerText = `เตียง: ${p.bed || 'สำรองเตียง'}`;
-                    document.getElementById('modalBedAssigned').innerText = `เตียง: ${p.bed || 'สำรองเตียง'}`;
+                    document.getElementById('bedAssigned').innerText = `เตียง: ${p.bed || 'รอกำหนด'}`;
+                    document.getElementById('modalBedAssigned').innerText = `เตียง: ${p.bed || 'รอกำหนด'}`;
                     
                     const staffList = ["กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช", "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย", "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"];
                     let cleanOp = p.operator.replace(/^\d+\./, '').trim();
@@ -648,6 +648,9 @@
                         document.getElementById('staffBgImg').src = imgPath;
                         document.getElementById('modalStaffAvatar').src = imgPath;
                     }
+                } else {
+                    document.getElementById('staffName').innerText = 'รอ Admin มอบหมายผู้ปฏิบัติงาน';
+                    document.getElementById('bedAssigned').innerText = 'เตียง: รอกำหนด';
                 }
             });
         }
