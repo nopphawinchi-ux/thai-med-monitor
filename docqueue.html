@@ -388,7 +388,8 @@
             staffDatabase.forEach(staff => {
                 let isLoggedIn = (currentLoggedInStaff === staff.name);
                 let isBusy = busyStaffNames.includes(staff.name);
-                let avatarUrl = `images/staff-${staff.id}.jpg`;
+                // แก้ไขพาทจาก images/ เป็น imsges/ ให้ตรงกัน
+                let avatarUrl = `imsges/staff-${staff.id}.jpg`;
 
                 let statusBadge = `<span class="status-dot-badge dot-offline"><i class="fa-solid fa-circle"></i> ปิดระบบ</span>`;
                 if (isLoggedIn) {
