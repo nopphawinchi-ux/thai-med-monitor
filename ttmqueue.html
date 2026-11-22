@@ -415,7 +415,6 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
-        const queueRef = database.ref('patientQueue');
 
         let capturedBase64Image = '';
         let countdownInterval = null;
@@ -495,7 +494,7 @@
             });
         }
 
-        // 🏥 บันทึกข้อมูลคิว A ลง Firebase
+        // 🏥 บันทึกข้อมูลคิว A ลง Firebase (ใช้ตารางหลัก flowRef ตารางเดียว)
         function submitQueueA(e) {
             e.preventDefault();
             let clinic = document.getElementById('inputClinic').value;
@@ -530,12 +529,12 @@
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
                     status: 'จุดลงทะเบียน',
-                    currentPoint: 'จุดลงทะเบียน', // จุดลงทะเบียน
+                    currentPoint: 'จุดลงทะเบียน', // สถานะเริ่มต้น
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
-                    operator: '', // ว่าง (รอ Admin กำหนด)
-                    bed: '',      // ว่าง (รอ Admin กำหนด)
+                    operator: '', // 🔓 บังคับเป็นค่าว่าง รอ Admin ในระบบ Flow เป็นคนเลือกและมอบหมายเจ้าหน้าที่
+                    bed: '',      // 🔓 บังคับเป็นค่าว่าง รอ Admin จัดสรรเตียง
                     chiefComplaint: `มารับบริการคลินิก${clinic}ตามคิว QR Code`,
                     treatmentTypes: [clinic === 'แพทย์แผนไทย' ? 'นวดรักษาแผนไทย' : 'สปาบำบัดเพื่อสุขภาพ'],
                     prescriptions: [],
@@ -549,22 +548,7 @@
                         localStorage.setItem('ttmPatientKey', newKey);
                         localStorage.setItem('ttmQueueNo', newQueueNo);
 
-                        let qPayload = {
-                            queueNo: newQueueNo,
-                            pname: pname,
-                            hn: hn,
-                            operator: '', // ว่าง
-                            bed: '',      // ว่าง
-                            avatar: payload.avatar,
-                            status: 'active',
-                            waitingMinutes: 30,
-                            diagnosis: 'หัตถการคลินิก',
-                            procedure: clinic,
-                            timestamp: 0 - Date.now(),
-                            endTime: Date.now() + (30 * 60 * 1000)
-                        };
-                        queueRef.push(qPayload);
-
+                        // ❌ ตัดตารางแยก patientQueue ออกแล้ว เพื่อให้ข้อมูลตรงกับระบบ Monitor หลัก 100%
                         loadPatientStatusView(newKey, newQueueNo);
                     } else {
                         alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
