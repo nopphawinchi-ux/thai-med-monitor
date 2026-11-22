@@ -30,7 +30,7 @@
             margin: 0; padding: 0; 
             display: flex; justify-content: center; align-items: center; 
             min-height: 100vh; color: var(--text-main); 
-            font-size: 16px; /* ขยาย Base Font เป็น 16px */
+            font-size: 16px;
         }
 
         .mobile-container {
@@ -42,7 +42,6 @@
             .mobile-container { border-radius: 32px; border: 8px solid rgba(255,255,255,0.2); height: 95vh; }
         }
 
-        /* 🌿 ส่วนหัวตัวหนังสือใหญ่ชัดเจน */
         .app-header {
             background: linear-gradient(135deg, #047857 0%, #065f46 100%);
             color: #ffffff; padding: 22px 16px;
@@ -58,11 +57,16 @@
             text-shadow: 0 1px 3px rgba(0,0,0,0.4);
         }
 
-        .staff-portal-btn {
-            position: absolute; right: 12px; top: 15px;
-            background: rgba(255,255,255,0.25); border: none; color: #fff; padding: 8px 12px;
-            border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 700;
+        /* 🔒 ย้ายปุ่มเจ้าหน้าที่มาไว้มุมล่างขวาสุด เล็กกะทัดรัด ป้องกันการกดโดน */
+        .staff-portal-btn-floating {
+            position: absolute; right: 12px; bottom: 12px; z-index: 99;
+            background: rgba(15, 118, 110, 0.85); border: 1.5px solid rgba(255, 255, 255, 0.5); 
+            color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 12px; 
+            cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); backdrop-filter: blur(4px);
+            transition: 0.2s; opacity: 0.7;
         }
+        .staff-portal-btn-floating:hover { opacity: 1; background: var(--primary); transform: scale(1.05); }
 
         .sound-permission-bar {
             background: #fef3c7; border-bottom: 2px solid #f59e0b; color: #92400e;
@@ -76,7 +80,7 @@
         }
 
         .content-body {
-            flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 40px;
+            flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 50px;
         }
 
         .card {
@@ -101,7 +105,6 @@
             margin-top: 10px; display: inline-flex; align-items: center; gap: 6px;
         }
 
-        /* 🎴 กรอบผู้ปฏิบัติงานและรายละเอียด (ขยายตัวหนังสือให้ใหญ่สะใจผู้สูงอายุ) */
         .staff-info-split-card {
             display: grid; grid-template-columns: 48% 52%; gap: 12px; background: #fff;
             border-radius: 18px; padding: 14px; border: 2px solid #cbd5e1;
@@ -275,6 +278,11 @@
     </div>
 
     <div class="mobile-container">
+        <!-- 🔒 ปุ่มเจ้าหน้าที่ถูกย้ายมาไว้มุมล่างขวาสุดของหน้าจอ (Floating Button) -->
+        <button class="staff-portal-btn-floating" onclick="openStaffPortal()">
+            <i class="fa-solid fa-lock"></i> เจ้าหน้าที่
+        </button>
+
         <div id="soundPermissionBar" class="sound-permission-bar">
             <span><i class="fa-solid fa-volume-xmark"></i> กรุณาเปิดเสียงแจ้งเตือน</span>
             <button onclick="unlockAudioContext()">เปิดเสียง</button>
@@ -283,15 +291,14 @@
         <div class="app-header">
             <h1>กลุ่มงานการแพทย์แผนไทยและการแพทย์ทางเลือก</h1>
             <p>รพ.พระอาจารย์มั่น ภูริทัตโต</p>
-            <button class="staff-portal-btn" onclick="openStaffPortal()"><i class="fa-solid fa-lock"></i> เจ้าหน้าที่</button>
         </div>
 
         <div class="content-body">
             <div id="viewKioskRegister" class="view-section active">
                 <div class="card">
-                    <div class="card-title"><i class="fa-solid fa-ticket"></i> จองคิวฝังเข็มแผนจีน (C01-C10)</div>
-                    <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px; font-weight: 600;">* สำหรับผู้ป่วยจองคิวก่อนเวลาทำการ โควต้า 10 คิว/วัน (รีเซ็ตวันต่อวัน)</div>
-                    <div id="quotaAlert" class="alert-badge" style="display:none; margin-bottom: 12px;">คิวเต็ม ให้ติดต่อเจ้าหน้าที่เพื่อรับการรักษาในครั้งถัดไป</div>
+                    <div class="card-title"><i class="fa-solid fa-ticket"></i> จองคิวฝังเข็มแผนจีน (<span id="displayTargetQueue">C01-C10</span>)</div>
+                    <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px; font-weight: 600;">* ระบบสแกนบัตรคิวถาวรประจำโต๊ะ (ล็อกคิวอัตโนมัติ)</div>
+                    <div id="quotaAlert" class="alert-badge" style="display:none; margin-bottom: 12px;">คิวนี้มีผู้ใช้งานแล้วในวันนี้ กรุณาติดต่อเจ้าหน้าที่</div>
 
                     <form id="kioskForm" onsubmit="submitAcupunctureQueue(event)">
                         <div class="form-group">
@@ -312,7 +319,7 @@
 
                         <div class="form-group">
                             <label>เบอร์โทรศัพท์ (10 หลัก)</label>
-                            <input type="tel" id="inputPhone" maxlength="10" placeholder="0812345678" pattern="[0-9]{10}" required>
+                            <input type="tel" id="inputPhone" maxlength="10" placeholder="**********" pattern="[0-9]{10}" required>
                         </div>
 
                         <div class="form-group">
@@ -347,7 +354,6 @@
                         </div>
                     </div>
 
-                    <!-- 🎴 รูปและชื่อเจ้าหน้าที่ + ข้อมูลฝั่งขวาตัวหนังสือใหญ่ชัดเจน -->
                     <div class="staff-info-split-card">
                         <div class="staff-left-container">
                             <img id="staffBgImg" class="staff-avatar-bg" src="" alt="Staff" onerror="this.src='https://via.placeholder.com/200'">
@@ -420,12 +426,13 @@
         let hasShownFinishedPopup = false;
         let audioCtxUnlocked = false;
 
+        const urlParams = new URLSearchParams(window.location.search);
+        let targetQueueNo = urlParams.get('queue') || 'C01';
+
         function unlockAudioContext() {
             try {
                 let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
+                if (audioCtx.state === 'suspended') { audioCtx.resume(); }
                 audioCtxUnlocked = true;
                 document.getElementById('soundPermissionBar').style.display = 'none';
             } catch(e) {
@@ -492,23 +499,28 @@
             }
         }
 
-        let currentAcqCount = 0;
         flowRef.on('value', (snapshot) => {
             let data = snapshot.val() || {};
             let todayStr = new Date().toISOString().split('T')[0];
+            let isTaken = false;
 
-            let cQueues = Object.values(data).filter(p => {
-                if (!p.queueNo || !p.queueNo.startsWith('C')) return false;
-                let pDate = p.timestamp ? new Date(p.timestamp).toISOString().split('T')[0] : '';
-                return pDate === todayStr;
+            Object.keys(data).forEach(k => {
+                let item = data[k];
+                let itemDate = item.timestamp ? new Date(item.timestamp).toISOString().split('T')[0] : '';
+                if (itemDate === todayStr && item.queueNo === targetQueueNo && item.currentPoint !== 'เสร็จสิ้นภารกิจ') {
+                    isTaken = true;
+                }
             });
 
-            currentAcqCount = cQueues.length;
-            if(currentAcqCount >= 10) {
-                document.getElementById('quotaAlert').style.display = 'block';
+            document.getElementById('displayTargetQueue').innerText = targetQueueNo;
+
+            if (isTaken) {
+                let alertBadge = document.getElementById('quotaAlert');
+                alertBadge.innerText = `❌ คิวที่ ${targetQueueNo} มีผู้ใช้งานแล้วในวันนี้ ไม่สามารถลงทะเบียนซ้ำได้`;
+                alertBadge.style.display = 'block';
                 document.getElementById('btnSubmitQueue').disabled = true;
                 document.getElementById('btnSubmitQueue').style.background = '#94a3b8';
-                document.getElementById('btnSubmitQueue').innerText = 'คิวเต็มแล้ว';
+                document.getElementById('btnSubmitQueue').innerText = 'คิวนี้ถูกใช้งานแล้ว';
             }
         });
 
@@ -523,35 +535,76 @@
 
             if(phone.length !== 10) { alert('กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก'); return; }
 
-            let nextNum = currentAcqCount + 1;
-            if(nextNum > 10) { 
-                alert('คิวเต็ม ให้ติดต่อเจ้าหน้าที่เพื่อรับการรักษาในครั้งถัดไป'); 
-                return; 
-            }
-            let queueNo = `C${String(nextNum).padStart(2, '0')}`;
+            let todayStr = new Date().toISOString().split('T')[0];
+            const nowObj = new Date();
+            const timeString = nowObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
 
-            let newKey = flowRef.push().key;
-            let payload = {
-                queueNo: queueNo, pname: pname, phone: phone, hn: hn, gender: gender,
-                patientPhoto: capturedBase64Image || '',
-                serviceType: 'ในสถานบริการ',
-                clinic: 'แพทย์แผนจีน',
-                currentPoint: 'รอทำหัตถการ',
-                status: 'waiting',
-                vitalSign: 'BP 120/80 mmHg',
-                rightTreatment: 'สิทธิบัตรทอง',
-                procedure: 'ฝังเข็มรักษา',
-                netPrice: '0.00 บาท',
-                rating: 'ไม่ได้ประเมิน', timestamp: Date.now()
-            };
+            flowRef.once('value', (snapshot) => {
+                let allData = snapshot.val() || {};
+                let alreadyTaken = false;
 
-            flowRef.child(newKey).set(payload, (error) => {
-                if(!error) {
-                    alert(`ลงทะเบียนสำเร็จ! คิวของคุณคือ ${queueNo} (คลินิกแพทย์แผนจีน)`);
-                    localStorage.setItem('myPatientKey', newKey);
-                    localStorage.setItem('myQueueNo', queueNo);
-                    loadPatientStatusView(newKey, queueNo);
+                Object.keys(allData).forEach(k => {
+                    let item = allData[k];
+                    let itemDate = item.timestamp ? new Date(item.timestamp).toISOString().split('T')[0] : '';
+                    if (itemDate === todayStr && item.queueNo === targetQueueNo && item.currentPoint !== 'เสร็จสิ้นภารกิจ') {
+                        alreadyTaken = true;
+                    }
+                });
+
+                if (alreadyTaken) {
+                    alert(`❌ ขออภัย! คิวที่ ${targetQueueNo} มีผู้ลงทะเบียนใช้งานไปแล้วในวันนี้`);
+                    location.reload();
+                    return;
                 }
+
+                let newKey = flowRef.push().key;
+                let payload = {
+                    serviceType: 'ในสถานบริการ',
+                    queueNo: targetQueueNo,
+                    idcard: '-',
+                    hn: hn,
+                    pname: pname,
+                    gender: gender,
+                    avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+                    staffRegis: 'สแกน QR Code หน้าโต๊ะ',
+                    vitalSign: {
+                        bp: '120/80',
+                        pr: '72',
+                        temp: '36.5',
+                        weight: '60',
+                        height: '170',
+                        wt: '60 กก. / 170 ซม.'
+                    },
+                    diseases: 'ไม่มี',
+                    rightScheme: 'สิทธิบัตรทอง',
+                    clinic: 'แพทย์แผนจีน',
+                    paymentMethod: 'ไม่ต้องชำระเงิน',
+                    payStatus: 'ไม่ต้องชำระเงิน',
+                    status: 'รอตรวจห้องแพทย์',
+                    currentPoint: 'จุดที่ 2: ห้องตรวจ',
+                    entryTime: timeString,
+                    entryDate: todayStr,
+                    doctorName: 'พท.จิรวัฒณ์ สีตาแสน ตำแหน่ง แพทย์แผนไทย',
+                    chiefComplaint: 'มารับบริการฝังเข็มตามคิว QR Code',
+                    treatmentTypes: ['ฝังเข็มแผนจีน'],
+                    prescriptions: [],
+                    totalCost: 0,
+                    pharmacyFeedback: 'ไม่ต้องจัดยา',
+                    rightClosed: false,
+                    receiptIssued: false,
+                    timestamp: nowObj.getTime()
+                };
+
+                flowRef.child(newKey).set(payload, (error) => {
+                    if(!error) {
+                        alert(`ลงทะเบียนสำเร็จ! คิวของคุณคือ ${targetQueueNo} (คลินิกแพทย์แผนจีน)`);
+                        localStorage.setItem('myPatientKey', newKey);
+                        localStorage.setItem('myQueueNo', targetQueueNo);
+                        loadPatientStatusView(newKey, targetQueueNo);
+                    } else {
+                        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง');
+                    }
+                });
             });
         }
 
@@ -567,10 +620,10 @@
                 if(!p) return;
                 document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'รอรับบริการ'}`;
                 
-                document.getElementById('valVitalSign').innerText = p.vitalSign || 'BP 120/80';
-                document.getElementById('valRight').innerText = p.rightTreatment || 'สิทธิบัตรทอง';
-                document.getElementById('valProcedure').innerText = p.procedure || 'ฝังเข็มรักษา';
-                document.getElementById('valPrice').innerText = p.netPrice || '0.00 บาท';
+                document.getElementById('valVitalSign').innerText = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : 'BP 120/80';
+                document.getElementById('valRight').innerText = p.rightScheme || 'สิทธิบัตรทอง';
+                document.getElementById('valProcedure').innerText = p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : 'ฝังเข็มรักษา';
+                document.getElementById('valPrice').innerText = `${p.totalCost || 0.00} บาท`;
 
                 let normalContainer = document.getElementById('normalStatusContainer');
                 let ratingCard = document.getElementById('ratingCard');
@@ -585,28 +638,10 @@
                     }
                 } else {
                     normalContainer.style.display = 'flex';
-                    if (p.currentPoint === 'กำลังทำหัตถการ' || p.currentPoint === 'พร้อมทำหัตถการ') {
+                    if (p.currentPoint === 'จุดที่ 4: การเงิน' || p.currentPoint === 'เสร็จสิ้นภารกิจ') {
                         ratingCard.style.display = 'block';
                     } else {
                         ratingCard.style.display = 'none';
-                    }
-                }
-
-                let countdownBox = document.getElementById('countdownBox');
-                if (p.currentPoint === 'รอทำหัตถการ' && p.waitingMinutes) {
-                    countdownBox.style.display = 'inline-flex';
-                    startPatientCountdown(p.waitingMinutes);
-                } else {
-                    countdownBox.style.display = 'none';
-                    if(countdownInterval) clearInterval(countdownInterval);
-                }
-
-                if (p.currentPoint === 'พร้อมทำหัตถการ' || p.triggerAlert === true) {
-                    let trigTime = p.triggerTime || 0;
-                    if (trigTime !== lastTriggerTime) {
-                        document.getElementById('callQueueModal').style.display = 'flex';
-                        playSoftChimeSound();
-                        lastTriggerTime = trigTime;
                     }
                 }
             });
@@ -621,7 +656,7 @@
                     document.getElementById('staffName').innerText = operatorName;
                     document.getElementById('bedAssigned').innerText = `เตียง: ${bed}`;
                     
-                    let avatarUrl = matched.avatar || 'images/default.jpg';
+                    let avatarUrl = matched.avatar || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
                     document.getElementById('staffBgImg').src = avatarUrl;
                     document.getElementById('modalStaffAvatar').src = avatarUrl;
 
@@ -650,33 +685,6 @@
                 osc.start(now);
                 osc.stop(now + 1.2);
             } catch(e) {}
-        }
-
-        function startPatientCountdown(minutes) {
-            if(countdownInterval) clearInterval(countdownInterval);
-            let totalSeconds = minutes * 60;
-            
-            function updateTimer() {
-                let m = Math.floor(totalSeconds / 60);
-                let s = totalSeconds % 60;
-                document.getElementById('countdownTimer').innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-                if (totalSeconds > 0) {
-                    totalSeconds--;
-                } else {
-                    clearInterval(countdownInterval);
-                    document.getElementById('countdownTimer').innerText = 'ถึงคิวแล้ว';
-                }
-            }
-            updateTimer();
-            countdownInterval = setInterval(updateTimer, 1000);
-        }
-
-        function closeLockedCallModal() {
-            document.getElementById('callQueueModal').style.display = 'none';
-        }
-
-        function closeFinishedModal() {
-            document.getElementById('finishedModal').style.display = 'none';
         }
 
         function callStaffEmergency() {
