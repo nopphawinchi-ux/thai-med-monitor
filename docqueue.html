@@ -402,7 +402,7 @@
                 html += `
                     <div class="staff-item-card ${isLoggedIn ? 'active-login' : ''}" onclick="clickStaffItem('${staff.name}', ${isLoggedIn})">
                         <div class="staff-item-left">
-                            <img src="${avatarUrl}" class="staff-item-avatar" onerror="this.src='images/default.jpg'">
+                            <img src="${avatarUrl}" class="staff-item-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
                             <div class="staff-item-name">${staff.id}. ${staff.name}</div>
                         </div>
                         <div>${statusBadge}</div>
@@ -726,7 +726,6 @@
             container.innerHTML = html;
         }
 
-        // แถบที่ 2: เคสกำลังปฏิบัติงานทั่วโรงพยาบาล (แสดงข้อมูลและชื่อผู้รับผิดชอบ ไม่มีปุ่มกดกระทำใดๆ)
         function renderProgressSection(items) {
             let container = document.getElementById('listProgressQueue');
             if (items.length === 0) {
