@@ -345,6 +345,7 @@
                         <div class="queue-number" id="myQueueNo">A01</div>
                         <div class="queue-status-text" id="myStatusText">กำลังรอเรียกเข้ารับบริการ</div>
                         
+                        <!-- ⏱️ นับเวลาถอยหลัง (แสดงเฉพาะเมื่อสถานะเป็น "รอทำหัตถการ" เท่านั้น) -->
                         <div id="countdownBox" class="countdown-badge" style="display: none;">
                             <i class="fa-solid fa-stopwatch"></i> เวลารอโดยประมาณ: <span id="countdownTimer">--:--</span> นาที
                         </div>
@@ -361,12 +362,12 @@
                         </div>
                         <div class="staff-right-col">
                             <div class="info-row">
-                                <span class="info-label">คลินิก:</span>
-                                <span class="info-value" id="valClinic">-</span>
+                                <span class="info-label">Vital Sign:</span>
+                                <span class="info-value" id="valVitalSign">-</span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">สิทธิ์การรักษา:</span>
-                                <span class="info-value" id="valRight">สิทธิบัตรทอง</span>
+                                <span class="info-value" id="valRight">-</span>
                             </div>
                             <div class="info-row">
                                 <span class="info-label">หัตถการ:</span>
@@ -491,7 +492,7 @@
             });
         }
 
-        // 🏥 บันทึกข้อมูลคิว A ลง Firebase (ปล่อย operator และ bed เป็นค่าว่าง เพื่อรอ Admin มอบหมาย)
+        // 🏥 บันทึกข้อมูลคิว A ลง Firebase (ตั้งค่า: จุดลงทะเบียน, สิทธิ์ว่าง, Vital Sign ว่าง, operator ว่าง)
         function submitQueueA(e) {
             e.preventDefault();
             let clinic = document.getElementById('inputClinic').value;
@@ -519,14 +520,14 @@
                     gender: gender,
                     avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                     staffRegis: 'สแกน QR Code หน้าโต๊ะ',
-                    vitalSign: { bp: '120/80', pr: '72', temp: '36.5', weight: '60', height: '170' },
+                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' }, // ว่าง รอจุดลงทะเบียนกรอก
                     diseases: 'ไม่มี',
-                    rightScheme: 'สิทธิบัตรทอง',
+                    rightScheme: '', // ว่าง รอจุดลงทะเบียนกรอก
                     clinic: clinic,
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
-                    status: 'รอตรวจห้องแพทย์',
-                    currentPoint: 'จุดที่ 2: ห้องตรวจ',
+                    status: 'จุดลงทะเบียน',
+                    currentPoint: 'จุดลงทะเบียน', // บังคับเริ่มที่จุดลงทะเบียน
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
@@ -561,8 +562,12 @@
             flowRef.child(key).on('value', (snap) => {
                 let p = snap.val();
                 if(!p) return;
-                document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'รอรับบริการ'}`;
-                document.getElementById('valClinic').innerText = p.clinic || 'แพทย์แผนไทย';
+                document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'จุดลงทะเบียน'}`;
+                
+                // แสดง Vital Sign และสิทธิ์ (แสดงว่างถ้ายังไม่ถูกกรอก)
+                let bpVal = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : '-';
+                document.getElementById('valVitalSign').innerText = bpVal;
+                document.getElementById('valRight').innerText = p.rightScheme || '-';
 
                 let normalContainer = document.getElementById('normalStatusContainer');
                 let ratingCard = document.getElementById('ratingCard');
@@ -579,10 +584,11 @@
                     ratingCard.style.display = (p.currentPoint === 'จุดที่ 4: การเงิน') ? 'block' : 'none';
                 }
 
-                // ⏱️ นับเวลาถอยหลัง
+                // ⏱️ นับเวลาถอยหลัง (เริ่มนับเฉพาะเมื่อสถานะเป็น "รอทำหัตถการ" เท่านั้น)
                 let countdownBox = document.getElementById('countdownBox');
-                let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 15;
-                if (p.currentPoint !== 'เสร็จสิ้นภารกิจ') {
+                let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 30;
+                
+                if (p.currentPoint === 'รอทำหัตถการ') {
                     countdownBox.style.display = 'inline-flex';
                     startPatientCountdown(waitMins);
                 } else {
@@ -590,7 +596,7 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // 🔔 แจ้งเตือนเมื่อถึงคิว
+                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว (ขึ้นเฉพาะเมื่อสถานะเป็น "พร้อมทำหัตถการ")
                 if (p.currentPoint === 'พร้อมทำหัตถการ') {
                     let modalState = document.getElementById('callQueueModal').style.display;
                     if (modalState !== 'flex') {

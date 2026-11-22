@@ -349,7 +349,7 @@
                         <div class="queue-number" id="myQueueNo">C01</div>
                         <div class="queue-status-text" id="myStatusText">กำลังรอเรียกเข้ารับบริการ</div>
                         
-                        <!-- ⏱️ นับเวลาถอยหลัง -->
+                        <!-- ⏱️ นับเวลาถอยหลัง (แสดงเฉพาะเมื่อสถานะเป็น "รอทำหัตถการ") -->
                         <div id="countdownBox" class="countdown-badge" style="display: none;">
                             <i class="fa-solid fa-stopwatch"></i> เวลารอโดยประมาณ: <span id="countdownTimer">--:--</span> นาที
                         </div>
@@ -367,11 +367,11 @@
                         <div class="staff-right-col" id="staffRightColContent">
                             <div class="info-row" id="rowVitalSign">
                                 <span class="info-label">Vital Sign:</span>
-                                <span class="info-value" id="valVitalSign">BP 120/80</span>
+                                <span class="info-value" id="valVitalSign">-</span>
                             </div>
                             <div class="info-row" id="rowRight">
                                 <span class="info-label">สิทธิ์การรักษา:</span>
-                                <span class="info-value" id="valRight">สิทธิบัตรทอง</span>
+                                <span class="info-value" id="valRight">-</span>
                             </div>
                             <div class="info-row" id="rowProcedure">
                                 <span class="info-label">หัตถการ:</span>
@@ -423,7 +423,6 @@
 
         let capturedBase64Image = '';
         let countdownInterval = null;
-        let lastTriggerTime = 0;
         let hasShownFinishedPopup = false;
         let audioCtxUnlocked = false;
 
@@ -526,7 +525,7 @@
             }
         });
 
-        // 🏥 บันทึกข้อมูลและผูกแพทย์ผู้ตรวจเป็น "นายแพทย์กฤตธนัท วงค์วิเศษ" อัตโนมัติ
+        // 🏥 บันทึกข้อมูลคิว (ตั้งค่าเริ่มต้น: จุดลงทะเบียน, สิทธิ์ว่าง, Vital Sign ว่าง, ล็อกแพทย์คนที่ 12)
         function submitAcupunctureQueue(e) {
             e.preventDefault();
             let prefix = document.getElementById('inputPrefix').value;
@@ -570,25 +569,18 @@
                     gender: gender,
                     avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                     staffRegis: 'สแกน QR Code หน้าโต๊ะ',
-                    vitalSign: {
-                        bp: '120/80',
-                        pr: '72',
-                        temp: '36.5',
-                        weight: '60',
-                        height: '170',
-                        wt: '60 กก. / 170 ซม.'
-                    },
+                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' }, // ว่าง รอจุดลงทะเบียนกรอก
                     diseases: 'ไม่มี',
-                    rightScheme: 'สิทธิบัตรทอง',
+                    rightScheme: '', // ว่าง รอจุดลงทะเบียนกรอก
                     clinic: 'แพทย์แผนจีน',
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
-                    status: 'รอตรวจห้องแพทย์',
-                    currentPoint: 'จุดที่ 2: ห้องตรวจ',
+                    status: 'จุดลงทะเบียน',
+                    currentPoint: 'จุดลงทะเบียน', // บังคับเริ่มที่จุดลงทะเบียน
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: 'นายแพทย์กฤตธนัท วงค์วิเศษ',
-                    operator: 'นายแพทย์กฤตธนัท วงค์วิเศษ', // ล็อกแพทย์ผู้ตรวจเป็นคนที่ 12
+                    operator: 'นายแพทย์กฤตธนัท วงค์วิเศษ', // ล็อกแพทย์คนที่ 12
                     bed: 'BED 1',
                     chiefComplaint: 'มารับบริการฝังเข็มตามคิว QR Code',
                     treatmentTypes: ['ฝังเข็มแผนจีน'],
@@ -606,7 +598,7 @@
                         localStorage.setItem('myPatientKey', newKey);
                         localStorage.setItem('myQueueNo', targetQueueNo);
 
-                        // ซิงค์ข้อมูลลงตาราง patientQueue ทันทีเพื่อให้ลิงก์กับหน้า Monitor และรูปขึ้นทันที
+                        // ซิงค์ข้อมูลลงตาราง patientQueue
                         let qPayload = {
                             queueNo: targetQueueNo,
                             pname: pname,
@@ -641,10 +633,12 @@
             flowRef.child(key).on('value', (snap) => {
                 let p = snap.val();
                 if(!p) return;
-                document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'รอรับบริการ'}`;
+                document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'จุดลงทะเบียน'}`;
                 
-                document.getElementById('valVitalSign').innerText = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : 'BP 120/80';
-                document.getElementById('valRight').innerText = p.rightScheme || 'สิทธิบัตรทอง';
+                // แสดง Vital Sign และสิทธิ์ (แสดงว่างถ้ายังไม่ถูกกรอก)
+                let bpVal = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : '-';
+                document.getElementById('valVitalSign').innerText = bpVal;
+                document.getElementById('valRight').innerText = p.rightScheme || '-';
                 document.getElementById('valProcedure').innerText = p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : 'ฝังเข็มรักษา';
                 document.getElementById('valPrice').innerText = `${p.totalCost || 0.00} บาท`;
 
@@ -668,10 +662,11 @@
                     }
                 }
 
-                // ⏱️ ระบบนับเวลาถอยหลัง
+                // ⏱️ ระบบนับเวลาถอยหลัง (เริ่มนับเฉพาะเมื่อสถานะเป็น "รอทำหัตถการ" เท่านั้น)
                 let countdownBox = document.getElementById('countdownBox');
-                let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 15;
-                if (p.currentPoint !== 'เสร็จสิ้นภารกิจ') {
+                let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 30;
+                
+                if (p.currentPoint === 'รอทำหัตถการ') {
                     countdownBox.style.display = 'inline-flex';
                     startPatientCountdown(waitMins);
                 } else {
@@ -679,7 +674,7 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว ("พร้อมทำหัตถการ")
+                // 🔔 Pop-up แจ้งเตือนจะขึ้นก็ต่อเมื่อสถานะถูกเปลี่ยนเป็น "พร้อมทำหัตถการ" จริงๆ เท่านั้น
                 if (p.currentPoint === 'พร้อมทำหัตถการ') {
                     let modalState = document.getElementById('callQueueModal').style.display;
                     if (modalState !== 'flex') {
@@ -689,7 +684,7 @@
                 }
             });
 
-            // 🖼️ ดึงภาพ Staff จาก imsges/staff-12.jpg ให้ตรงกับแพทย์คนที่ 12
+            // 🖼️ ดึงภาพ Staff
             const operatorStaffList = [
                 "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
                 "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
