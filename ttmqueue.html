@@ -220,7 +220,7 @@
         </div>
     </div>
 
-    <!-- Modal แจ้งเตือนเมื่อถึงคิว (กดปิดแล้วไม่เด้งซ้ำ เว้นแต่มีการกดเรียกใหม่) -->
+    <!-- Modal แจ้งเตือนเมื่อถึงคิว -->
     <div id="callQueueModal" class="modal-overlay" style="background: rgba(4, 120, 87, 0.75); z-index: 99999;">
         <div class="modal-content" style="border: 3px solid #047857;">
             <div style="font-size: 48px; color: var(--primary); margin-bottom: 8px;"><i class="fa-solid fa-bell-concierge fa-bounce"></i></div>
@@ -229,7 +229,7 @@
             <div style="background: #ecfdf5; padding: 12px; border-radius: 12px; border: 2px solid #34d399; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; text-align: left;">
                 <img id="modalStaffAvatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Staff" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
                 <div>
-                    <div style="font-size: 12px; color: #065f46; font-weight: 700;">ผู้ปฏิบัติงาน</div>
+                    <div style="font-size: 12px; color: #064e3b; font-weight: 700;">ผู้ปฏิบัติงาน</div>
                     <div id="modalStaffName" style="font-size: 16px; font-weight: 800; color: #064e3b;">ยังไม่ระบุผู้รับผิดชอบ</div>
                     <div id="modalBedAssigned" style="font-size: 14px; font-weight: 800; color: var(--primary);">เตียง: รอกำหนด</div>
                 </div>
@@ -343,9 +343,9 @@
                     <div class="card queue-box">
                         <div style="font-size: 14px; color: var(--text-sub); font-weight: 700;">หมายเลขคิวของคุณ</div>
                         <div class="queue-number" id="myQueueNo">A01</div>
-                        <div class="queue-status-text" id="myStatusText">กำลังรอเรียกเข้ารับบริการ</div>
+                        <div class="queue-status-text" id="myStatusText">จุดลงทะเบียน</div>
                         
-                        <!-- ⏱️ นับเวลาถอยหลัง (รองรับทุกสถานะที่มีคำว่า "รอทำหัตถการ") -->
+                        <!-- ⏱️ นับเวลาถอยหลัง (แสดงเฉพาะเมื่อสถานะมีคำว่า "รอทำหัตถการ") -->
                         <div id="countdownBox" class="countdown-badge" style="display: none;">
                             <i class="fa-solid fa-stopwatch"></i> เวลารอโดยประมาณ: <span id="countdownTimer">--:--</span> นาที
                         </div>
@@ -421,7 +421,7 @@
         let countdownInterval = null;
         let hasShownFinishedPopup = false;
         let audioCtxUnlocked = false;
-        let hasAcknowledgedAlert = false; // ป้องกันป๊อปอัปเด้งซ้ำหลังกดปิด
+        let hasAcknowledgedAlert = false;
         let lastTriggerTime = 0;
 
         function unlockAudioContext() {
@@ -495,7 +495,7 @@
             });
         }
 
-        // 🏥 บันทึกข้อมูลคิว A ลง Firebase
+        // 🏥 บันทึกข้อมูลคิว A ลง Firebase (สถานะเริ่มต้น: จุดลงทะเบียน)
         function submitQueueA(e) {
             e.preventDefault();
             let clinic = document.getElementById('inputClinic').value;
@@ -530,7 +530,7 @@
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
                     status: 'จุดลงทะเบียน',
-                    currentPoint: 'จุดลงทะเบียน',
+                    currentPoint: 'จุดลงทะเบียน', // ตั้งค่าสถานะเริ่มต้นเป็น "จุดลงทะเบียน"
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
@@ -583,6 +583,7 @@
                 let p = snap.val();
                 if(!p) return;
                 document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'จุดลงทะเบียน'}`;
+                document.getElementById('valClinic').innerText = p.clinic || 'แพทย์แผนไทย';
                 
                 let bpVal = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : '-';
                 document.getElementById('valVitalSign').innerText = bpVal;
@@ -604,7 +605,7 @@
                     ratingCard.style.display = (p.currentPoint === 'จุดที่ 4: การเงิน') ? 'block' : 'none';
                 }
 
-                // ⏱️ นับเวลาถอยหลัง (รองรับทุกสถานะที่มีคำว่า "รอทำหัตถการ")
+                // ⏱️ นับเวลาถอยหลัง (เริ่มนับเฉพาะเมื่อสถานะมีคำว่า "รอทำหัตถการ")
                 let countdownBox = document.getElementById('countdownBox');
                 let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 30;
                 
@@ -616,10 +617,10 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว (ตรวจสอบการกดเรียกซ้ำและปุ่มปิด)
+                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว ("พร้อมทำหัตถการ")
                 if (p.currentPoint === 'พร้อมทำหัตถการ') {
                     if (p.triggerTime && p.triggerTime !== lastTriggerTime) {
-                        hasAcknowledgedAlert = false; // มีการกดเรียกใหม่จากแอดมิน ให้เปิดป๊อปอัป
+                        hasAcknowledgedAlert = false;
                         lastTriggerTime = p.triggerTime;
                     }
 
@@ -632,7 +633,7 @@
                     }
                 }
 
-                // อัปเดตข้อมูลผู้รับผิดชอบเมื่อถูกกำหนดจาก Admin Monitor พร้อมดึงรูปภาพ
+                // อัปเดตข้อมูลผู้รับผิดชอบเมื่อถูกกำหนดจาก Admin
                 if (p.operator && p.operator.trim() !== '') {
                     document.getElementById('staffName').innerText = p.operator;
                     document.getElementById('modalStaffName').innerText = p.operator;
@@ -686,7 +687,7 @@
 
         function closeLockedCallModal() { 
             document.getElementById('callQueueModal').style.display = 'none'; 
-            hasAcknowledgedAlert = true; // ล็อกไม่ให้เด้งซ้ำจนกว่าจะมีคนกดเรียกใหม่
+            hasAcknowledgedAlert = true;
         }
 
         function closeFinishedModal() { document.getElementById('finishedModal').style.display = 'none'; }
@@ -740,7 +741,7 @@
             if(!key) { alert('กรุณาลงทะเบียนรับบัตรคิวก่อนครับ'); return; }
             flowRef.child(key).update({ 
                 currentPoint: statusText,
-                triggerTime: Date.now() // อัปเดตเวลาเพื่อให้ป๊อปอัปแจ้งเตือนทำงานเมื่อถูกเรียก
+                triggerTime: Date.now()
             }, () => {
                 document.getElementById('staffPortalModal').style.display = 'none';
                 alert(`จำลองเปลี่ยนสถานะเป็น: "${statusText}" เรียบร้อย`);
