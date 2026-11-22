@@ -51,22 +51,34 @@
         .header h1 { margin: 0; font-size: 20px; font-weight: 700; }
         .header p { margin: 4px 0 0 0; font-size: 14px; color: #d1fae5; }
 
+        /* Main Layout ปรับให้รองรับการพับ Sidebar ไปด้านข้าง */
         .main-layout {
-            display: grid; grid-template-columns: 320px 1fr; gap: 20px;
+            display: grid; grid-template-columns: 320px 1fr; gap: 20px; transition: 0.3s ease;
         }
+        .main-layout.sidebar-collapsed { grid-template-columns: 60px 1fr !important; }
         @media(max-width: 1024px) {
             .main-layout { grid-template-columns: 1fr; }
         }
 
+        /* Sidebar พร้อมปุ่มพับเก็บด้านข้าง */
         .staff-sidebar {
             background: #fff; border-radius: 16px; border: 2px solid var(--border);
             padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-            display: flex; flex-direction: column; gap: 12px; height: fit-content;
+            display: flex; flex-direction: column; gap: 12px; height: fit-content; transition: 0.3s ease; overflow: hidden;
         }
+        .main-layout.sidebar-collapsed .staff-sidebar { padding: 12px 8px; }
+        .main-layout.sidebar-collapsed .sidebar-content-wrap { display: none !important; }
+
+        .sidebar-toggle-btn {
+            background: var(--primary); color: #fff; border: none; padding: 4px 8px; border-radius: 6px;
+            font-size: 12px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        }
+        .sidebar-toggle-btn:hover { background: var(--primary-hover); }
+
         .sidebar-title {
             font-size: 16px; font-weight: 700; color: var(--primary);
             border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: center; white-space: nowrap;
         }
         .staff-list-container { display: flex; flex-direction: column; gap: 8px; max-height: 750px; overflow-y: auto; }
         
@@ -79,12 +91,12 @@
         .staff-item-card.active-login { background: #f0fdf4; border-color: #059669; box-shadow: 0 2px 6px rgba(5,150,105,0.15); }
 
         .staff-item-left { display: flex; align-items: center; gap: 10px; }
-        .staff-item-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #cbd5e1; }
-        .staff-item-name { font-size: 13px; font-weight: 700; color: #1e293b; line-height: 1.2; }
+        .staff-item-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #cbd5e1; flex-shrink: 0; }
+        .staff-item-name { font-size: 13px; font-weight: 700; color: #1e293b; line-height: 1.2; white-space: nowrap; }
 
         .status-dot-badge {
             font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; color: #fff;
-            display: flex; align-items: center; gap: 4px;
+            display: flex; align-items: center; gap: 4px; white-space: nowrap;
         }
         .dot-offline { background: #94a3b8; } 
         .dot-ready { background: #10b981; }   
@@ -238,15 +250,21 @@
             </div>
         </div>
 
-        <div class="main-layout">
-            <!-- Sidebar รายชื่อเจ้าหน้าที่ 12 คน -->
+        <div class="main-layout" id="mainLayoutContainer">
+            <!-- Sidebar รายชื่อเจ้าหน้าที่ 12 คน พร้อมปุ่มพับเก็บด้านข้าง -->
             <div class="staff-sidebar">
                 <div class="sidebar-title">
-                    <span><i class="fa-solid fa-users"></i> ผู้ปฏิบัติงานทั้ง 12 คน</span>
-                    <span style="font-size: 12px; color: var(--primary); font-weight: 800;" id="loggedInStaffDisplay">สถานะ: ยังไม่เข้าสู่ระบบ</span>
+                    <span class="sidebar-content-wrap"><i class="fa-solid fa-users"></i> ผู้ปฏิบัติงานทั้ง 12 คน</span>
+                    <button class="sidebar-toggle-btn" onclick="toggleSidebarCollapse()" id="sidebarToggleBtn" title="ย่อ/ขยาย Sidebar"><i class="fa-solid fa-angles-left"></i></button>
                 </div>
+                
+                <div class="sidebar-content-wrap" style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="font-size: 12px; color: var(--primary); font-weight: 800;" id="loggedInStaffDisplay">สถานะ: ยังไม่เข้าสู่ระบบ</div>
+                </div>
+
                 <div class="staff-list-container" id="staffSidebarList"></div>
-                <div style="font-size: 11px; color: var(--text-sub); text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
+                
+                <div class="sidebar-content-wrap" style="font-size: 11px; color: var(--text-sub); text-align: center; border-top: 1px dashed #e2e8f0; padding-top: 8px;">
                     คลิกเพื่อลงชื่อเข้าใช้งาน
                 </div>
             </div>
@@ -358,6 +376,18 @@
         let audioCtxUnlocked = false;
         let audioContextInstance = null;
 
+        // ฟังก์ชันพับเก็บ/ขยาย Sidebar ไปด้านข้าง
+        function toggleSidebarCollapse() {
+            let mainLayout = document.getElementById('mainLayoutContainer');
+            let btnIcon = document.getElementById('sidebarToggleBtn').querySelector('i');
+            mainLayout.classList.toggle('sidebar-collapsed');
+            if (mainLayout.classList.contains('sidebar-collapsed')) {
+                btnIcon.className = "fa-solid fa-angles-right";
+            } else {
+                btnIcon.className = "fa-solid fa-angles-left";
+            }
+        }
+
         function unlockAudioContext() {
             try {
                 audioContextInstance = new (window.AudioContext || window.webkitAudioContext)();
@@ -388,7 +418,6 @@
             staffDatabase.forEach(staff => {
                 let isLoggedIn = (currentLoggedInStaff === staff.name);
                 let isBusy = busyStaffNames.includes(staff.name);
-                // แก้ไขพาทจาก images/ เป็น imsges/ ให้ตรงกัน
                 let avatarUrl = `imsges/staff-${staff.id}.jpg`;
 
                 let statusBadge = `<span class="status-dot-badge dot-offline"><i class="fa-solid fa-circle"></i> ปิดระบบ</span>`;
@@ -404,7 +433,7 @@
                     <div class="staff-item-card ${isLoggedIn ? 'active-login' : ''}" onclick="clickStaffItem('${staff.name}', ${isLoggedIn})">
                         <div class="staff-item-left">
                             <img src="${avatarUrl}" class="staff-item-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
-                            <div class="staff-item-name">${staff.id}. ${staff.name}</div>
+                            <div class="staff-item-name sidebar-content-wrap">${staff.id}. ${staff.name}</div>
                         </div>
                         <div>${statusBadge}</div>
                     </div>
@@ -503,7 +532,7 @@
 
                     if (currentLoggedInStaff && assignedOp === currentLoggedInStaff && (point === 'พร้อมทำหัตถการ')) {
                         if (key !== lastNotifiedQueueKey && p.triggerAlert) {
-                            showPersonalNotify(p);
+                            showPersonalNotify(p, key);
                             lastNotifiedQueueKey = key;
                         }
                     }
@@ -566,7 +595,8 @@
             renderDoneSection(doneList);
         });
 
-        function showPersonalNotify(p) {
+        function showPersonalNotify(p, key) {
+            window.activeNotifiedKey = key; // เก็บ Key ปัจจุบันไว้เคลียร์ตอนกดปิด
             document.getElementById('notifyQueueNo').innerText = p.queueNo || '-';
             document.getElementById('notifyPatientName').innerText = p.pname || '-';
             document.getElementById('notifyServiceType').innerText = `ประเภท: ${p.serviceType || 'ในสถานบริการ'} (${p.clinic || 'แพทย์แผนไทย'})`;
@@ -577,6 +607,11 @@
 
         function closePersonalNotifyModal() {
             document.getElementById('personalNotifyModal').style.display = 'none';
+            // 🛠️ เคลียร์ค่า triggerAlert บน Firebase ทันทีเมื่อกดปิด เพื่อไม่ให้เด้งซ้ำเวลารีเฟรช
+            if (window.activeNotifiedKey) {
+                flowRef.child(window.activeNotifiedKey).update({ triggerAlert: false });
+                window.activeNotifiedKey = null;
+            }
         }
 
         function playChimeSound() {
