@@ -610,8 +610,7 @@
                 });
             });
         }
-
-        function loadPatientStatusView(key, qNo) {
+	        function loadPatientStatusView(key, qNo) {
             document.getElementById('viewKioskRegister').classList.remove('active');
             document.getElementById('viewPatientStatus').classList.add('active');
             document.getElementById('myQueueNo').innerText = qNo;
@@ -657,6 +656,16 @@
                 } else {
                     countdownBox.style.display = 'none';
                     if(countdownInterval) clearInterval(countdownInterval);
+                }
+
+                // 🔔 นำระบบ Pop-up แจ้งเตือนเมื่อถึงคิว ("พร้อมทำหัตถการ") กลับมาตรงนี้ครับ
+                if (p.currentPoint === 'พร้อมทำหัตถการ' || p.triggerAlert === true) {
+                    let trigTime = p.triggerTime || 0;
+                    if (trigTime !== lastTriggerTime) {
+                        document.getElementById('callQueueModal').style.display = 'flex';
+                        playSoftChimeSound();
+                        lastTriggerTime = trigTime;
+                    }
                 }
             });
 
