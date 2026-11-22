@@ -1161,12 +1161,11 @@
                 paymentMethod: paymentMethod || 'ตามสิทธิ์',
                 payStatus: payStatus || 'ยังไม่ชำระ',
                 status: 'รอตรวจห้องแพทย์',
-                currentPoint: 'จุดลงทะเบียน', // เริ่มต้นที่จุดลงทะเบียนตามเงื่อนไขที่ต้องการ
+                currentPoint: 'จุดลงทะเบียน',
                 entryTime: timeString,
                 entryDate: dateString,
                 doctorName: selectedGlobalDoc,
-                operator: '', // กำหนดเป็นค่าว่าง รอ Admin กำหนด
-                bed: '',      // ป้องกันการขึ้นคำว่าสำรองเตียง ตั้งค่าเป็นค่าว่างรอ Admin จัดสรร
+                operator: '', // 🔓 ปลอดภัย ปล่อยว่าง รอ Admin จัดการ
                 chiefComplaint: '',
                 treatmentTypes: [],
                 prescriptions: [],

@@ -132,6 +132,7 @@
         .staff-bed-label {
             font-size: 14px; font-weight: 800; color: #34d399; margin-top: 4px;
             text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+            display: none; /* ซ่อนช่องตำแหน่งข้อมูลนี้ถ้าระบบไม่ใช้ */
         }
 
         .staff-right-col {
@@ -244,7 +245,6 @@
                 <div>
                     <div style="font-size: 12px; color: #065f46; font-weight: 700;">ผู้ปฏิบัติงาน</div>
                     <div id="modalStaffName" style="font-size: 16px; font-weight: 800; color: #064e3b;">รอ Admin กำหนด</div>
-                    <div id="modalBedAssigned" style="font-size: 14px; font-weight: 800; color: #059669;">เตียง: รอกำหนด</div>
                 </div>
             </div>
             <button class="btn-primary-action" onclick="closeLockedCallModal()" style="padding: 12px; font-size: 16px; background: #059669;">รับทราบ / ปิดหน้าต่าง</button>
@@ -356,12 +356,11 @@
                     </div>
 
                     <div class="staff-info-split-card">
-                        <div class="staff-left-container">
+                        <div class="staff-left-container" style="height: 140px;">
                             <img id="staffBgImg" class="staff-avatar-bg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Staff">
                             <div class="staff-overlay-gradient"></div>
                             <div class="staff-text-overlay">
                                 <div id="staffName" class="staff-name-label">รอ Admin มอบหมายผู้ปฏิบัติงาน</div>
-                                <div id="bedAssigned" class="staff-bed-label">เตียง: รอกำหนด</div>
                             </div>
                         </div>
                         <div class="staff-right-col" id="staffRightColContent">
@@ -419,7 +418,6 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
-        const queueRef = database.ref('patientQueue');
 
         let capturedBase64Image = '';
         let countdownInterval = null;
@@ -525,7 +523,7 @@
             }
         });
 
-        // 🏥 บันทึกข้อมูลคิว (ค่าเริ่มต้น: จุดลงทะเบียน, สิทธิ์ว่าง, Vital Sign ว่าง, ไม่มีเตียงและผู้ปฏิบัติงานค้างไว้)
+        // 🏥 บันทึกข้อมูลคิว
         function submitAcupunctureQueue(e) {
             e.preventDefault();
             let prefix = document.getElementById('inputPrefix').value;
@@ -569,19 +567,18 @@
                     gender: gender,
                     avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                     staffRegis: 'สแกน QR Code หน้าโต๊ะ',
-                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' }, // ว่าง รอจุดลงทะเบียนกรอก
+                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' },
                     diseases: 'ไม่มี',
-                    rightScheme: '', // ว่าง รอจุดลงทะเบียนกรอก
+                    rightScheme: '',
                     clinic: 'แพทย์แผนจีน',
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
                     status: 'จุดลงทะเบียน',
-                    currentPoint: 'จุดลงทะเบียน', // บังคับเริ่มที่จุดลงทะเบียน
+                    currentPoint: 'จุดลงทะเบียน',
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
-                    operator: '', // 🔓 ค่าว่าง (รอ Admin มอบหมาย)
-                    bed: '',      // 🔓 ค่าว่าง (รอ Admin จัดสรรเตียง)
+                    operator: '', // ปล่อยว่าง รอ Admin กำหนด
                     chiefComplaint: 'มารับบริการฝังเข็มตามคิว QR Code',
                     treatmentTypes: ['ฝังเข็มแผนจีน'],
                     prescriptions: [],
@@ -597,24 +594,6 @@
                         alert(`ลงทะเบียนสำเร็จ! คิวของคุณคือ ${targetQueueNo} (คลินิกแพทย์แผนจีน)`);
                         localStorage.setItem('myPatientKey', newKey);
                         localStorage.setItem('myQueueNo', targetQueueNo);
-
-                        // ซิงค์ข้อมูลลงตาราง patientQueue แบบค่าว่าง
-                        let qPayload = {
-                            queueNo: targetQueueNo,
-                            pname: pname,
-                            hn: hn,
-                            operator: '',
-                            bed: '',
-                            avatar: payload.avatar,
-                            status: 'active',
-                            waitingMinutes: 30,
-                            diagnosis: 'หัตถการคลินิก',
-                            procedure: 'ฝังเข็มรักษา',
-                            timestamp: 0 - Date.now(),
-                            endTime: Date.now() + (30 * 60 * 1000)
-                        };
-                        queueRef.push(qPayload);
-
                         loadPatientStatusView(newKey, targetQueueNo);
                     } else {
                         alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง');
@@ -661,7 +640,7 @@
                     }
                 }
 
-                // ⏱️ ระบบนับเวลาถอยหลัง (เริ่มนับเฉพาะเมื่อสถานะเป็น "รอทำหัตถการ" เท่านั้น)
+                // ⏱️ ระบบนับเวลาถอยหลัง
                 let countdownBox = document.getElementById('countdownBox');
                 let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 30;
                 
@@ -673,7 +652,7 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว ("พร้อมทำหัตถการ")
+                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว
                 if (p.currentPoint === 'พร้อมทำหัตถการ') {
                     let modalState = document.getElementById('callQueueModal').style.display;
                     if (modalState !== 'flex') {
@@ -682,12 +661,10 @@
                     }
                 }
 
-                // อัปเดตข้อมูลผู้รับผิดชอบและเตียงเมื่อถูกกำหนดจาก Admin
+                // อัปเดตข้อมูลผู้รับผิดชอบเมื่อถูกกำหนดจาก Admin
                 if (p.operator && p.operator.trim() !== '') {
                     document.getElementById('staffName').innerText = p.operator;
                     document.getElementById('modalStaffName').innerText = p.operator;
-                    document.getElementById('bedAssigned').innerText = `เตียง: ${p.bed || 'รอกำหนด'}`;
-                    document.getElementById('modalBedAssigned').innerText = `เตียง: ${p.bed || 'รอกำหนด'}`;
                     
                     const operatorStaffList = [
                         "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
@@ -703,9 +680,7 @@
                     }
                 } else {
                     document.getElementById('staffName').innerText = 'รอ Admin มอบหมายผู้ปฏิบัติงาน';
-                    document.getElementById('bedAssigned').innerText = 'เตียง: รอกำหนด';
                     document.getElementById('modalStaffName').innerText = 'รอ Admin กำหนด';
-                    document.getElementById('modalBedAssigned').innerText = 'เตียง: รอกำหนด';
                 }
             });
         }
