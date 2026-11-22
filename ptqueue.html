@@ -42,6 +42,17 @@
             .mobile-container { border-radius: 32px; border: 8px solid rgba(255,255,255,0.2); height: 95vh; }
         }
 
+        /* 🔒 ปุ่มเจ้าหน้าที่ย้ายมาไว้ล่างขวาสุด */
+        .staff-portal-btn-floating {
+            position: absolute; right: 12px; bottom: 12px; z-index: 99;
+            background: rgba(15, 118, 110, 0.85); border: 1.5px solid rgba(255, 255, 255, 0.5); 
+            color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 12px; 
+            cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); backdrop-filter: blur(4px);
+            transition: 0.2s; opacity: 0.7;
+        }
+        .staff-portal-btn-floating:hover { opacity: 1; background: var(--primary); transform: scale(1.05); }
+
         .app-header {
             background: linear-gradient(135deg, #047857 0%, #065f46 100%);
             color: #ffffff; padding: 22px 16px;
@@ -56,17 +67,6 @@
             font-size: 15px; margin: 0; color: #d1fae5 !important; font-weight: 600;
             text-shadow: 0 1px 3px rgba(0,0,0,0.4);
         }
-
-        /* 🔒 ย้ายปุ่มเจ้าหน้าที่มาไว้มุมล่างขวาสุด เล็กกะทัดรัด ป้องกันการกดโดน */
-        .staff-portal-btn-floating {
-            position: absolute; right: 12px; bottom: 12px; z-index: 99;
-            background: rgba(15, 118, 110, 0.85); border: 1.5px solid rgba(255, 255, 255, 0.5); 
-            color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 12px; 
-            cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); backdrop-filter: blur(4px);
-            transition: 0.2s; opacity: 0.7;
-        }
-        .staff-portal-btn-floating:hover { opacity: 1; background: var(--primary); transform: scale(1.05); }
 
         .sound-permission-bar {
             background: #fef3c7; border-bottom: 2px solid #f59e0b; color: #92400e;
@@ -240,7 +240,7 @@
             <h2 style="color: #065f46; margin: 0 0 6px 0; font-size: 22px;">ถึงคิวเข้ารับบริการของคุณแล้ว</h2>
             <p style="color: #047857; font-weight: 700; font-size: 15px; margin-bottom: 14px;">ขอเชิญเข้ารับบริการ ณ จุดหัตถการค่ะ</p>
             <div style="background: #ecfdf5; padding: 12px; border-radius: 12px; border: 2px solid #34d399; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; text-align: left;">
-                <img id="modalStaffAvatar" src="" alt="Staff" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #059669;" onerror="this.src='https://via.placeholder.com/55'">
+                <img id="modalStaffAvatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Staff" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #059669;">
                 <div>
                     <div style="font-size: 12px; color: #065f46; font-weight: 700;">ผู้ปฏิบัติงาน</div>
                     <div id="modalStaffName" style="font-size: 16px; font-weight: 800; color: #064e3b;">-</div>
@@ -278,7 +278,7 @@
     </div>
 
     <div class="mobile-container">
-        <!-- 🔒 ปุ่มเจ้าหน้าที่ถูกย้ายมาไว้มุมล่างขวาสุดของหน้าจอ (Floating Button) -->
+        <!-- 🔒 ปุ่มเจ้าหน้าที่ลอยอยู่มุมล่างขวาสุด -->
         <button class="staff-portal-btn-floating" onclick="openStaffPortal()">
             <i class="fa-solid fa-lock"></i> เจ้าหน้าที่
         </button>
@@ -297,8 +297,8 @@
             <div id="viewKioskRegister" class="view-section active">
                 <div class="card">
                     <div class="card-title"><i class="fa-solid fa-ticket"></i> จองคิวฝังเข็มแผนจีน (<span id="displayTargetQueue">C01-C10</span>)</div>
-                    <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px; font-weight: 600;">* ระบบสแกนบัตรคิวถาวรประจำโต๊ะ (ล็อกคิวอัตโนมัติ)</div>
-                    <div id="quotaAlert" class="alert-badge" style="display:none; margin-bottom: 12px;">คิวนี้มีผู้ใช้งานแล้วในวันนี้ กรุณาติดต่อเจ้าหน้าที่</div>
+                    <div style="font-size: 14px; color: var(--text-sub); margin-bottom: 12px; font-weight: 600;">* สำหรับผู้ป่วยจองคิวก่อนเวลาทำการ โควต้า 10 คิว/วัน (รีเซ็ตวันต่อวัน)</div>
+                    <div id="quotaAlert" class="alert-badge" style="display:none; margin-bottom: 12px;">คิวนี้มีผู้ใช้งานแล้วในวันนี้ กรุณาไปสแกนคิวใหม่</div>
 
                     <form id="kioskForm" onsubmit="submitAcupunctureQueue(event)">
                         <div class="form-group">
@@ -349,6 +349,7 @@
                         <div class="queue-number" id="myQueueNo">C01</div>
                         <div class="queue-status-text" id="myStatusText">กำลังรอเรียกเข้ารับบริการ</div>
                         
+                        <!-- ⏱️ นับเวลาถอยหลัง -->
                         <div id="countdownBox" class="countdown-badge" style="display: none;">
                             <i class="fa-solid fa-stopwatch"></i> เวลารอโดยประมาณ: <span id="countdownTimer">--:--</span> นาที
                         </div>
@@ -356,7 +357,7 @@
 
                     <div class="staff-info-split-card">
                         <div class="staff-left-container">
-                            <img id="staffBgImg" class="staff-avatar-bg" src="" alt="Staff" onerror="this.src='https://via.placeholder.com/200'">
+                            <img id="staffBgImg" class="staff-avatar-bg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Staff">
                             <div class="staff-overlay-gradient"></div>
                             <div class="staff-text-overlay">
                                 <div id="staffName" class="staff-name-label">รอกำหนดเจ้าหน้าที่</div>
@@ -499,6 +500,7 @@
             }
         }
 
+        // 🔍 ตรวจสอบคิวซ้ำ (แจ้งเตือนให้ไปสแกนคิวใหม่)
         flowRef.on('value', (snapshot) => {
             let data = snapshot.val() || {};
             let todayStr = new Date().toISOString().split('T')[0];
@@ -516,7 +518,7 @@
 
             if (isTaken) {
                 let alertBadge = document.getElementById('quotaAlert');
-                alertBadge.innerText = `❌ คิวที่ ${targetQueueNo} มีผู้ใช้งานแล้วในวันนี้ ไม่สามารถลงทะเบียนซ้ำได้`;
+                alertBadge.innerText = `❌ คิวที่ ${targetQueueNo} มีผู้ใช้งานแล้วในวันนี้ กรุณาไปสแกนคิวใหม่`;
                 alertBadge.style.display = 'block';
                 document.getElementById('btnSubmitQueue').disabled = true;
                 document.getElementById('btnSubmitQueue').style.background = '#94a3b8';
@@ -524,6 +526,7 @@
             }
         });
 
+        // 🏥 บันทึกข้อมูลให้ตรงตามโครงสร้าง hospital-flow.html
         function submitAcupunctureQueue(e) {
             e.preventDefault();
             let prefix = document.getElementById('inputPrefix').value;
@@ -552,7 +555,7 @@
                 });
 
                 if (alreadyTaken) {
-                    alert(`❌ ขออภัย! คิวที่ ${targetQueueNo} มีผู้ลงทะเบียนใช้งานไปแล้วในวันนี้`);
+                    alert(`❌ ขออภัย! คิวที่ ${targetQueueNo} มีผู้ใช้งานแล้วในวันนี้ กรุณาไปสแกนคิวใหม่`);
                     location.reload();
                     return;
                 }
@@ -644,26 +647,78 @@
                         ratingCard.style.display = 'none';
                     }
                 }
+
+                // ⏱️ ระบบนับเวลาถอยหลัง
+                let countdownBox = document.getElementById('countdownBox');
+                let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 15;
+                if (p.currentPoint !== 'เสร็จสิ้นภารกิจ') {
+                    countdownBox.style.display = 'inline-flex';
+                    startPatientCountdown(waitMins);
+                } else {
+                    countdownBox.style.display = 'none';
+                    if(countdownInterval) clearInterval(countdownInterval);
+                }
             });
+
+            // 🖼️ ดึงภาพ staff (staff-1.jpg ถึง staff-12.jpg) ตามรายชื่อผู้ปฏิบัติงานจริง (operator)
+            const staffMasterList = [
+                "พรสิน เฮียงราช", "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด",
+                "ฉัตรลดา หงษ์วิลัย", "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์"
+            ];
 
             queueRef.on('value', (snap) => {
                 let queues = snap.val() || {};
                 let matched = Object.values(queues).find(q => q.queueNo === qNo);
-                if(matched) {
-                    let operatorName = matched.operator || 'ผู้ให้บริการ';
-                    let bed = matched.bed || 'สำรองเตียง';
-                    
-                    document.getElementById('staffName').innerText = operatorName;
-                    document.getElementById('bedAssigned').innerText = `เตียง: ${bed}`;
-                    
-                    let avatarUrl = matched.avatar || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-                    document.getElementById('staffBgImg').src = avatarUrl;
-                    document.getElementById('modalStaffAvatar').src = avatarUrl;
+                
+                let operatorName = matched && matched.operator ? matched.operator : 'พท.จิรวัฒณ์ สีตาแสน';
+                let bed = matched && matched.bed ? matched.bed : 'เตียงฝังเข็ม';
+                
+                document.getElementById('staffName').innerText = operatorName;
+                document.getElementById('bedAssigned').innerText = `เตียง: ${bed}`;
+                document.getElementById('modalStaffName').innerText = operatorName;
+                document.getElementById('modalBedAssigned').innerText = `เตียง: ${bed}`;
 
-                    document.getElementById('modalStaffName').innerText = operatorName;
-                    document.getElementById('modalBedAssigned').innerText = `เตียง: ${bed}`;
-                }
+                let staffIndex = staffMasterList.findIndex(name => operatorName.includes(name));
+                let staffImageIndex = staffIndex !== -1 ? (staffIndex % 12) + 1 : 1;
+                let dynamicStaffImgPath = `images/staff-${staffImageIndex}.jpg`;
+
+                let bgImg = document.getElementById('staffBgImg');
+                let modalAvatar = document.getElementById('modalStaffAvatar');
+
+                let testImg = new Image();
+                testImg.src = dynamicStaffImgPath;
+                testImg.onload = function() {
+                    bgImg.src = dynamicStaffImgPath;
+                    modalAvatar.src = dynamicStaffImgPath;
+                };
+                testImg.onerror = function() {
+                    let fallbackAvatar = (matched && matched.avatar && matched.avatar.trim() !== '') ? matched.avatar : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                    bgImg.src = fallbackAvatar;
+                    modalAvatar.src = fallbackAvatar;
+                };
             });
+        }
+
+        function startPatientCountdown(minutes) {
+            if(countdownInterval) clearInterval(countdownInterval);
+            let totalSeconds = minutes * 60;
+            
+            function updateTimer() {
+                let m = Math.floor(totalSeconds / 60);
+                let s = totalSeconds % 60;
+                let timerEl = document.getElementById('countdownTimer');
+                if(timerEl) {
+                    timerEl.innerText = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                }
+                if (totalSeconds > 0) {
+                    totalSeconds--;
+                } else {
+                    clearInterval(countdownInterval);
+                    if(timerEl) timerEl.innerText = 'ถึงคิวแล้ว';
+                }
+            }
+            updateTimer();
+            countdownInterval = setInterval(updateTimer, 1000);
         }
 
         function playSoftChimeSound() {
