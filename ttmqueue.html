@@ -494,7 +494,6 @@
             });
         }
 
-        // ข้อ 1 & 2: ส่งข้อมูลลงทะเบียนแบบสะอาด โดยไม่ยัดค่าเตียงหรือเจ้าหน้าที่ (ให้เป็นค่าว่าง)
         function submitQueueA(e) {
             e.preventDefault();
             let clinic = document.getElementById('inputClinic').value;
@@ -533,8 +532,8 @@
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
-                    operator: '', // ค่าว่าง รอ Admin กำหนด
-                    bed: '',      // ค่าว่าง รอ Admin กำหนด
+                    operator: '',
+                    bed: '',
                     chiefComplaint: `มารับบริการคลินิก${clinic}ตามคิว QR Code`,
                     treatmentTypes: [clinic === 'แพทย์แผนไทย' ? 'นวดรักษาแผนไทย' : 'สปาบำบัดเพื่อสุขภาพ'],
                     prescriptions: [],
@@ -548,6 +547,7 @@
                         localStorage.setItem('ttmPatientKey', newKey);
                         localStorage.setItem('ttmQueueNo', newQueueNo);
 
+                        // 💡 แก้ไขตรงนี้: เปลี่ยน status จาก 'active' เป็น 'waiting' เพื่อบังคับให้ไปลงที่ Waiting List บนหน้า Monitor เสมอ
                         let qPayload = {
                             queueNo: newQueueNo,
                             pname: pname,
@@ -555,7 +555,7 @@
                             operator: '',
                             bed: '',
                             avatar: payload.avatar,
-                            status: 'active',
+                            status: 'waiting', 
                             waitingMinutes: 30,
                             diagnosis: 'หัตถการคลินิก',
                             procedure: clinic,
@@ -572,7 +572,6 @@
             });
         }
 
-        // ข้อ 3, 4, 5, 6, 7: เชื่อมโยงข้อมูล Real-time, Countdown, Pop-up สถานะ, และประเมินความพึงพอใจ
         function loadPatientStatusView(key, qNo) {
             document.getElementById('viewKioskRegister').classList.remove('active');
             document.getElementById('viewPatientStatus').classList.add('active');
@@ -584,7 +583,6 @@
                 
                 document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'จุดลงทะเบียน'}`;
                 
-                // ข้อ 3: เชื่อมโยงข้อมูล Vital Sign, สิทธิ์ และค่าใช้จ่ายจาก Hospital Flow
                 let bpVal = (p.vitalSign && p.vitalSign.bp) ? `BP ${p.vitalSign.bp}` : '-';
                 document.getElementById('valVitalSign').innerText = bpVal;
                 document.getElementById('valRight').innerText = (p.rightScheme && p.rightScheme.trim() !== '') ? p.rightScheme : '-';
@@ -593,7 +591,6 @@
                 let normalContainer = document.getElementById('normalStatusContainer');
                 let ratingCard = document.getElementById('ratingCard');
 
-                // ข้อ 5 & 6: เมื่อเสร็จสิ้นภารกิจ แสดง Pop-up และเปิดการ์ดประเมินความพึงพอใจ
                 if (p.currentPoint === 'เสร็จสิ้นภารกิจ') {
                     normalContainer.style.display = 'none';
                     ratingCard.style.display = 'block';
@@ -606,7 +603,6 @@
                     ratingCard.style.display = (p.currentPoint === 'จุดที่ 4: การเงิน') ? 'block' : 'none';
                 }
 
-                // ข้อ 4: แสดงเวลานับถอยหลังเมื่อ Admin เปลี่ยนสถานะเป็น "รอทำหัตถการ"
                 let countdownBox = document.getElementById('countdownBox');
                 let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 30;
                 
@@ -618,7 +614,6 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // ข้อ 7: Pop-up แจ้งเตือน "พร้อมทำหัตถการ" (แจ้งเตือน 1 ครั้งเมื่อปิด หรือกดเรียกซ้ำ)
                 if (p.currentPoint === 'พร้อมทำหัตถการ') {
                     if (p.triggerTime && p.triggerTime !== lastTriggerTime) {
                         hasAcknowledgedAlert = false;
@@ -634,7 +629,6 @@
                     }
                 }
 
-                // อัปเดตข้อมูลเตียงและผู้ปฏิบัติงานตามจริงจาก Admin
                 let opName = (p.operator && p.operator.trim() !== '') ? p.operator : '--รอกำหนด--';
                 let bedName = (p.bed && p.bed.trim() !== '' && p.bed !== 'สำรองเตียง') ? p.bed : '--รอกำหนดเตียง--';
 
@@ -730,7 +724,6 @@
             }
         }
 
-        // ข้อ 8: โหมดจำลองเฉพาะเจ้าหน้าที่ (จำลองเฉพาะ ชื่อ, เบอร์โทร, HN เท่านั้น)
         function simFillOnePatient() {
             const firstNames = ["สมชาย", "สมหญิง", "ก้านกล้วย", "มะลิ", "ประดิษฐ์", "ดวงใจ", "วิชัย", "กนกวรรณ"];
             const lastNames = ["ใจดี", "มีสุข", "มั่นคง", "รักสงบ", "ศรีสุข", "เจริญ", "คงคา", "ทองคำ"];

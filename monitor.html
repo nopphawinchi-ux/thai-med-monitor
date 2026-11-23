@@ -50,39 +50,23 @@
             color: white; border: none; padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
             display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .audio-btn {
-            background: rgba(48, 209, 88, 0.2); color: var(--app-green); border: 1px solid rgba(48, 209, 88, 0.4);
-        }
+        .audio-btn { background: rgba(48, 209, 88, 0.2); color: var(--app-green); border: 1px solid rgba(48, 209, 88, 0.4); }
         .audio-btn.active { background: var(--app-green); color: #000; }
 
-        .saver-btn {
-            background: rgba(123, 44, 191, 0.2); color: #d8b4fe; border: 1px solid rgba(123, 44, 191, 0.4);
-        }
+        .saver-btn { background: rgba(123, 44, 191, 0.2); color: #d8b4fe; border: 1px solid rgba(123, 44, 191, 0.4); }
         .saver-btn:hover { background: rgba(123, 44, 191, 0.4); }
 
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 20px;
-            max-width: 1900px;
-            margin: 0 auto;
-        }
+        .main-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; max-width: 1900px; margin: 0 auto; }
         @media(max-width: 1200px) { .main-layout { grid-template-columns: 1fr; } }
 
-        .monitor-container {
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); 
-            gap: 20px;
-            align-content: start;
-        }
+        .monitor-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 20px; align-content: start; }
 
         .monitor-card {
             background: var(--app-card); backdrop-filter: blur(25px);
             border-radius: 24px; padding: 20px; position: relative; overflow: hidden;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6); border: 1px solid var(--app-border); 
             border-left: 10px solid var(--app-orange); display: flex; flex-direction: column; justify-content: space-between;
-            animation: fadeIn 0.4s ease;
-            min-height: 280px;
+            animation: fadeIn 0.4s ease; min-height: 280px;
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
@@ -93,38 +77,21 @@
             mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 60%);
             -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 60%);
         }
-        .card-bg-operator img {
-            width: 100%; height: 100%; object-fit: cover; object-position: center;
-            mix-blend-mode: luminosity;
-        }
+        .card-bg-operator img { width: 100%; height: 100%; object-fit: cover; object-position: center; mix-blend-mode: luminosity; }
 
-        .card-content-left {
-            position: relative; z-index: 2; width: 65%;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-
+        .card-content-left { position: relative; z-index: 2; width: 65%; display: flex; flex-direction: column; gap: 10px; }
         .card-top { display: flex; flex-direction: column; align-items: flex-start; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 4px; }
+        
         .card-bed { background: var(--app-orange); color: #000; padding: 2px 10px; border-radius: 6px; font-size: 15px; font-weight: 800; margin-bottom: 4px; display: inline-block; }
         
         .card-patient h3 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; line-height: 1.3; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .card-patient p { margin: 2px 0 0; font-size: 13px; color: rgba(255,255,255,0.6); }
         .card-patient .diag-text { color: #ffd60a; font-weight: 600; }
 
-        .queue-badge-main {
-            background: var(--app-purple); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 16px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.2);
-        }
+        .queue-badge-main { background: var(--app-purple); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 16px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid rgba(255,255,255,0.2); }
+        .card-procedure { background: rgba(255, 122, 0, 0.2); padding: 8px; border-radius: 8px; font-size: 14px; font-weight: 700; text-align: left; color: #ffab40; border: 1px dashed rgba(255, 122, 0, 0.4); display: inline-block; }
 
-        .card-procedure {
-            background: rgba(255, 122, 0, 0.2); padding: 8px; border-radius: 8px;
-            font-size: 14px; font-weight: 700; text-align: left; color: #ffab40;
-            border: 1px dashed rgba(255, 122, 0, 0.4); display: inline-block;
-        }
-
-        .card-timer {
-            background: rgba(0, 0, 0, 0.5); padding: 6px 10px; border-radius: 8px; text-align: left;
-            font-size: 16px; font-weight: 800; color: var(--app-green);
-            border: 1px solid rgba(255,255,255,0.06); display: inline-block;
-        }
+        .card-timer { background: rgba(0, 0, 0, 0.5); padding: 6px 10px; border-radius: 8px; text-align: left; font-size: 16px; font-weight: 800; color: var(--app-green); border: 1px solid rgba(255,255,255,0.06); display: inline-block; }
         .card-timer.time-up { color: var(--app-red); animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
@@ -135,61 +102,24 @@
         .card-operator-name { font-size: 13px; color: rgba(255,255,255,0.8); }
 
         .card-btn-group { display: flex; gap: 6px; }
-        .btn-call {
-            background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4);
-            padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700;
-        }
+        .btn-call { background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700; }
         .btn-call:hover { background: #0ea5e9; color: #fff; }
-
-        .btn-done { 
-            background: rgba(255, 69, 58, 0.2); color: var(--app-red); border: 1px solid rgba(255, 69, 58, 0.4); 
-            padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700;
-        }
+        .btn-done { background: rgba(255, 69, 58, 0.2); color: var(--app-red); border: 1px solid rgba(255, 69, 58, 0.4); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 700; }
         .btn-done:hover { background: var(--app-red); color: #fff; }
 
-        .sidebar-waitlist {
-            background: rgba(30, 15, 45, 0.9);
-            border: 1px solid rgba(123, 44, 191, 0.4);
-            border-radius: 24px;
-            padding: 20px;
-            max-height: calc(100vh - 120px);
-            display: flex;
-            flex-direction: column;
-        }
-        .sidebar-title {
-            font-size: 18px; font-weight: 700; color: #d8b4fe; margin-bottom: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;
-        }
-        .waitlist-items {
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            flex-grow: 1;
-        }
-        .waitlist-card {
-            background: rgba(61, 28, 79, 0.6);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            padding: 12px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .sidebar-waitlist { background: rgba(30, 15, 45, 0.9); border: 1px solid rgba(123, 44, 191, 0.4); border-radius: 24px; padding: 20px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
+        .sidebar-title { font-size: 18px; font-weight: 700; color: #d8b4fe; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .waitlist-items { overflow-y: auto; display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
+        .waitlist-card { background: rgba(61, 28, 79, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
         .waitlist-info h5 { margin: 0 0 4px 0; font-size: 15px; color: #fff; display: flex; align-items: center; gap: 6px; }
         .waitlist-info p { margin: 0; font-size: 12px; color: rgba(255,255,255,0.6); }
-        .btn-start-wait {
-            background: var(--app-orange); color: #fff; border: none; padding: 6px 10px;
-            border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
-        }
+        .btn-start-wait { background: var(--app-orange); color: #fff; border: none; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
         .btn-start-wait:hover { background: #e56d00; }
 
         #screenSaverOverlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: radial-gradient(circle at 50% 50%, #1a0b2e 0%, #0a0410 100%);
-            z-index: 9999; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center;
+            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
             opacity: 0; pointer-events: none; transition: opacity 0.8s ease-in-out;
         }
         #screenSaverOverlay.active { opacity: 1; pointer-events: auto; }
@@ -198,10 +128,8 @@
         .saver-title { font-size: 42px; font-weight: 800; color: #fff; margin: 0 0 10px 0; letter-spacing: 1px; }
         .saver-subtitle { font-size: 20px; color: #b794f4; font-weight: 400; margin-bottom: 40px; }
         .saver-clock {
-            font-size: 64px; font-weight: 800; color: #ffab40;
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 15px 40px; border-radius: 20px; backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: inline-block;
+            font-size: 64px; font-weight: 800; color: #ffab40; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 40px; border-radius: 20px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: inline-block;
         }
         @keyframes floatSlow { 0% { transform: translateY(0px); } 100% { transform: translateY(-15px); } }
     </style>
@@ -229,12 +157,8 @@
 
         <div class="header-datetime" id="liveDateTime">กำลังโหลดวันเวลา...</div>
         <div class="header-actions">
-            <button class="control-btn saver-btn" onclick="toggleManualScreenSaver()">
-                <i class="fa-solid fa-moon"></i> พักหน้าจอ
-            </button>
-            <button id="audioToggleBtn" class="control-btn audio-btn" onclick="initAudio()">
-                <i class="fa-solid fa-volume-xmark"></i> เปิดเสียง
-            </button>
+            <button class="control-btn saver-btn" onclick="toggleManualScreenSaver()"><i class="fa-solid fa-moon"></i> พักหน้าจอ</button>
+            <button id="audioToggleBtn" class="control-btn audio-btn" onclick="initAudio()"><i class="fa-solid fa-volume-xmark"></i> เปิดเสียง</button>
         </div>
     </div>
 
@@ -254,19 +178,19 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
-    		authDomain: "thai-med-monitor.firebaseapp.com",
-    		projectId: "thai-med-monitor",
-    		storageBucket: "thai-med-monitor.firebasestorage.app",
-    		messagingSenderId: "894864632905",
-    		appId: "1:894864632905:web:521452d40ea00653a72398",
-    		measurementId: "G-7SXZRHE5F9"
+            apiKey: "***************************************",
+            authDomain: "thai-med-monitor.firebaseapp.com",
+            projectId: "thai-med-monitor",
+            storageBucket: "thai-med-monitor.firebasestorage.app",
+            messagingSenderId: "894864632905",
+            appId: "1:894864632905:web:521452d40ea00653a72398",
+            measurementId: "G-7SXZRHE5F9"
         };
 
-       
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const queueRef = database.ref('patientQueue');
+        const hospitalFlowRef = database.ref('hospitalFlowQueryGreenThemeV48'); // บรรทัดเติม
 
         let previousKeys = [];
         let notifiedTimeUpKeys = [];
@@ -285,7 +209,7 @@
             let cleanName = operatorName.replace(/^\d+\./, '').trim();
             let index = operatorStaffList.findIndex(s => s.includes(cleanName) || cleanName.includes(s));
             if (index !== -1) {
-                return `imsges/staff-${index + 1}.jpg`;
+                return `images/staff-${index + 1}.jpg`;
             }
             return '';
         }
@@ -299,9 +223,7 @@
             document.getElementById('liveDateTime').innerHTML = `<i class="fa-regular fa-calendar-days"></i> ${dateStr} | <i class="fa-regular fa-clock"></i> ${timeStr}`;
             
             const saverClockEl = document.getElementById('saverClock');
-            if (saverClockEl) {
-                saverClockEl.innerText = timeStr;
-            }
+            if (saverClockEl) { saverClockEl.innerText = timeStr; }
         }
         setInterval(updateDateTime, 1000);
         updateDateTime();
@@ -314,7 +236,6 @@
             speakText("ระบบเสียงพร้อมใช้งานค่ะ");
         }
 
-        // แปลงรูปแบบคิว เช่น A01 ให้เสียงอ่านออกเสียงชัดเจน (เอ 0 1)
         function formatQueueForSpeech(queueNo) {
             if (!queueNo) return '';
             let formatted = queueNo.split('').join(' ');
@@ -338,16 +259,15 @@
             let qStr = qSpeech ? `หมายเลขคิว ${qSpeech}` : '';
             let announcement = `ขอเชิญ ${qStr}, คุณ ${pname}, ที่ ${bed}, ผู้ปฏิบัติงาน ${operator}`;
             speakText(announcement);
+            
+            // บรรทัดเติม (แก้ปัญหาข้อ 2)
+            if (queueNo) { hospitalFlowRef.orderByChild('queueNo').equalTo(queueNo).once('value', (snap) => { if (snap.exists()) { snap.forEach((childSnap) => { hospitalFlowRef.child(childSnap.key).update({ triggerTime: Date.now() }); }); } }); }
         }
 
         function toggleManualScreenSaver() {
             manualSaverActive = !manualSaverActive;
             const screenSaver = document.getElementById('screenSaverOverlay');
-            if (manualSaverActive) {
-                screenSaver.classList.add('active');
-            } else {
-                screenSaver.classList.remove('active');
-            }
+            if (manualSaverActive) { screenSaver.classList.add('active'); } else { screenSaver.classList.remove('active'); }
         }
 
         function switchViewMode(mode) {
@@ -365,8 +285,10 @@
             renderDashboard();
         }
 
-        function removePatient(key) {
-            queueRef.child(key).remove();
+        function removePatient(key) { 
+            let p = currentQueueData[key];
+            if (p && p.queueNo) { hospitalFlowRef.orderByChild('queueNo').equalTo(p.queueNo).once('value', (snap) => { if (snap.exists()) { snap.forEach((childSnap) => { hospitalFlowRef.child(childSnap.key).update({ currentPoint: 'เสร็จสิ้นภารกิจ', status: 'เสร็จสิ้นภารกิจ' }); }); } }); } // บรรทัดเติม (แก้ปัญหาข้อ 1)
+            queueRef.child(key).remove(); 
         }
 
         function startWaitingPatient(key) {
@@ -383,6 +305,9 @@
             renderDashboard();
         });
 
+        // บรรทัดเติม (แก้ปัญหาข้อ 1 ส่วนดักฟัง)
+        hospitalFlowRef.on('child_changed', (snapshot) => { let data = snapshot.val(); if (data && (data.currentPoint === 'เสร็จสิ้นภารกิจ' || data.status === 'เสร็จสิ้นภารกิจ')) { let targetQueueNo = data.queueNo; Object.keys(currentQueueData).forEach((qKey) => { if (currentQueueData[qKey].queueNo === targetQueueNo) { queueRef.child(qKey).remove(); } }); } });
+
         function renderDashboard() {
             const container = document.getElementById('monitorQueue');
             const waitlistContainer = document.getElementById('waitlistContainer');
@@ -396,28 +321,26 @@
                 return timeA - timeB;
             });
 
-            let isOutsideCase = (p) => p.bed === 'นอกพื้นที่';
+            let isOutsideCase = (p) => p.bed === 'นอกพื้นที่' || p.serviceType === 'นอกสถานบริการ';
 
-            let allActiveKeys = keys.filter(k => currentQueueData[k].status === 'active' || !currentQueueData[k].status);
-            let allWaitingKeys = keys.filter(k => currentQueueData[k].status === 'waiting');
+            let allActiveKeys = keys.filter(k => {
+                let p = currentQueueData[k];
+                return p.status === 'active' || !p.status || p.status === 'กำลังทำหัตถการ';
+            });
+            let allWaitingKeys = keys.filter(k => {
+                let p = currentQueueData[k];
+                return p.status === 'waiting' || p.status === 'รอทำหัตถการ';
+            });
 
             let activeKeys = allActiveKeys.filter(k => {
                 let p = currentQueueData[k];
-                if (currentViewMode === 'inside') {
-                    return !isOutsideCase(p);
-                } else {
-                    return isOutsideCase(p);
-                }
+                if (currentViewMode === 'inside') { return !isOutsideCase(p); } else { return isOutsideCase(p); }
             });
 
             let waitingKeys = allWaitingKeys.filter(k => {
                 let p = currentQueueData[k];
                 let isBQueue = p.queueNo && p.queueNo.startsWith('B');
-                if (currentViewMode === 'inside') {
-                    return !isBQueue;
-                } else {
-                    return isBQueue;
-                }
+                if (currentViewMode === 'inside') { return !isBQueue; } else { return isBQueue; }
             });
 
             if ((allActiveKeys.length === 0 && allWaitingKeys.length === 0) || manualSaverActive) {
@@ -428,7 +351,6 @@
 
             document.getElementById('waitCount').innerText = `(${waitingKeys.length})`;
 
-            // อ่านเสียงเฉพาะเคสใหม่ที่ตรงกับโหมดหน้าจอปัจจุบัน โดยอ่าน "คิวก่อนชื่อ"
             if (soundEnabled && allActiveKeys.length > 0) {
                 let newActive = allActiveKeys.filter(k => !previousKeys.includes(k));
                 if (newActive.length > 0) {
@@ -438,7 +360,10 @@
 
                     let matchMode = (currentViewMode === 'inside' && !isOutside) || (currentViewMode === 'outside' && isOutside);
 
-                    if (matchMode) {
+                    // บรรทัดเติม (แก้ปัญหาข้อ 3 - เช็คว่าต้องมีข้อมูลเตียงและผู้ปฏิบัติงานก่อนประกาศเสียง)
+                    let hasAssignedInfo = p.bed && p.bed.trim() !== '' && p.operator && p.operator.trim() !== '';
+
+                    if (matchMode && hasAssignedInfo) { // บรรทัดเติมเงื่อนไข
                         let qSpeech = formatQueueForSpeech(p.queueNo);
                         let qStr = qSpeech ? `หมายเลขคิว ${qSpeech}` : '';
                         let announcement = `${qStr}, ผู้ป่วย ${p.pname}, ที่ ${p.bed}, ผู้ปฏิบัติงาน ${p.operator}`;
@@ -473,20 +398,15 @@
                         timeStr = `เกินเวลา +${String(ovMinutes).padStart(2, '0')}:${String(ovSeconds).padStart(2, '0')} นาที`;
                     }
 
-                    // แสดงหมายเลขคิวก่อนชื่อผู้ป่วยบนหน้าจอ
                     let qBadge = p.queueNo ? `<span class="queue-badge-main">${p.queueNo}</span>` : '';
                     let staffImgPath = getStaffImagePath(p.operator);
-
                     let bgAvatarHtml = staffImgPath 
                         ? `<img src="${staffImgPath}" alt="${p.operator}" onerror="this.onerror=function(){this.src='${p.avatar}';}; this.src='${staffImgPath.replace('.jpg', '.png')}';">`
                         : `<img src="${p.avatar}" alt="${p.operator}">`;
 
                     html += `
                         <div class="monitor-card" id="card-${key}">
-                            <div class="card-bg-operator">
-                                ${bgAvatarHtml}
-                            </div>
-
+                            <div class="card-bg-operator">${bgAvatarHtml}</div>
                             <div class="card-content-left">
                                 <div class="card-top">
                                     <div class="card-bed">${p.bed}</div>
@@ -495,32 +415,18 @@
                                         <p>HN: ${p.hn} | วินิจฉัย: <span class="diag-text">${p.diagnosis}</span></p>
                                     </div>
                                 </div>
-
-                                <div class="card-procedure">
-                                    <i class="fa-solid fa-hands-asl-interpreting"></i> ${p.procedure}
-                                </div>
-
-                                <div class="card-timer ${isTimeUp ? 'time-up' : ''}" id="timer-${key}">
-                                    <i class="fa-regular fa-clock"></i> ${timeStr}
-                                </div>
-
+                                <div class="card-procedure"><i class="fa-solid fa-hands-asl-interpreting"></i> ${p.procedure}</div>
+                                <div class="card-timer ${isTimeUp ? 'time-up' : ''}" id="timer-${key}"><i class="fa-regular fa-clock"></i> ${timeStr}</div>
                                 <div class="card-details">
                                     <div><span>โรคประจำตัว:</span> ${p.disease}</div>
                                     <div style="color:#ffb3b3;"><span>ข้อควรระวัง:</span> ${p.caution}</div>
                                 </div>
                             </div>
-
                             <div class="card-footer">
-                                <div class="card-operator-name">
-                                    ผู้ปฏิบัติงาน: <b>${p.operator}</b>
-                                </div>
+                                <div class="card-operator-name">ผู้ปฏิบัติงาน: <b>${p.operator}</b></div>
                                 <div class="card-btn-group">
-                                    <button class="btn-call" onclick="repeatCallPatient('${p.pname}', '${p.bed}', '${p.operator}', '${p.queueNo || ''}')" title="กดเรียกคิวซ้ำ">
-                                        <i class="fa-solid fa-volume-high"></i> เรียก
-                                    </button>
-                                    <button class="btn-done" onclick="removePatient('${key}')">
-                                        <i class="fa-solid fa-check"></i> เสร็จสิ้น
-                                    </button>
+                                    <button class="btn-call" onclick="repeatCallPatient('${p.pname}', '${p.bed}', '${p.operator}', '${p.queueNo || ''}')"><i class="fa-solid fa-volume-high"></i> เรียก</button>
+                                    <button class="btn-done" onclick="removePatient('${key}')"><i class="fa-solid fa-check"></i> เสร็จสิ้น</button>
                                 </div>
                             </div>
                         </div>
@@ -549,69 +455,6 @@
                 waitlistContainer.innerHTML = waitHtml;
             }
         }
-
-        setInterval(() => {
-            let keys = Object.keys(currentQueueData);
-            if (keys.length > 0) {
-                keys.forEach((key) => {
-                    let p = currentQueueData[key];
-                    if (p.status === 'active' || !p.status) {
-                        let timeLeftMs = p.endTime - Date.now();
-                        let isTimeUp = timeLeftMs <= 0;
-
-                        let isDrKrittanat = p.operator && p.operator.includes("นายแพทย์กฤตธนัท วงค์วิเศษ");
-                        if (isTimeUp && isDrKrittanat) {
-                            let isOutside = p.bed === 'นอกพื้นที่';
-                            let matchMode = (currentViewMode === 'inside' && !isOutside) || (currentViewMode === 'outside' && isOutside);
-                            if (soundEnabled && matchMode && !notifiedTimeUpKeys.includes(key)) {
-                                speakText(`หมดเวลาหัตถการของแพทย์กฤตธนัท ที่ ${p.bed}`);
-                                notifiedTimeUpKeys.push(key);
-                            }
-                            removePatient(key);
-                            return;
-                        }
-
-                        if (isTimeUp) {
-                            let overdueMs = Math.abs(timeLeftMs);
-                            const gracePeriodMs = 5 * 60 * 1000;
-
-                            if (overdueMs >= gracePeriodMs) {
-                                removePatient(key);
-                                return;
-                            }
-
-                            let isOutside = p.bed === 'นอกพื้นที่';
-                            let matchMode = (currentViewMode === 'inside' && !isOutside) || (currentViewMode === 'outside' && isOutside);
-
-                            if (soundEnabled && matchMode && !notifiedTimeUpKeys.includes(key)) {
-                                speakText(`หมดเวลาทำหัตถการ ที่ ${p.bed}`);
-                                notifiedTimeUpKeys.push(key);
-                            }
-                        }
-
-                        let timerEl = document.getElementById(`timer-${key}`);
-                        if (timerEl) {
-                            let timeStr = "";
-                            if (!isTimeUp) {
-                                let minutes = Math.floor(timeLeftMs / 60000);
-                                let seconds = Math.floor((timeLeftMs % 60000) / 1000);
-                                timeStr = `คงเหลือ: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} นาที`;
-                            } else {
-                                let overdueMs = Math.abs(timeLeftMs);
-                                let ovMinutes = Math.floor(overdueMs / 60000);
-                                let ovSeconds = Math.floor((overdueMs % 60000) / 1000);
-                                timeStr = `เกินเวลา +${String(ovMinutes).padStart(2, '0')}:${String(ovSeconds).padStart(2, '0')} นาที`;
-                            }
-                            
-                            timerEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${timeStr}`;
-                            if (isTimeUp) {
-                                timerEl.classList.add('time-up');
-                            }
-                        }
-                    }
-                });
-            }
-        }, 1000);
     </script>
 </body>
 </html>
