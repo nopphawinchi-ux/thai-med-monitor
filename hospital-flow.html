@@ -1560,37 +1560,39 @@
             document.getElementById('editPatientModal').style.display = 'flex';
         }
 
-        function loadPatientIntoRegistration(key) {
-            let p = allPatientsData[key];
-            closeEditModal();
-            switchView('view-1', document.getElementById('tab-btn-1'));
+        	function loadPatientIntoRegistration(key) {
+    let p = allPatientsData[key];
+    closeEditModal();
+    switchView('view-1', document.getElementById('tab-btn-1'));
 
-            document.getElementById('reg-idcard').value = p.idcard || '';
-            document.getElementById('reg-hn').value = p.hn || '';
-            document.getElementById('reg-pname').value = p.pname || '';
-            document.getElementById('reg-phone').value = p.phone || '';
-            
-            if (p.gender) selectGender(p.gender);
-            if (p.serviceType) selectServiceType(p.serviceType);
+    document.getElementById('reg-idcard').value = p.idcard || '';
+    document.getElementById('reg-hn').value = p.hn || '';
+    document.getElementById('reg-pname').value = p.pname || '';
+    
+    // 👉 เพิ่มบรรทัดนี้เพื่อให้ดึงเบอร์โทรศัพท์ที่ผู้ป่วยกรอกไว้กลับมาแสดงที่ฟอร์มครับ
+    document.getElementById('reg-phone').value = p.phone || '';
+    
+    if (p.gender) selectGender(p.gender);
+    if (p.serviceType) selectServiceType(p.serviceType);
 
-            if (p.vitalSign) {
-                let bpParts = (p.vitalSign.bp || '').split('/');
-                if (bpParts.length === 2) {
-                    document.getElementById('reg-sys').value = bpParts[0];
-                    document.getElementById('reg-dia').value = bpParts[1];
-                }
-                document.getElementById('reg-pr').value = p.vitalSign.pr !== '-' ? p.vitalSign.pr : '';
-                document.getElementById('reg-temp').value = p.vitalSign.temp !== '-' ? p.vitalSign.temp : '';
-                document.getElementById('reg-weight').value = p.vitalSign.weight !== '-' ? p.vitalSign.weight : '';
-                document.getElementById('reg-height').value = p.vitalSign.height !== '-' ? p.vitalSign.height : '';
-            }
-
-            document.getElementById('reg-right').value = "";
-            checkRightSchemeValidation();
-
-            document.getElementById('reg-service-type').dataset.editingKey = key;
-            alert(`ดึงข้อมูลของ "${p.pname}" มาที่จุดลงทะเบียนแล้ว!\nกรุณาตรวจสอบ Vital Sign และเลือกสิทธิ์การรักษาใหม่ จากนั้นกด "บันทึกและส่งต่อไปยังห้องตรวจ"`);
+    if (p.vitalSign) {
+        let bpParts = (p.vitalSign.bp || '').split('/');
+        if (bpParts.length === 2) {
+            document.getElementById('reg-sys').value = bpParts[0];
+            document.getElementById('reg-dia').value = bpParts[1];
         }
+        document.getElementById('reg-pr').value = p.vitalSign.pr !== '-' ? p.vitalSign.pr : '';
+        document.getElementById('reg-temp').value = p.vitalSign.temp !== '-' ? p.vitalSign.temp : '';
+        document.getElementById('reg-weight').value = p.vitalSign.weight !== '-' ? p.vitalSign.weight : '';
+        document.getElementById('reg-height').value = p.vitalSign.height !== '-' ? p.vitalSign.height : '';
+    }
+
+    document.getElementById('reg-right').value = "";
+    checkRightSchemeValidation();
+
+    document.getElementById('reg-service-type').dataset.editingKey = key;
+    alert(`ดึงข้อมูลของ "${p.pname}" มาที่จุดลงทะเบียนแล้ว!\nกรุณาตรวจสอบ Vital Sign และเลือกสิทธิ์การรักษาใหม่ จากนั้นกด "บันทึกและส่งต่อไปยังห้องตรวจ"`);
+}
 
         function closeEditModal() { document.getElementById('editPatientModal').style.display = 'none'; }
 
