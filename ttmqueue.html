@@ -230,8 +230,8 @@
                 <img id="modalStaffAvatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Staff" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
                 <div>
                     <div style="font-size: 12px; color: #064e3b; font-weight: 700;">ผู้ปฏิบัติงาน</div>
-                    <div id="modalStaffName" style="font-size: 16px; font-weight: 800; color: #064e3b;">ยังไม่ระบุผู้รับผิดชอบ</div>
-                    <div id="modalBedAssigned" style="font-size: 14px; font-weight: 800; color: var(--primary);">เตียง: รอกำหนด</div>
+                    <div id="modalStaffName" style="font-size: 16px; font-weight: 800; color: #064e3b;">--รอกำหนด--</div>
+                    <div id="modalBedAssigned" style="font-size: 14px; font-weight: 800; color: var(--primary);">เตียง: --รอกำหนดเตียง--</div>
                 </div>
             </div>
             <button class="btn-primary-action" onclick="closeLockedCallModal()" style="padding: 12px; font-size: 16px;">รับทราบ / ปิดหน้าต่าง</button>
@@ -256,7 +256,7 @@
                 <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 20px; color: #64748b;" onclick="document.getElementById('staffPortalModal').style.display='none'"></i>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px;">
-                <button class="btn-primary-action" onclick="simFillOnePatient()" style="background: #0284c7; padding: 12px;"><i class="fa-solid fa-user-plus"></i> สุ่มกรอกคนไข้ใหม่</button>
+                <button class="btn-primary-action" onclick="simFillOnePatient()" style="background: #0284c7; padding: 12px;"><i class="fa-solid fa-user-plus"></i> สุ่มกรอกคนไข้ใหม่ (ชื่อ, เบอร์โทร, HN)</button>
                 <button class="btn-primary-action" onclick="simSetStatus('รอทำหัตถการ')" style="background: #d97706; padding: 12px;"><i class="fa-solid fa-clock"></i> เซ็ต: รอทำหัตถการ</button>
                 <button class="btn-primary-action" onclick="simSetStatus('พร้อมทำหัตถการ')" style="background: var(--primary); padding: 12px;"><i class="fa-solid fa-bell"></i> เซ็ต: พร้อมทำหัตถการ (เรียกคิว)</button>
                 <button class="btn-primary-action" onclick="simSetStatus('เสร็จสิ้นภารกิจ')" style="background: #dc2626; padding: 12px;"><i class="fa-solid fa-check"></i> เซ็ต: เสร็จสิ้นภารกิจ</button>
@@ -356,8 +356,8 @@
                             <img id="staffBgImg" class="staff-avatar-bg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Staff">
                             <div class="staff-overlay-gradient"></div>
                             <div class="staff-text-overlay">
-                                <div id="staffName" class="staff-name-label">รอ Admin มอบหมายผู้ปฏิบัติงาน</div>
-                                <div id="bedAssigned" class="staff-bed-label">เตียง: รอกำหนด</div>
+                                <div id="staffName" class="staff-name-label">--รอกำหนด--</div>
+                                <div id="bedAssigned" class="staff-bed-label">เตียง: --รอกำหนดเตียง--</div>
                             </div>
                         </div>
                         <div class="staff-right-col" id="staffRightColContent">
@@ -471,7 +471,6 @@
             }
         }
 
-        // 🔄 ฟังก์ชันรันหมายเลขคิว A ต่อเนื่องในแต่ละวันอัตโนมัติ
         function generateNextQueueA(callback) {
             let todayStr = new Date().toISOString().split('T')[0];
             flowRef.once('value', (snapshot) => {
@@ -495,7 +494,7 @@
             });
         }
 
-        // 🏥 บันทึกข้อมูลคิว A ลง Firebase (สถานะเริ่มต้น: จุดลงทะเบียน)
+        // ข้อ 1 & 2: ส่งข้อมูลลงทะเบียนแบบสะอาด โดยไม่ยัดค่าเตียงหรือเจ้าหน้าที่ (ให้เป็นค่าว่าง)
         function submitQueueA(e) {
             e.preventDefault();
             let clinic = document.getElementById('inputClinic').value;
@@ -530,12 +529,12 @@
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
                     status: 'จุดลงทะเบียน',
-                    currentPoint: 'จุดลงทะเบียน', // ตั้งค่าสถานะเริ่มต้นเป็น "จุดลงทะเบียน"
+                    currentPoint: 'จุดลงทะเบียน',
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
-                    operator: '',
-                    bed: 'สำรองเตียง',
+                    operator: '', // ค่าว่าง รอ Admin กำหนด
+                    bed: '',      // ค่าว่าง รอ Admin กำหนด
                     chiefComplaint: `มารับบริการคลินิก${clinic}ตามคิว QR Code`,
                     treatmentTypes: [clinic === 'แพทย์แผนไทย' ? 'นวดรักษาแผนไทย' : 'สปาบำบัดเพื่อสุขภาพ'],
                     prescriptions: [],
@@ -554,7 +553,7 @@
                             pname: pname,
                             hn: hn,
                             operator: '',
-                            bed: 'สำรองเตียง',
+                            bed: '',
                             avatar: payload.avatar,
                             status: 'active',
                             waitingMinutes: 30,
@@ -573,7 +572,7 @@
             });
         }
 
-        // หน้าจอแสดงสถานะของผู้ป่วย
+        // ข้อ 3, 4, 5, 6, 7: เชื่อมโยงข้อมูล Real-time, Countdown, Pop-up สถานะ, และประเมินความพึงพอใจ
         function loadPatientStatusView(key, qNo) {
             document.getElementById('viewKioskRegister').classList.remove('active');
             document.getElementById('viewPatientStatus').classList.add('active');
@@ -582,17 +581,19 @@
             flowRef.child(key).on('value', (snap) => {
                 let p = snap.val();
                 if(!p) return;
-                document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'จุดลงทะเบียน'}`;
-                document.getElementById('valClinic').innerText = p.clinic || 'แพทย์แผนไทย';
                 
-                let bpVal = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : '-';
+                document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'จุดลงทะเบียน'}`;
+                
+                // ข้อ 3: เชื่อมโยงข้อมูล Vital Sign, สิทธิ์ และค่าใช้จ่ายจาก Hospital Flow
+                let bpVal = (p.vitalSign && p.vitalSign.bp) ? `BP ${p.vitalSign.bp}` : '-';
                 document.getElementById('valVitalSign').innerText = bpVal;
-                document.getElementById('valRight').innerText = p.rightScheme || '-';
+                document.getElementById('valRight').innerText = (p.rightScheme && p.rightScheme.trim() !== '') ? p.rightScheme : '-';
                 document.getElementById('valPrice').innerText = `${(p.totalCost || 0).toFixed(2)} บาท`;
 
                 let normalContainer = document.getElementById('normalStatusContainer');
                 let ratingCard = document.getElementById('ratingCard');
 
+                // ข้อ 5 & 6: เมื่อเสร็จสิ้นภารกิจ แสดง Pop-up และเปิดการ์ดประเมินความพึงพอใจ
                 if (p.currentPoint === 'เสร็จสิ้นภารกิจ') {
                     normalContainer.style.display = 'none';
                     ratingCard.style.display = 'block';
@@ -605,7 +606,7 @@
                     ratingCard.style.display = (p.currentPoint === 'จุดที่ 4: การเงิน') ? 'block' : 'none';
                 }
 
-                // ⏱️ นับเวลาถอยหลัง (เริ่มนับเฉพาะเมื่อสถานะมีคำว่า "รอทำหัตถการ")
+                // ข้อ 4: แสดงเวลานับถอยหลังเมื่อ Admin เปลี่ยนสถานะเป็น "รอทำหัตถการ"
                 let countdownBox = document.getElementById('countdownBox');
                 let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 30;
                 
@@ -617,7 +618,7 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว ("พร้อมทำหัตถการ")
+                // ข้อ 7: Pop-up แจ้งเตือน "พร้อมทำหัตถการ" (แจ้งเตือน 1 ครั้งเมื่อปิด หรือกดเรียกซ้ำ)
                 if (p.currentPoint === 'พร้อมทำหัตถการ') {
                     if (p.triggerTime && p.triggerTime !== lastTriggerTime) {
                         hasAcknowledgedAlert = false;
@@ -633,13 +634,16 @@
                     }
                 }
 
-                // อัปเดตข้อมูลผู้รับผิดชอบเมื่อถูกกำหนดจาก Admin
+                // อัปเดตข้อมูลเตียงและผู้ปฏิบัติงานตามจริงจาก Admin
+                let opName = (p.operator && p.operator.trim() !== '') ? p.operator : '--รอกำหนด--';
+                let bedName = (p.bed && p.bed.trim() !== '' && p.bed !== 'สำรองเตียง') ? p.bed : '--รอกำหนดเตียง--';
+
+                document.getElementById('staffName').innerText = opName;
+                document.getElementById('modalStaffName').innerText = opName;
+                document.getElementById('bedAssigned').innerText = `เตียง: ${bedName}`;
+                document.getElementById('modalBedAssigned').innerText = `เตียง: ${bedName}`;
+
                 if (p.operator && p.operator.trim() !== '') {
-                    document.getElementById('staffName').innerText = p.operator;
-                    document.getElementById('modalStaffName').innerText = p.operator;
-                    document.getElementById('bedAssigned').innerText = `เตียง: ${p.bed || 'สำรองเตียง'}`;
-                    document.getElementById('modalBedAssigned').innerText = `เตียง: ${p.bed || 'สำรองเตียง'}`;
-                    
                     const staffList = ["กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช", "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย", "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"];
                     let cleanOp = p.operator.replace(/^\d+\./, '').trim();
                     let idx = staffList.findIndex(s => s.includes(cleanOp) || cleanOp.includes(s));
@@ -726,6 +730,7 @@
             }
         }
 
+        // ข้อ 8: โหมดจำลองเฉพาะเจ้าหน้าที่ (จำลองเฉพาะ ชื่อ, เบอร์โทร, HN เท่านั้น)
         function simFillOnePatient() {
             const firstNames = ["สมชาย", "สมหญิง", "ก้านกล้วย", "มะลิ", "ประดิษฐ์", "ดวงใจ", "วิชัย", "กนกวรรณ"];
             const lastNames = ["ใจดี", "มีสุข", "มั่นคง", "รักสงบ", "ศรีสุข", "เจริญ", "คงคา", "ทองคำ"];
@@ -733,7 +738,7 @@
             document.getElementById('inputPhone').value = `08${Math.floor(10000000 + Math.random() * 90000000)}`;
             document.getElementById('inputHN').value = `67${Math.floor(1000 + Math.random() * 9000)}`;
             document.getElementById('staffPortalModal').style.display = 'none';
-            alert('จำลองกรอกข้อมูลเรียบร้อย! กดปุ่ม "กดยืนยันรับบัตรคิว A" ได้เลย');
+            alert('จำลองกรอกข้อมูล (ชื่อ, เบอร์โทร, HN) เรียบร้อย! กดปุ่ม "กดยืนยันรับบัตรคิว A" ได้เลย');
         }
 
         function simSetStatus(statusText) {
