@@ -305,7 +305,7 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
+            apiKey: "***************************************",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -440,17 +440,21 @@
             alert(`ดึงข้อมูลคุณ "${p.pname}" [คิว: ${currentImportedQueueNo || '-'}] เรียบร้อยแล้ว!`);
         }
 
-        function generateUniqueAvatar(name) {
-            const colors = ['#0f766e', '#115e59', '#0284c7', '#7c3aed', '#b45309'];
-            const bg = colors[name.length % colors.length];
-            const initials = name.replace(/^\d+\./, '').trim().substring(0, 2);
-            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-                <rect width="100" height="100" fill="${bg}"/>
-                <circle cx="50" cy="38" r="20" fill="#ffffff" opacity="0.95"/>
-                <path d="M 20 85 Q 20 60 50 60 Q 80 60 80 85 Z" fill="#ffffff" opacity="0.95"/>
-                <text x="50" y="44" font-size="20" font-family="Prompt" font-weight="bold" fill="${bg}" text-anchor="middle">${initials}</text>
-            </svg>`;
-            return 'data:imsges/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+        function generateUniqueAvatar(operatorName) {
+            const operatorStaffList = [
+                "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
+                "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
+                "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"
+            ];
+            
+            let cleanName = operatorName.replace(/^\d+\./, '').trim();
+            let index = operatorStaffList.findIndex(s => s.includes(cleanName) || cleanName.includes(s));
+            
+            if (index !== -1) {
+                return `imsges/staff-${index + 1}.jpg`; // ดึง path รูปภาพจากโฟลเดอร์ imsges ตามจริง
+            }
+            
+            return 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; // ภาพสำรองหากไม่พบรายชื่อ
         }
 
         function updateFormDropdownLocks() {
