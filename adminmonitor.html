@@ -223,12 +223,7 @@
             <div class="form-group">
                 <label id="bedLabel">เลือกเตียงบริการ</label>
                 <select id="inputBed">
-                    <option value="สำรองเตียง">สำรองเตียง (ค่าเริ่มต้น)</option>
-                    <optgroup label="เตียงสำรอง (1-5)">
-                        <option value="เตียง 1">เตียง 1</option><option value="เตียง 2">เตียง 2</option>
-                        <option value="เตียง 3">เตียง 3</option><option value="เตียง 4">เตียง 4</option>
-                        <option value="เตียง 5">เตียง 5</option>
-                    </optgroup>
+                    <option value="">-- รอกำหนดเตียง --</option>
                     <optgroup label="General Beds (BED 1-5 สำหรับแพทย์แผนจีน C1-C10)">
                         <option value="BED 1">BED 1</option><option value="BED 2">BED 2</option>
                         <option value="BED 3">BED 3</option><option value="BED 4">BED 4</option>
@@ -363,6 +358,7 @@
 
             for (let option of bedSelect.options) {
                 let val = option.value;
+                if (!val) continue;
                 let isAllowedReadyBed = (val === "BED 1" || val === "BED 2" || val === "BED 3" || val === "BED 4" || val === "BED 5");
 
                 if (status === 'พร้อมทำหัตถการ' && isAcupunctureC && !isAllowedReadyBed) {
@@ -398,6 +394,9 @@
             });
         }
 
+        // -------------------------------------------------------------------------
+        // แก้ไข: ป้องกันการดึงค่าเตียงหรือผู้ปฏิบัติงานอัตโนมัติ ให้เป็นค่าว่างหากไม่มีข้อมูล
+        // -------------------------------------------------------------------------
         function fillPatientDataFromSearch(selectEl) {
             let key = selectEl.value;
             if (!key) return;
@@ -411,8 +410,12 @@
             document.getElementById('inputServiceType').value = p.serviceType || 'ในสถานบริการ';
             document.getElementById('inputClinic').value = p.clinic || 'แพทย์แผนจีน';
             document.getElementById('inputCurrentPoint').value = p.currentPoint || 'จุดลงทะเบียน';
-            document.getElementById('inputOperator').value = p.operator || '';
-            document.getElementById('inputBed').value = p.bed || 'สำรองเตียง';
+            
+            // หากไม่มีผู้ปฏิบัติงานส่งมา ให้เซ็ตเป็นค่าว่าง ("") ทันที
+            document.getElementById('inputOperator').value = (p.operator && p.operator.trim() !== '') ? p.operator : '';
+            
+            // หากไม่มีเตียงส่งมา ให้เซ็ตเป็นค่าว่าง ("") ทันที ห้ามเลือกเอง
+            document.getElementById('inputBed').value = (p.bed && p.bed.trim() !== '' && p.bed !== 'สำรองเตียง') ? p.bed : '';
 
             handleStatusChange();
             updateBedOptions();
@@ -457,7 +460,6 @@
                 let isPresent = (loggedInStaffName === staff.name);
                 let isBusy = busyStaff.some(name => name.includes(staff.name));
                 let statusBadge = "";
-                // แก้ไขพาทจาก images/ เป็น imsges/ ให้ตรงกัน
                 let avatarUrl = `imsges/staff-${staff.id}.jpg`;
 
                 if (!isPresent) {
@@ -563,7 +565,9 @@
                 let ratingText = p.rating || 'ไม่ได้ประเมิน';
 
                 let matchedQ = Object.values(allQueueData).find(q => q.queueNo === p.queueNo);
-                let bedInfo = matchedQ ? matchedQ.bed : (p.bed || 'สำรองเตียง');
+                
+                let rawBed = (matchedQ && matchedQ.bed) ? matchedQ.bed : p.bed;
+                let bedInfo = (rawBed && rawBed.trim() !== '' && rawBed !== 'สำรองเตียง') ? rawBed : 'รอกำหนด';
 
                 html += `
                     <tr>
@@ -636,6 +640,9 @@
             hasAlertedModal = false;
         }
 
+        // -------------------------------------------------------------------------
+        // บันทึกข้อมูล: ส่งค่า bed และ operator ไปตามจริง (ถ้าไม่ได้เลือกจะเป็นค่าว่าง)
+        // -------------------------------------------------------------------------
         function saveAdminQueue() {
             let key = document.getElementById('editKey').value;
             let queueNo = document.getElementById('inputQueueNo').value.trim();
@@ -645,11 +652,11 @@
             let clinic = document.getElementById('inputClinic').value;
             let currentPoint = document.getElementById('inputCurrentPoint').value;
             let waitingMinutes = (currentPoint === 'รอทำหัตถการ') ? (parseInt(document.getElementById('inputWaitingMinutes').value) || 30) : 0;
-            let operator = document.getElementById('inputOperator').value;
-            let bed = document.getElementById('inputBed').value;
+            let operator = document.getElementById('inputOperator').value; // ถ้าไม่มีเลือกจะเป็นค่าว่าง
+            let bed = document.getElementById('inputBed').value; // ถ้าไม่มีเลือกจะเป็นค่าว่าง
 
-            if(!queueNo || !pname || !operator) {
-                alert('กรุณากรอกข้อมูลสำคัญ (คิว, ชื่อ, ผู้ปฏิบัติงาน) ให้ครบถ้วน');
+            if(!queueNo || !pname) {
+                alert('กรุณากรอกหมายเลขคิวและชื่อผู้ป่วยให้ครบถ้วน');
                 return;
             }
 
@@ -687,9 +694,8 @@
                 let queues = snap.val() || {};
                 let existingKey = Object.keys(queues).find(k => queues[k].queueNo === queueNo);
                 
-                let cleanName = operator.replace(/^\d+\./, '').trim();
+                let cleanName = operator ? operator.replace(/^\d+\./, '').trim() : '';
                 let index = operatorStaffList.findIndex(s => s.includes(cleanName) || cleanName.includes(s));
-                // แก้ไขพาทจาก images/ เป็น imsges/ ให้ตรงกัน
                 let avatarUrl = index !== -1 ? `imsges/staff-${index + 1}.jpg` : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
 
                 let qStatus = (currentPoint === 'รอทำหัตถการ') ? 'waiting' : 'active';
@@ -698,8 +704,8 @@
                     queueNo: queueNo,
                     pname: pname,
                     hn: hn || '-----',
-                    operator: operator,
-                    bed: bed,
+                    operator: operator || '',
+                    bed: bed || '',
                     avatar: avatarUrl,
                     status: qStatus,
                     waitingMinutes: waitingMinutes,
@@ -717,6 +723,9 @@
             });
         }
 
+        // -------------------------------------------------------------------------
+        // แก้ไขฟังก์ชัน editQueue ให้เคลียร์ค่าเป็นค่าว่างหากไม่มีข้อมูลเตียงหรือผู้ปฏิบัติงาน
+        // -------------------------------------------------------------------------
         function editQueue(key) {
             let p = allFlowData[key];
             if(!p) return;
@@ -727,8 +736,12 @@
             document.getElementById('inputServiceType').value = p.serviceType || 'ในสถานบริการ';
             document.getElementById('inputClinic').value = p.clinic || 'แพทย์แผนจีน';
             document.getElementById('inputCurrentPoint').value = p.currentPoint || 'จุดลงทะเบียน';
-            document.getElementById('inputOperator').value = p.operator || '';
-            document.getElementById('inputBed').value = p.bed || 'สำรองเตียง';
+            
+            // หากไม่มีข้อมูลผู้ปฏิบัติงาน ให้เป็นค่าว่าง
+            document.getElementById('inputOperator').value = (p.operator && p.operator.trim() !== '') ? p.operator : '';
+            
+            // หากไม่มีข้อมูลเตียง ให้เป็นค่าว่าง (รอกำหนดเตียง) ทันที
+            document.getElementById('inputBed').value = (p.bed && p.bed.trim() !== '' && p.bed !== 'สำรองเตียง') ? p.bed : '';
 
             handleStatusChange();
             updateBedOptions();
@@ -746,7 +759,7 @@
             document.getElementById('inputQueueNo').value = '';
             document.getElementById('inputPName').value = '';
             document.getElementById('inputHN').value = '';
-            document.getElementById('inputBed').value = 'สำรองเตียง';
+            document.getElementById('inputBed').value = '';
             document.getElementById('selectRegisteredPatient').value = '';
             document.getElementById('formTitle').innerText = '➕ เพิ่ม/แก้ไขข้อมูลคิว';
             handleStatusChange();

@@ -415,6 +415,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
+        const queueRef = database.ref('patientQueue');
 
         let capturedBase64Image = '';
         let countdownInterval = null;
@@ -494,7 +495,7 @@
             });
         }
 
-        // 🏥 บันทึกข้อมูลคิว A ลง Firebase (ใช้ตารางหลัก flowRef ตารางเดียว)
+        // 🏥 บันทึกข้อมูลคิว A ลง Firebase (สถานะเริ่มต้น: จุดลงทะเบียน)
         function submitQueueA(e) {
             e.preventDefault();
             let clinic = document.getElementById('inputClinic').value;
@@ -522,19 +523,19 @@
                     gender: gender,
                     avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                     staffRegis: 'สแกน QR Code หน้าโต๊ะ',
-                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' }, // ว่าง
+                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' },
                     diseases: 'ไม่มี',
-                    rightScheme: '', // ว่าง
+                    rightScheme: '',
                     clinic: clinic,
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
                     status: 'จุดลงทะเบียน',
-                    currentPoint: 'จุดลงทะเบียน', // สถานะเริ่มต้น
+                    currentPoint: 'จุดลงทะเบียน', // ตั้งค่าสถานะเริ่มต้นเป็น "จุดลงทะเบียน"
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: '-',
-                    operator: '', // 🔓 บังคับเป็นค่าว่าง รอ Admin ในระบบ Flow เป็นคนเลือกและมอบหมายเจ้าหน้าที่
-                    bed: '',      // 🔓 บังคับเป็นค่าว่าง รอ Admin จัดสรรเตียง
+                    operator: '',
+                    bed: 'สำรองเตียง',
                     chiefComplaint: `มารับบริการคลินิก${clinic}ตามคิว QR Code`,
                     treatmentTypes: [clinic === 'แพทย์แผนไทย' ? 'นวดรักษาแผนไทย' : 'สปาบำบัดเพื่อสุขภาพ'],
                     prescriptions: [],
@@ -548,7 +549,22 @@
                         localStorage.setItem('ttmPatientKey', newKey);
                         localStorage.setItem('ttmQueueNo', newQueueNo);
 
-                        // ❌ ตัดตารางแยก patientQueue ออกแล้ว เพื่อให้ข้อมูลตรงกับระบบ Monitor หลัก 100%
+                        let qPayload = {
+                            queueNo: newQueueNo,
+                            pname: pname,
+                            hn: hn,
+                            operator: '',
+                            bed: 'สำรองเตียง',
+                            avatar: payload.avatar,
+                            status: 'active',
+                            waitingMinutes: 30,
+                            diagnosis: 'หัตถการคลินิก',
+                            procedure: clinic,
+                            timestamp: 0 - Date.now(),
+                            endTime: Date.now() + (30 * 60 * 1000)
+                        };
+                        queueRef.push(qPayload);
+
                         loadPatientStatusView(newKey, newQueueNo);
                     } else {
                         alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
@@ -617,12 +633,12 @@
                     }
                 }
 
-                // อัปเดตข้อมูลผู้รับผิดชอบและเตียงเมื่อถูกกำหนดจาก Admin
+                // อัปเดตข้อมูลผู้รับผิดชอบเมื่อถูกกำหนดจาก Admin
                 if (p.operator && p.operator.trim() !== '') {
                     document.getElementById('staffName').innerText = p.operator;
                     document.getElementById('modalStaffName').innerText = p.operator;
-                    document.getElementById('bedAssigned').innerText = `เตียง: ${p.bed || 'รอกำหนด'}`;
-                    document.getElementById('modalBedAssigned').innerText = `เตียง: ${p.bed || 'รอกำหนด'}`;
+                    document.getElementById('bedAssigned').innerText = `เตียง: ${p.bed || 'สำรองเตียง'}`;
+                    document.getElementById('modalBedAssigned').innerText = `เตียง: ${p.bed || 'สำรองเตียง'}`;
                     
                     const staffList = ["กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช", "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย", "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"];
                     let cleanOp = p.operator.replace(/^\d+\./, '').trim();
@@ -632,9 +648,6 @@
                         document.getElementById('staffBgImg').src = imgPath;
                         document.getElementById('modalStaffAvatar').src = imgPath;
                     }
-                } else {
-                    document.getElementById('staffName').innerText = 'รอ Admin มอบหมายผู้ปฏิบัติงาน';
-                    document.getElementById('bedAssigned').innerText = 'เตียง: รอกำหนด';
                 }
             });
         }

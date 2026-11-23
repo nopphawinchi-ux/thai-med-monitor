@@ -113,7 +113,7 @@
         .staff-left-container {
             position: relative; width: 100%; height: 180px; border-radius: 14px; overflow: hidden;
             border: 2.5px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            display: flex; flex-direction: column; justify-content: flex-end; background: #e2e8f0;
+            display: flex; flex-direction: column; justify-content: flex-end;
         }
         .staff-avatar-bg {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;
@@ -126,13 +126,12 @@
             position: relative; z-index: 3; padding: 10px; text-align: left; width: 100%;
         }
         .staff-name-label {
-            font-size: 15px; font-weight: 800; color: #ffffff; line-height: 1.35;
+            font-size: 16px; font-weight: 800; color: #ffffff; line-height: 1.35;
             text-shadow: 0 1px 4px rgba(0,0,0,0.9);
         }
         .staff-bed-label {
-            font-size: 14px; font-weight: 800; color: #34d399; margin-top: 4px;
+            font-size: 16px; font-weight: 800; color: #34d399; margin-top: 4px;
             text-shadow: 0 1px 4px rgba(0,0,0,0.9);
-            display: none; /* ซ่อนช่องตำแหน่งข้อมูลนี้ถ้าระบบไม่ใช้ */
         }
 
         .staff-right-col {
@@ -241,10 +240,11 @@
             <h2 style="color: #065f46; margin: 0 0 6px 0; font-size: 22px;">ถึงคิวเข้ารับบริการของคุณแล้ว</h2>
             <p style="color: #047857; font-weight: 700; font-size: 15px; margin-bottom: 14px;">ขอเชิญเข้ารับบริการ ณ จุดหัตถการค่ะ</p>
             <div style="background: #ecfdf5; padding: 12px; border-radius: 12px; border: 2px solid #34d399; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; text-align: left;">
-                <img id="modalStaffAvatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Staff" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #059669;">
+                <img id="modalStaffAvatar" src="imsges/staff-12.jpg" alt="Staff" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #059669;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
                 <div>
                     <div style="font-size: 12px; color: #065f46; font-weight: 700;">ผู้ปฏิบัติงาน</div>
-                    <div id="modalStaffName" style="font-size: 16px; font-weight: 800; color: #064e3b;">รอ Admin กำหนด</div>
+                    <div id="modalStaffName" style="font-size: 16px; font-weight: 800; color: #064e3b;">นายแพทย์กฤตธนัท วงค์วิเศษ</div>
+                    <div id="modalBedAssigned" style="font-size: 14px; font-weight: 800; color: #059669;">เตียง: BED 1</div>
                 </div>
             </div>
             <button class="btn-primary-action" onclick="closeLockedCallModal()" style="padding: 12px; font-size: 16px; background: #059669;">รับทราบ / ปิดหน้าต่าง</button>
@@ -349,28 +349,29 @@
                         <div class="queue-number" id="myQueueNo">C01</div>
                         <div class="queue-status-text" id="myStatusText">กำลังรอเรียกเข้ารับบริการ</div>
                         
-                        <!-- ⏱️ นับเวลาถอยหลัง (แสดงเฉพาะเมื่อสถานะเป็น "รอทำหัตถการ") -->
+                        <!-- ⏱️ นับเวลาถอยหลัง -->
                         <div id="countdownBox" class="countdown-badge" style="display: none;">
                             <i class="fa-solid fa-stopwatch"></i> เวลารอโดยประมาณ: <span id="countdownTimer">--:--</span> นาที
                         </div>
                     </div>
 
                     <div class="staff-info-split-card">
-                        <div class="staff-left-container" style="height: 140px;">
-                            <img id="staffBgImg" class="staff-avatar-bg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Staff">
+                        <div class="staff-left-container">
+                            <img id="staffBgImg" class="staff-avatar-bg" src="imsges/staff-12.jpg" alt="Staff" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
                             <div class="staff-overlay-gradient"></div>
                             <div class="staff-text-overlay">
-                                <div id="staffName" class="staff-name-label">รอ Admin มอบหมายผู้ปฏิบัติงาน</div>
+                                <div id="staffName" class="staff-name-label">นายแพทย์กฤตธนัท วงค์วิเศษ</div>
+                                <div id="bedAssigned" class="staff-bed-label">เตียง: BED 1</div>
                             </div>
                         </div>
                         <div class="staff-right-col" id="staffRightColContent">
                             <div class="info-row" id="rowVitalSign">
                                 <span class="info-label">Vital Sign:</span>
-                                <span class="info-value" id="valVitalSign">-</span>
+                                <span class="info-value" id="valVitalSign">BP 120/80</span>
                             </div>
                             <div class="info-row" id="rowRight">
                                 <span class="info-label">สิทธิ์การรักษา:</span>
-                                <span class="info-value" id="valRight">-</span>
+                                <span class="info-value" id="valRight">สิทธิบัตรทอง</span>
                             </div>
                             <div class="info-row" id="rowProcedure">
                                 <span class="info-label">หัตถการ:</span>
@@ -389,7 +390,7 @@
                     </div>
                 </div>
 
-                <div class="card rating-card" id="ratingCard" style="display: none;">
+                <div class="card rating-card" id="ratingCard">
                     <div class="card-title" style="margin-bottom: 6px; color: #b45309;"><i class="fa-solid fa-face-smile"></i> ประเมินความพึงพอใจการให้บริการ</div>
                     <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 8px; font-weight: 600;">โปรดให้คะแนนเพื่อการพัฒนาบริการ</div>
                     <div class="rating-container">
@@ -418,9 +419,11 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
+        const queueRef = database.ref('patientQueue');
 
         let capturedBase64Image = '';
         let countdownInterval = null;
+        let lastTriggerTime = 0;
         let hasShownFinishedPopup = false;
         let audioCtxUnlocked = false;
 
@@ -523,7 +526,7 @@
             }
         });
 
-        // 🏥 บันทึกข้อมูลคิว
+        // 🏥 บันทึกข้อมูลและผูกแพทย์ผู้ตรวจเป็น "นายแพทย์กฤตธนัท วงค์วิเศษ" อัตโนมัติ
         function submitAcupunctureQueue(e) {
             e.preventDefault();
             let prefix = document.getElementById('inputPrefix').value;
@@ -567,18 +570,26 @@
                     gender: gender,
                     avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                     staffRegis: 'สแกน QR Code หน้าโต๊ะ',
-                    vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' },
+                    vitalSign: {
+                        bp: '120/80',
+                        pr: '72',
+                        temp: '36.5',
+                        weight: '60',
+                        height: '170',
+                        wt: '60 กก. / 170 ซม.'
+                    },
                     diseases: 'ไม่มี',
-                    rightScheme: '',
+                    rightScheme: 'สิทธิบัตรทอง',
                     clinic: 'แพทย์แผนจีน',
                     paymentMethod: 'ไม่ต้องชำระเงิน',
                     payStatus: 'ไม่ต้องชำระเงิน',
-                    status: 'จุดลงทะเบียน',
-                    currentPoint: 'จุดลงทะเบียน',
+                    status: 'รอตรวจห้องแพทย์',
+                    currentPoint: 'จุดที่ 2: ห้องตรวจ',
                     entryTime: timeString,
                     entryDate: todayStr,
-                    doctorName: '-',
-                    operator: '', // ปล่อยว่าง รอ Admin กำหนด
+                    doctorName: 'นายแพทย์กฤตธนัท วงค์วิเศษ',
+                    operator: 'นายแพทย์กฤตธนัท วงค์วิเศษ', // ล็อกแพทย์ผู้ตรวจเป็นคนที่ 12
+                    bed: 'BED 1',
                     chiefComplaint: 'มารับบริการฝังเข็มตามคิว QR Code',
                     treatmentTypes: ['ฝังเข็มแผนจีน'],
                     prescriptions: [],
@@ -594,6 +605,24 @@
                         alert(`ลงทะเบียนสำเร็จ! คิวของคุณคือ ${targetQueueNo} (คลินิกแพทย์แผนจีน)`);
                         localStorage.setItem('myPatientKey', newKey);
                         localStorage.setItem('myQueueNo', targetQueueNo);
+
+                        // ซิงค์ข้อมูลลงตาราง patientQueue ทันทีเพื่อให้ลิงก์กับหน้า Monitor และรูปขึ้นทันที
+                        let qPayload = {
+                            queueNo: targetQueueNo,
+                            pname: pname,
+                            hn: hn,
+                            operator: 'นายแพทย์กฤตธนัท วงค์วิเศษ',
+                            bed: 'BED 1',
+                            avatar: 'imsges/staff-12.jpg',
+                            status: 'active',
+                            waitingMinutes: 30,
+                            diagnosis: 'หัตถการคลินิก',
+                            procedure: 'ฝังเข็มรักษา',
+                            timestamp: 0 - Date.now(),
+                            endTime: Date.now() + (30 * 60 * 1000)
+                        };
+                        queueRef.push(qPayload);
+
                         loadPatientStatusView(newKey, targetQueueNo);
                     } else {
                         alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง');
@@ -612,13 +641,12 @@
             flowRef.child(key).on('value', (snap) => {
                 let p = snap.val();
                 if(!p) return;
-                document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'จุดลงทะเบียน'}`;
+                document.getElementById('myStatusText').innerText = `สถานะ: ${p.currentPoint || 'รอรับบริการ'}`;
                 
-                let bpVal = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : '-';
-                document.getElementById('valVitalSign').innerText = bpVal;
-                document.getElementById('valRight').innerText = p.rightScheme || '-';
+                document.getElementById('valVitalSign').innerText = p.vitalSign && p.vitalSign.bp ? `BP ${p.vitalSign.bp}` : 'BP 120/80';
+                document.getElementById('valRight').innerText = p.rightScheme || 'สิทธิบัตรทอง';
                 document.getElementById('valProcedure').innerText = p.treatmentTypes && p.treatmentTypes.length > 0 ? p.treatmentTypes.join(', ') : 'ฝังเข็มรักษา';
-                document.getElementById('valPrice').innerText = `${(p.totalCost || 0).toFixed(2)} บาท`;
+                document.getElementById('valPrice').innerText = `${p.totalCost || 0.00} บาท`;
 
                 let normalContainer = document.getElementById('normalStatusContainer');
                 let ratingCard = document.getElementById('ratingCard');
@@ -642,9 +670,8 @@
 
                 // ⏱️ ระบบนับเวลาถอยหลัง
                 let countdownBox = document.getElementById('countdownBox');
-                let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 30;
-                
-                if (p.currentPoint && p.currentPoint.includes('รอทำหัตถการ')) {
+                let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 15;
+                if (p.currentPoint !== 'เสร็จสิ้นภารกิจ') {
                     countdownBox.style.display = 'inline-flex';
                     startPatientCountdown(waitMins);
                 } else {
@@ -652,7 +679,7 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว
+                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว ("พร้อมทำหัตถการ")
                 if (p.currentPoint === 'พร้อมทำหัตถการ') {
                     let modalState = document.getElementById('callQueueModal').style.display;
                     if (modalState !== 'flex') {
@@ -660,28 +687,43 @@
                         playSoftChimeSound();
                     }
                 }
+            });
 
-                // อัปเดตข้อมูลผู้รับผิดชอบเมื่อถูกกำหนดจาก Admin
-                if (p.operator && p.operator.trim() !== '') {
-                    document.getElementById('staffName').innerText = p.operator;
-                    document.getElementById('modalStaffName').innerText = p.operator;
-                    
-                    const operatorStaffList = [
-                        "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
-                        "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
-                        "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"
-                    ];
-                    let cleanOp = p.operator.replace(/^(พท\.|พทป\.|นายแพทย์|ดร\.|นพ\.)/g, '').trim();
-                    let idx = operatorStaffList.findIndex(s => s.includes(cleanOp) || cleanOp.includes(s));
-                    if (idx !== -1) {
-                        let imgPath = `imsges/staff-${idx + 1}.jpg`;
-                        document.getElementById('staffBgImg').src = imgPath;
-                        document.getElementById('modalStaffAvatar').src = imgPath;
-                    }
-                } else {
-                    document.getElementById('staffName').innerText = 'รอ Admin มอบหมายผู้ปฏิบัติงาน';
-                    document.getElementById('modalStaffName').innerText = 'รอ Admin กำหนด';
+            // 🖼️ ดึงภาพ Staff จาก imsges/staff-12.jpg ให้ตรงกับแพทย์คนที่ 12
+            const operatorStaffList = [
+                "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
+                "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
+                "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"
+            ];
+
+            function getStaffImagePath(operatorName) {
+                if (!operatorName) return 'imsges/staff-12.jpg';
+                let cleanName = operatorName.replace(/^(พท\.|พทป\.|นายแพทย์|ดร\.|นพ\.)/g, '').trim();
+                let index = operatorStaffList.findIndex(s => s.includes(cleanName) || cleanName.includes(s));
+                if (index !== -1) {
+                    return `imsges/staff-${index + 1}.jpg`;
                 }
+                return 'imsges/staff-12.jpg';
+            }
+
+            queueRef.on('value', (snap) => {
+                let queues = snap.val() || {};
+                let matched = Object.values(queues).find(q => q.queueNo === qNo);
+                
+                let operatorName = matched && matched.operator ? matched.operator : 'นายแพทย์กฤตธนัท วงค์วิเศษ';
+                let bed = matched && matched.bed ? matched.bed : 'BED 1';
+                
+                document.getElementById('staffName').innerText = operatorName;
+                document.getElementById('bedAssigned').innerText = `เตียง: ${bed}`;
+                document.getElementById('modalStaffName').innerText = operatorName;
+                document.getElementById('modalBedAssigned').innerText = `เตียง: ${bed}`;
+
+                let staffImgPath = getStaffImagePath(operatorName);
+                let bgImg = document.getElementById('staffBgImg');
+                let modalAvatar = document.getElementById('modalStaffAvatar');
+
+                bgImg.src = staffImgPath;
+                modalAvatar.src = staffImgPath;
             });
         }
 
@@ -820,7 +862,7 @@
             document.getElementById('inputHN').value = `67${Math.floor(1000 + Math.random() * 9000)}`;
             
             document.getElementById('staffPortalModal').style.display = 'none';
-            alert(`จำลองกรอกข้อมูลของ "${prefix} ${fName} ${lName}" เรียบร้อย! กดปุ่ม "กดยืนยันรับบัตรคิว" ได้เลย`);
+            alert(`จำลองกรอกข้อมูลของ "${prefix} ${fName} ${lName}" เรียบร้อย! (ระบบผูกแพทย์ผู้ตรวจ: นายแพทย์กฤตธนัท) กดปุ่ม "กดยืนยันรับบัตรคิว" ได้เลย`);
         }
 
         function simSetStatus(statusText) {
