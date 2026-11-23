@@ -521,6 +521,7 @@
                     gender: gender,
                     avatar: capturedBase64Image || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                     staffRegis: 'สแกน QR Code หน้าโต๊ะ',
+                    phone: phone, // 👈 เพิ่มฟิลด์เบอร์โทรศัพท์ตรงนี้เพื่อให้ส่งขึ้นฐานข้อมูลพร้อมใช้งานใน Flow
                     vitalSign: { bp: '', pr: '', temp: '', weight: '', height: '' },
                     diseases: 'ไม่มี',
                     rightScheme: '',
@@ -547,7 +548,6 @@
                         localStorage.setItem('ttmPatientKey', newKey);
                         localStorage.setItem('ttmQueueNo', newQueueNo);
 
-                        // 💡 แก้ไขตรงนี้: เปลี่ยน status จาก 'active' เป็น 'waiting' เพื่อบังคับให้ไปลงที่ Waiting List บนหน้า Monitor เสมอ
                         let qPayload = {
                             queueNo: newQueueNo,
                             pname: pname,
