@@ -190,7 +190,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const queueRef = database.ref('patientQueue');
-        const hospitalFlowRef = database.ref('hospitalFlowQueryGreenThemeV48'); // บรรทัดเติม
+        const hospitalFlowRef = database.ref('hospitalFlowQueryGreenThemeV48');
 
         let previousKeys = [];
         let notifiedTimeUpKeys = [];
@@ -205,11 +205,13 @@
             "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"
         ];
 
+        // 🛠️ แก้ไขจุดที่ 1: ดึงรูป Staff จากโฟลเดอร์ imsges/ และรองรับการตัดคำนำหน้า
         function getStaffImagePath(operatorName) {
-            let cleanName = operatorName.replace(/^\d+\./, '').trim();
+            if (!operatorName) return '';
+            let cleanName = operatorName.replace(/^\d+\./, '').replace(/^(พท\.|พทป\.|นายแพทย์|ดร\.|นพ\.)/g, '').trim();
             let index = operatorStaffList.findIndex(s => s.includes(cleanName) || cleanName.includes(s));
             if (index !== -1) {
-                return `images/staff-${index + 1}.jpg`;
+                return `imsges/staff-${index + 1}.jpg`;
             }
             return '';
         }
@@ -260,8 +262,15 @@
             let announcement = `ขอเชิญ ${qStr}, คุณ ${pname}, ที่ ${bed}, ผู้ปฏิบัติงาน ${operator}`;
             speakText(announcement);
             
-            // บรรทัดเติม (แก้ปัญหาข้อ 2)
-            if (queueNo) { hospitalFlowRef.orderByChild('queueNo').equalTo(queueNo).once('value', (snap) => { if (snap.exists()) { snap.forEach((childSnap) => { hospitalFlowRef.child(childSnap.key).update({ triggerTime: Date.now() }); }); } }); }
+            if (queueNo) { 
+                hospitalFlowRef.orderByChild('queueNo').equalTo(queueNo).once('value', (snap) => { 
+                    if (snap.exists()) { 
+                        snap.forEach((childSnap) => { 
+                            hospitalFlowRef.child(childSnap.key).update({ triggerTime: Date.now() }); 
+                        }); 
+                    } 
+                }); 
+            }
         }
 
         function toggleManualScreenSaver() {
@@ -285,9 +294,21 @@
             renderDashboard();
         }
 
+        // 🛠️ แก้ไขจุดที่ 2: กดเสร็จสิ้นเฉพาะคิวของแถวนั้นๆ เคสใครเคสมัน ไม่เหมาหมด
         function removePatient(key) { 
             let p = currentQueueData[key];
-            if (p && p.queueNo) { hospitalFlowRef.orderByChild('queueNo').equalTo(p.queueNo).once('value', (snap) => { if (snap.exists()) { snap.forEach((childSnap) => { hospitalFlowRef.child(childSnap.key).update({ currentPoint: 'เสร็จสิ้นภารกิจ', status: 'เสร็จสิ้นภารกิจ' }); }); } }); } // บรรทัดเติม (แก้ปัญหาข้อ 1)
+            if (p && p.queueNo) { 
+                hospitalFlowRef.orderByChild('queueNo').equalTo(p.queueNo).once('value', (snap) => { 
+                    if (snap.exists()) { 
+                        snap.forEach((childSnap) => { 
+                            hospitalFlowRef.child(childSnap.key).update({ 
+                                currentPoint: 'เสร็จสิ้นภารกิจ', 
+                                status: 'เสร็จสิ้นภารกิจ' 
+                            }); 
+                        }); 
+                    } 
+                }); 
+            }
             queueRef.child(key).remove(); 
         }
 
@@ -305,8 +326,17 @@
             renderDashboard();
         });
 
-        // บรรทัดเติม (แก้ปัญหาข้อ 1 ส่วนดักฟัง)
-        hospitalFlowRef.on('child_changed', (snapshot) => { let data = snapshot.val(); if (data && (data.currentPoint === 'เสร็จสิ้นภารกิจ' || data.status === 'เสร็จสิ้นภารกิจ')) { let targetQueueNo = data.queueNo; Object.keys(currentQueueData).forEach((qKey) => { if (currentQueueData[qKey].queueNo === targetQueueNo) { queueRef.child(qKey).remove(); } }); } });
+        hospitalFlowRef.on('child_changed', (snapshot) => { 
+            let data = snapshot.val(); 
+            if (data && (data.currentPoint === 'เสร็จสิ้นภารกิจ' || data.status === 'เสร็จสิ้นภารกิจ')) { 
+                let targetQueueNo = data.queueNo; 
+                Object.keys(currentQueueData).forEach((qKey) => { 
+                    if (currentQueueData[qKey].queueNo === targetQueueNo) { 
+                        queueRef.child(qKey).remove(); 
+                    } 
+                }); 
+            } 
+        });
 
         function renderDashboard() {
             const container = document.getElementById('monitorQueue');
@@ -359,11 +389,9 @@
                     let isOutside = isOutsideCase(p);
 
                     let matchMode = (currentViewMode === 'inside' && !isOutside) || (currentViewMode === 'outside' && isOutside);
-
-                    // บรรทัดเติม (แก้ปัญหาข้อ 3 - เช็คว่าต้องมีข้อมูลเตียงและผู้ปฏิบัติงานก่อนประกาศเสียง)
                     let hasAssignedInfo = p.bed && p.bed.trim() !== '' && p.operator && p.operator.trim() !== '';
 
-                    if (matchMode && hasAssignedInfo) { // บรรทัดเติมเงื่อนไข
+                    if (matchMode && hasAssignedInfo) { 
                         let qSpeech = formatQueueForSpeech(p.queueNo);
                         let qStr = qSpeech ? `หมายเลขคิว ${qSpeech}` : '';
                         let announcement = `${qStr}, ผู้ป่วย ${p.pname}, ที่ ${p.bed}, ผู้ปฏิบัติงาน ${p.operator}`;
