@@ -242,7 +242,7 @@
             <div style="background: #ecfdf5; padding: 12px; border-radius: 12px; border: 2px solid #34d399; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; text-align: left;">
                 <img id="modalStaffAvatar" src="imsges/staff-12.jpg" alt="Staff" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid #059669;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
                 <div>
-                    <div style="font-size: 12px; color: #065f46; font-weight: 700;">ผู้ปฏิบัติงาน</div>
+                    <div style="font-size: 12px; color: #064e3b; font-weight: 700;">ผู้ปฏิบัติงาน</div>
                     <div id="modalStaffName" style="font-size: 16px; font-weight: 800; color: #064e3b;">นายแพทย์กฤตธนัท วงค์วิเศษ</div>
                     <div id="modalBedAssigned" style="font-size: 14px; font-weight: 800; color: #059669;">เตียง: BED 1</div>
                 </div>
@@ -426,6 +426,7 @@
         let lastTriggerTime = 0;
         let hasShownFinishedPopup = false;
         let audioCtxUnlocked = false;
+        let hasAcknowledgedAlert = false; // 👈 เพิ่มตัวแปรสำหรับล็อกไม่ให้ Pop-up เด้งซ้ำ
 
         const urlParams = new URLSearchParams(window.location.search);
         let targetQueueNo = urlParams.get('queue') || 'C01';
@@ -500,7 +501,6 @@
             }
         }
 
-        // 🔍 ตรวจสอบคิวซ้ำ
         flowRef.on('value', (snapshot) => {
             let data = snapshot.val() || {};
             let todayStr = new Date().toISOString().split('T')[0];
@@ -526,7 +526,6 @@
             }
         });
 
-        // 🏥 บันทึกข้อมูลและผูกแพทย์ผู้ตรวจเป็น "นายแพทย์กฤตธนัท วงค์วิเศษ" อัตโนมัติ
         function submitAcupunctureQueue(e) {
             e.preventDefault();
             let prefix = document.getElementById('inputPrefix').value;
@@ -589,7 +588,7 @@
                     entryTime: timeString,
                     entryDate: todayStr,
                     doctorName: 'นายแพทย์กฤตธนัท วงค์วิเศษ',
-                    operator: 'นายแพทย์กฤตธนัท วงค์วิเศษ', // ล็อกแพทย์ผู้ตรวจเป็นคนที่ 12
+                    operator: 'นายแพทย์กฤตธนัท วงค์วิเศษ',
                     bed: 'BED 1',
                     chiefComplaint: 'มารับบริการฝังเข็มตามคิว QR Code',
                     treatmentTypes: ['ฝังเข็มแผนจีน'],
@@ -607,7 +606,6 @@
                         localStorage.setItem('myPatientKey', newKey);
                         localStorage.setItem('myQueueNo', targetQueueNo);
 
-                        // ซิงค์ข้อมูลลงตาราง patientQueue ทันทีเพื่อให้ลิงก์กับหน้า Monitor และรูปขึ้นทันที
                         let qPayload = {
                             queueNo: targetQueueNo,
                             pname: pname,
@@ -669,7 +667,6 @@
                     }
                 }
 
-                // ⏱️ ระบบนับเวลาถอยหลัง
                 let countdownBox = document.getElementById('countdownBox');
                 let waitMins = p.waitingMinutes !== undefined ? p.waitingMinutes : 15;
                 if (p.currentPoint !== 'เสร็จสิ้นภารกิจ') {
@@ -680,17 +677,23 @@
                     if(countdownInterval) clearInterval(countdownInterval);
                 }
 
-                // 🔔 Pop-up แจ้งเตือนเมื่อถึงคิว ("พร้อมทำหัตถการ")
+                // 🔔 แก้ไขส่วนแจ้งเตือน "พร้อมทำหัตถการ" ไม่ให้เด้งซ้ำวนไปเรื่อยๆ
                 if (p.currentPoint === 'พร้อมทำหัตถการ') {
-                    let modalState = document.getElementById('callQueueModal').style.display;
-                    if (modalState !== 'flex') {
-                        document.getElementById('callQueueModal').style.display = 'flex';
-                        playSoftChimeSound();
+                    if (p.triggerTime && p.triggerTime !== lastTriggerTime) {
+                        hasAcknowledgedAlert = false;
+                        lastTriggerTime = p.triggerTime;
+                    }
+
+                    if (!hasAcknowledgedAlert) {
+                        let modalState = document.getElementById('callQueueModal').style.display;
+                        if (modalState !== 'flex') {
+                            document.getElementById('callQueueModal').style.display = 'flex';
+                            playSoftChimeSound();
+                        }
                     }
                 }
             });
 
-            // 🖼️ ดึงภาพ Staff จาก imsges/staff-12.jpg ให้ตรงกับแพทย์คนที่ 12
             const operatorStaffList = [
                 "กรชกร พองผาลา", "สุประภา มาละอินทร์", "พรวินิจ แก้วอัคฮาด", "พรสิน เฮียงราช",
                 "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
@@ -773,6 +776,7 @@
 
         function closeLockedCallModal() {
             document.getElementById('callQueueModal').style.display = 'none';
+            hasAcknowledgedAlert = true; // 👈 ล็อกไม่ให้ Pop-up เด้งซ้ำจนกว่าจะมีการกดเรียกใหม่
         }
 
         function closeFinishedModal() {
