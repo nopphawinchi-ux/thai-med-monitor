@@ -117,7 +117,7 @@
     </div>
 
     <div class="header">
-        <h2><i class="fa-solid fa-gauge-high"></i> Admin Monitor - จัดการคิวและผู้ให้บริการ</h2>
+        <h2><i class="fa-solid fa-gauge-high"></i> Admin Monitor - จัดการคิวและสถานะรวม</h2>
         <div style="display: flex; gap: 10px; align-items: center;">
             <!-- ขั้นตอนที่ 2: สร้างปุ่มล็อกอิน -->
             <button class="login-btn" onclick="loginWithGoogle()">🔑 เข้าสู่ระบบด้วย Gmail</button>
@@ -323,7 +323,7 @@
         let activeEmergencyKey = null;
         let hasAlertedModal = false;
 
-        // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google
+        // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google และตรวจสอบสิทธิ์
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             firebase.auth().signInWithPopup(provider)
@@ -334,6 +334,13 @@
                     alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
                 });
         }
+
+        // ตรวจสอบสถานะการล็อกอินทุกครั้งที่โหลดหน้า
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                alert("กรุณาเข้าสู่ระบบด้วย Gmail ที่มุมบนขวาก่อนใช้งานหน้า Admin Monitor");
+            }
+        });
 
         const adminStaffList = [
             { id: 1, name: "กรชกร พองผาลา" }, { id: 2, name: "สุประภา มาละอินทร์" },
@@ -670,6 +677,13 @@
             let waitingMinutes = (currentPoint === 'รอทำหัตถการ') ? (parseInt(document.getElementById('inputWaitingMinutes').value) || 30) : 0;
             let operator = document.getElementById('inputOperator').value;
             let bed = document.getElementById('inputBed').value;
+
+            // ตรวจสอบการล็อกอินก่อนบันทึกข้อมูล
+            let currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
+                alert("⚠️ กรุณากดปุ่ม '🔑 เข้าสู่ระบบด้วย Gmail' ที่มุมบนขวาก่อนบันทึกข้อมูล!");
+                return;
+            }
 
             if(!queueNo || !pname) {
                 alert('กรุณากรอกหมายเลขคิวและชื่อผู้ป่วยให้ครบถ้วน');
