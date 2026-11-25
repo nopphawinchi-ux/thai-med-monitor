@@ -329,7 +329,7 @@
             background-color: #fff5f5;
         }
 
-        /* ขยายขนาดกล่องจำลองสติกเกอร์ 5x2 ซม. (เพิ่มขึ้น 200% ชัดเจนเต็มพื้นที่) */
+        /* ฟอร์มสติกเกอร์ 5x2 ซม. (ข้อความ 70%, QR Code 30% ชิดมุมเต็มพื้นที่) */
         #stickerPreviewContainer {
             position: absolute;
             left: -9999px;
@@ -338,12 +338,13 @@
             height: 227px;
             background: #ffffff;
             border: 2px solid #000;
-            padding: 16px;
+            padding: 8px;
             box-sizing: border-box;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-family: sans-serif;
+            overflow: hidden;
         }
 
         @media (max-width: 1024px) {
@@ -747,17 +748,16 @@
     <div class="sidebar" id="rightSidebar"></div>
 </div>
 
-<!-- กล่องจำลองสติกเกอร์สำหรับแปลงเป็นภาพ (ขยายตัวอักษรและ QR Code ใหญ่ขึ้น 200%) -->
+<!-- กล่องจำลองสติกเกอร์ 5x2 ซม. (ข้อความ 70% ตัวอักษรใหญ่เท่ากัน, QR Code 30% ชิดมุมเต็มพื้นที่) -->
 <div id="stickerPreviewContainer">
-    <div style="width: 58%; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
-        <div id="stickerDrugName" style="font-weight: bold; font-size: 22px; line-height: 1.2;">-</div>
-        <div id="stickerLot" style="font-size: 16px; font-weight: 600;">-</div>
-        <div id="stickerMfg" style="font-size: 15px;">-</div>
-        <div id="stickerExp" style="font-size: 15px;">-</div>
+    <div style="width: 70%; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+        <div id="stickerDrugName" style="font-weight: bold; font-size: 20px; line-height: 1.1;">-</div>
+        <div id="stickerLot" style="font-size: 18px; font-weight: bold; line-height: 1.1;">-</div>
+        <div id="stickerMfg" style="font-size: 18px; font-weight: bold; line-height: 1.1;">-</div>
+        <div id="stickerExp" style="font-size: 18px; font-weight: bold; line-height: 1.1;">-</div>
     </div>
-    <div style="width: 42%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <div id="stickerQr"></div>
-        <div id="stickerCodeText" style="font-size: 13px; font-weight: bold; margin-top: 6px;">-</div>
+    <div style="width: 30%; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; height: 100%;">
+        <div id="stickerQr" style="display: flex; align-items: center; justify-content: center;"></div>
     </div>
 </div>
 
@@ -1213,7 +1213,7 @@
     }
 
     function stopScanner() {
-        if (html5QrCode) {
+        if (html5QrCode && html5QrCode.isScanning) {
             html5QrCode.stop().then(() => {
                 html5QrCode.clear();
                 document.getElementById('reader').style.display = 'none';
@@ -1247,7 +1247,7 @@
     }
 
     function stopStockScanner() {
-        if (stockQrCode) {
+        if (stockQrCode && stockQrCode.isScanning) {
             stockQrCode.stop().then(() => {
                 stockQrCode.clear();
                 document.getElementById('stockReader').style.display = 'none';
@@ -1548,12 +1548,11 @@
         document.getElementById('stickerLot').innerText = `Lot: ${lastGeneratedLot || '-'}`;
         document.getElementById('stickerMfg').innerText = `Mfg: ${lastGeneratedMfg || '-'}`;
         document.getElementById('stickerExp').innerText = `Exp: ${lastGeneratedExp || '-'}`;
-        document.getElementById('stickerCodeText').innerText = lastGeneratedCode;
 
         let qrBox = document.getElementById('stickerQr');
         qrBox.innerHTML = "";
-        // ขยายขนาด QR Code สำหรับพิมพ์ภาพใหญ่ขึ้น 200% (130x130 พิกเซล)
-        new QRCode(qrBox, { text: lastGeneratedCode, width: 130, height: 130 });
+        // สร้าง QR Code ขนาดใหญ่เต็มพื้นที่ 30% ของฝั่งขวา
+        new QRCode(qrBox, { text: lastGeneratedCode, width: 180, height: 180 });
 
         let previewContainer = document.getElementById('stickerPreviewContainer');
         previewContainer.style.left = '0';
