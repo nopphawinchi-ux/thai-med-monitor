@@ -13,6 +13,8 @@
     <!-- Firebase SDK (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <!-- ขั้นตอนที่ 1: เพิ่ม Script Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     
     <style>
         :root {
@@ -221,6 +223,10 @@
         .btn-success { background: var(--accent-green); color: white; width: 100%; margin-top: 14px; padding: 12px; font-size: 14px; }
         .btn-success:hover { background: #1b5e20; }
 
+        /* ปุ่มล็อกอิน Google */
+        .login-btn { background: #fff; color: #444; border: 1px solid var(--border-color); margin-bottom: 10px; }
+        .login-btn:hover { background: #f8fafb; }
+
         .patient-box, .code-result-box {
             background: #f8fafb;
             border: 1px solid var(--border-color);
@@ -382,6 +388,8 @@
     <!-- แถบเครื่องมือซ้ายมือ / แถบบนสำหรับมือถือ -->
     <div class="toolbar">
         <h3>เมนูระบบ</h3>
+        <!-- ขั้นตอนที่ 2: สร้างปุ่มล็อกอิน -->
+        <button class="nav-btn login-btn" onclick="loginWithGoogle()">🔑 เข้าสู่ระบบด้วย Gmail เจ้าหน้าที่</button>
         <button class="nav-btn active" id="btnDispense" onclick="switchTab('dispense')">1. จ่ายยา</button>
         <button class="nav-btn" id="btnStock" onclick="switchTab('stock')">2. Stock ยา</button>
         <button class="nav-btn" id="btnGenerator" onclick="switchTab('generator')">3. สร้างบาร์โค้ดยา</button>
@@ -798,6 +806,18 @@
     let lastGeneratedLot = "";
     let lastGeneratedMfg = "";
     let lastGeneratedExp = "";
+
+    // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google
+    function loginWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider)
+            .then((result) => {
+                alert("ยินดีต้อนรับเจ้าหน้าที่: " + result.user.displayName);
+            })
+            .catch((error) => {
+                alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+            });
+    }
 
     stockRef.on('value', (snapshot) => {
         drugDatabase = snapshot.val() || {
@@ -1494,7 +1514,7 @@
     function deleteStockItem(code) {
         let drug = drugDatabase[code];
         if (!drug.isDeleted) {
-            if (confirm("คุณต้องการลบยานี้ออกจากคลังใช่หรือไม่?")) {
+            if (confirm("คุณต้องการลบบัดนี้ออกจากคลังใช่หรือไม่?")) {
                 drug.isDeleted = true;
                 stockRef.set(drugDatabase);
                 renderStockTable();
