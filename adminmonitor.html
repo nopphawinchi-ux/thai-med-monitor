@@ -10,6 +10,8 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- ขั้นตอนที่ 1: เพิ่ม Script Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -25,6 +27,15 @@
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #fff; padding: 15px 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .header h2 { margin: 0; color: var(--app-primary); font-size: 20px; }
+
+        /* ปุ่มล็อกอิน Google */
+        .login-btn { 
+            background: #ffffff; color: #444; border: 1px solid var(--app-border); 
+            padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; 
+            cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            transition: 0.2s; 
+        }
+        .login-btn:hover { background: #f8fafb; border-color: var(--app-primary); }
 
         .emergency-modal {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -108,6 +119,8 @@
     <div class="header">
         <h2><i class="fa-solid fa-gauge-high"></i> Admin Monitor - จัดการคิวและผู้ให้บริการ</h2>
         <div style="display: flex; gap: 10px; align-items: center;">
+            <!-- ขั้นตอนที่ 2: สร้างปุ่มล็อกอิน -->
+            <button class="login-btn" onclick="loginWithGoogle()">🔑 เข้าสู่ระบบด้วย Gmail</button>
             <a href="docqueue.html" target="_blank" style="background: #0284c7; color:#fff; text-decoration:none; padding:8px 14px; border-radius:8px; font-size:13px; font-weight:700;"><i class="fa-solid fa-user-doctor"></i> ไปหน้า DocQueue</a>
             <div style="font-size: 14px; font-weight: 600; color: #64748b;">รพ.พระอาจารย์มั่น ภูริทัตโต</div>
         </div>
@@ -305,6 +318,23 @@
         const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
         const queueRef = database.ref('patientQueue');
 
+        let allFlowData = {};
+        let allQueueData = {};
+        let activeEmergencyKey = null;
+        let hasAlertedModal = false;
+
+        // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    alert("ยินดีต้อนรับเจ้าหน้าที่: " + result.user.displayName);
+                })
+                .catch((error) => {
+                    alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+                });
+        }
+
         const adminStaffList = [
             { id: 1, name: "กรชกร พองผาลา" }, { id: 2, name: "สุประภา มาละอินทร์" },
             { id: 3, name: "พรวินิจ แก้วอัคฮาด" }, { id: 4, name: "พรสิน เฮียงราช" },
@@ -313,11 +343,6 @@
             { id: 9, name: "ประกายรัตน์ กาลสุข" }, { id: 10, name: "นพวินทร์ จิรศศิภิรมย์" },
             { id: 11, name: "สุนิสา อินทะเสย์" }, { id: 12, name: "นายแพทย์กฤตธนัท วงค์วิเศษ" }
         ];
-
-        let allFlowData = {};
-        let allQueueData = {};
-        let activeEmergencyKey = null;
-        let hasAlertedModal = false;
 
         function selectWaitingTime(mins, el) {
             document.querySelectorAll('.time-badge-btn').forEach(btn => btn.classList.remove('selected'));
@@ -394,9 +419,6 @@
             });
         }
 
-        // -------------------------------------------------------------------------
-        // แก้ไข: ป้องกันการดึงค่าเตียงหรือผู้ปฏิบัติงานอัตโนมัติ ให้เป็นค่าว่างหากไม่มีข้อมูล
-        // -------------------------------------------------------------------------
         function fillPatientDataFromSearch(selectEl) {
             let key = selectEl.value;
             if (!key) return;
@@ -411,10 +433,7 @@
             document.getElementById('inputClinic').value = p.clinic || 'แพทย์แผนจีน';
             document.getElementById('inputCurrentPoint').value = p.currentPoint || 'จุดลงทะเบียน';
             
-            // หากไม่มีผู้ปฏิบัติงานส่งมา ให้เซ็ตเป็นค่าว่าง ("") ทันที
             document.getElementById('inputOperator').value = (p.operator && p.operator.trim() !== '') ? p.operator : '';
-            
-            // หากไม่มีเตียงส่งมา ให้เซ็ตเป็นค่าว่าง ("") ทันที ห้ามเลือกเอง
             document.getElementById('inputBed').value = (p.bed && p.bed.trim() !== '' && p.bed !== 'สำรองเตียง') ? p.bed : '';
 
             handleStatusChange();
@@ -640,9 +659,6 @@
             hasAlertedModal = false;
         }
 
-        // -------------------------------------------------------------------------
-        // บันทึกข้อมูล: ส่งค่า bed และ operator ไปตามจริง (ถ้าไม่ได้เลือกจะเป็นค่าว่าง)
-        // -------------------------------------------------------------------------
         function saveAdminQueue() {
             let key = document.getElementById('editKey').value;
             let queueNo = document.getElementById('inputQueueNo').value.trim();
@@ -652,8 +668,8 @@
             let clinic = document.getElementById('inputClinic').value;
             let currentPoint = document.getElementById('inputCurrentPoint').value;
             let waitingMinutes = (currentPoint === 'รอทำหัตถการ') ? (parseInt(document.getElementById('inputWaitingMinutes').value) || 30) : 0;
-            let operator = document.getElementById('inputOperator').value; // ถ้าไม่มีเลือกจะเป็นค่าว่าง
-            let bed = document.getElementById('inputBed').value; // ถ้าไม่มีเลือกจะเป็นค่าว่าง
+            let operator = document.getElementById('inputOperator').value;
+            let bed = document.getElementById('inputBed').value;
 
             if(!queueNo || !pname) {
                 alert('กรุณากรอกหมายเลขคิวและชื่อผู้ป่วยให้ครบถ้วน');
@@ -723,9 +739,6 @@
             });
         }
 
-        // -------------------------------------------------------------------------
-        // แก้ไขฟังก์ชัน editQueue ให้เคลียร์ค่าเป็นค่าว่างหากไม่มีข้อมูลเตียงหรือผู้ปฏิบัติงาน
-        // -------------------------------------------------------------------------
         function editQueue(key) {
             let p = allFlowData[key];
             if(!p) return;
@@ -737,10 +750,7 @@
             document.getElementById('inputClinic').value = p.clinic || 'แพทย์แผนจีน';
             document.getElementById('inputCurrentPoint').value = p.currentPoint || 'จุดลงทะเบียน';
             
-            // หากไม่มีข้อมูลผู้ปฏิบัติงาน ให้เป็นค่าว่าง
             document.getElementById('inputOperator').value = (p.operator && p.operator.trim() !== '') ? p.operator : '';
-            
-            // หากไม่มีข้อมูลเตียง ให้เป็นค่าว่าง (รอกำหนดเตียง) ทันที
             document.getElementById('inputBed').value = (p.bed && p.bed.trim() !== '' && p.bed !== 'สำรองเตียง') ? p.bed : '';
 
             handleStatusChange();
