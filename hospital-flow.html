@@ -10,6 +10,8 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- ขั้นตอนที่ 1: เพิ่ม Script Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -49,7 +51,7 @@
             background: var(--card-bg); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--card-border);
             margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); gap: 10px; flex-wrap: wrap;
         }
-        .nav-login-area { display: flex; align-items: center; }
+        .nav-login-area { display: flex; align-items: center; gap: 10px; }
         .nav-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
         .nav-tab-btn {
             background: #f8fafc; border: 1px solid #cbd5e1; color: var(--text-muted);
@@ -248,7 +250,6 @@
         .btn-row-add { background: #0284c7; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 4px; font-size: 13px; }
         .btn-row-del { background: #dc2626; color: #fff; border: none; padding: 4px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 34px; font-size: 12px; }
 
-        /* จุดที่ 5: ตารางสรุปรายวัน ปรับบรรทัดชิด ช่องไฟน้อยลง เพื่อความกระชับ */
         .admin-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--card-border); }
         .admin-table th, .admin-table td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 5px 8px; text-align: left; color: var(--text-main); line-height: 1.25; }
         .admin-table th { background: #f8fafc; color: var(--primary-teal); font-weight: 700; padding: 6px 8px; }
@@ -305,6 +306,8 @@
     <!-- แถบเมนูด้านบน -->
     <div class="top-nav">
         <div class="nav-login-area">
+            <!-- ขั้นตอนที่ 2: สร้างปุ่มล็อกอิน -->
+            <button class="nav-tab-btn" onclick="loginWithGoogle()" style="background: #fff; color: #444; border-color: #cbd5e1;"><i class="fa-brands fa-google"></i> เข้าสู่ระบบด้วย Gmail</button>
             <button class="nav-tab-btn nav-tab-login active" id="tab-btn-0" onclick="switchView('view-0', this)"><i class="fa-solid fa-right-to-bracket"></i> 0. Log In</button>
         </div>
         <div class="nav-tabs">
@@ -741,6 +744,18 @@
         let currentDoctorFilter = 'ในสถานบริการ';
         let currentPharmacyFilter = 'ในสถานบริการ';
 
+        // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    alert("ยินดีต้อนรับเจ้าหน้าที่: " + result.user.displayName);
+                })
+                .catch((error) => {
+                    alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+                });
+        }
+
         const staffList = [
             "พรสิน เฮียงราช", "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด",
             "ฉัตรลดา หงษ์วิลัย", "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์"
@@ -916,7 +931,7 @@
             const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
             
             document.getElementById('user-point-1').selectedIndex = 1;
-            document.getElementById('reg-idcard').value = "1103701234567";
+            document.getElementById('reg-idcard').value = "*************";
             document.getElementById('reg-hn').value = "670123";
             document.getElementById('reg-pname').value = randomName;
             autoDetectGender(randomName);
@@ -926,7 +941,7 @@
             document.getElementById('reg-temp').value = "36.5";
             document.getElementById('reg-weight').value = "60";
             document.getElementById('reg-height').value = "170";
-            document.getElementById('reg-phone').value = "0812345678";
+            document.getElementById('reg-phone').value = "**********";
             document.getElementById('reg-right').value = "บัตรทอง 30 บาท";
             checkRightSchemeValidation();
             
@@ -1090,7 +1105,6 @@
             return prefix + String(nextNum).padStart(2, '0');
         }
 
-        // ฟังก์ชันบันทึกและส่งข้อมูล (รองรับทั้งสร้างใหม่และอัปเดตเคสเดิมหลังแก้ไข)
         function submitRegistration() {
             if (!isSystemLoggedIn) { alert("กรุณาเข้าสู่ระบบก่อนบันทึกข้อมูล"); return; }
             const staffUser = document.getElementById('user-point-1').value;
@@ -1153,7 +1167,7 @@
 
             if (targetQ.startsWith('C')) {
                 assignedQueueNo = targetQ;
-                selectedGlobalDoc = doctorListWithTitle[5]; // นายแพทย์กฤตธนัท วงค์วิเศษ
+                selectedGlobalDoc = doctorListWithTitle[5];
                 selectedClinicVal = 'แพทย์แผนจีน';
                 serviceType = 'ในสถานบริการ';
             } else if (editingKey && allPatientsData[editingKey]) {
@@ -1560,39 +1574,37 @@
             document.getElementById('editPatientModal').style.display = 'flex';
         }
 
-        	function loadPatientIntoRegistration(key) {
-    let p = allPatientsData[key];
-    closeEditModal();
-    switchView('view-1', document.getElementById('tab-btn-1'));
+        function loadPatientIntoRegistration(key) {
+            let p = allPatientsData[key];
+            closeEditModal();
+            switchView('view-1', document.getElementById('tab-btn-1'));
 
-    document.getElementById('reg-idcard').value = p.idcard || '';
-    document.getElementById('reg-hn').value = p.hn || '';
-    document.getElementById('reg-pname').value = p.pname || '';
-    
-    // 👉 เพิ่มบรรทัดนี้เพื่อให้ดึงเบอร์โทรศัพท์ที่ผู้ป่วยกรอกไว้กลับมาแสดงที่ฟอร์มครับ
-    document.getElementById('reg-phone').value = p.phone || '';
-    
-    if (p.gender) selectGender(p.gender);
-    if (p.serviceType) selectServiceType(p.serviceType);
+            document.getElementById('reg-idcard').value = p.idcard || '';
+            document.getElementById('reg-hn').value = p.hn || '';
+            document.getElementById('reg-pname').value = p.pname || '';
+            document.getElementById('reg-phone').value = p.phone || '';
+            
+            if (p.gender) selectGender(p.gender);
+            if (p.serviceType) selectServiceType(p.serviceType);
 
-    if (p.vitalSign) {
-        let bpParts = (p.vitalSign.bp || '').split('/');
-        if (bpParts.length === 2) {
-            document.getElementById('reg-sys').value = bpParts[0];
-            document.getElementById('reg-dia').value = bpParts[1];
+            if (p.vitalSign) {
+                let bpParts = (p.vitalSign.bp || '').split('/');
+                if (bpParts.length === 2) {
+                    document.getElementById('reg-sys').value = bpParts[0];
+                    document.getElementById('reg-dia').value = bpParts[1];
+                }
+                document.getElementById('reg-pr').value = p.vitalSign.pr !== '-' ? p.vitalSign.pr : '';
+                document.getElementById('reg-temp').value = p.vitalSign.temp !== '-' ? p.vitalSign.temp : '';
+                document.getElementById('reg-weight').value = p.vitalSign.weight !== '-' ? p.vitalSign.weight : '';
+                document.getElementById('reg-height').value = p.vitalSign.height !== '-' ? p.vitalSign.height : '';
+            }
+
+            document.getElementById('reg-right').value = "";
+            checkRightSchemeValidation();
+
+            document.getElementById('reg-service-type').dataset.editingKey = key;
+            alert(`ดึงข้อมูลของ "${p.pname}" มาที่จุดลงทะเบียนแล้ว!\nกรุณาตรวจสอบ Vital Sign และเลือกสิทธิ์การรักษาใหม่ จากนั้นกด "บันทึกและส่งต่อไปยังห้องตรวจ"`);
         }
-        document.getElementById('reg-pr').value = p.vitalSign.pr !== '-' ? p.vitalSign.pr : '';
-        document.getElementById('reg-temp').value = p.vitalSign.temp !== '-' ? p.vitalSign.temp : '';
-        document.getElementById('reg-weight').value = p.vitalSign.weight !== '-' ? p.vitalSign.weight : '';
-        document.getElementById('reg-height').value = p.vitalSign.height !== '-' ? p.vitalSign.height : '';
-    }
-
-    document.getElementById('reg-right').value = "";
-    checkRightSchemeValidation();
-
-    document.getElementById('reg-service-type').dataset.editingKey = key;
-    alert(`ดึงข้อมูลของ "${p.pname}" มาที่จุดลงทะเบียนแล้ว!\nกรุณาตรวจสอบ Vital Sign และเลือกสิทธิ์การรักษาใหม่ จากนั้นกด "บันทึกและส่งต่อไปยังห้องตรวจ"`);
-}
 
         function closeEditModal() { document.getElementById('editPatientModal').style.display = 'none'; }
 
