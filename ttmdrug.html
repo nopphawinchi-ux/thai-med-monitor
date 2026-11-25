@@ -287,7 +287,6 @@
             color: var(--text-secondary);
         }
 
-        /* Responsive Table wrapper */
         .table-responsive {
             width: 100%;
             overflow-x: auto;
@@ -330,15 +329,16 @@
             background-color: #fff5f5;
         }
 
+        /* ขยายขนาดกล่องจำลองสติกเกอร์ 5x2 ซม. (เพิ่มขึ้น 200% ชัดเจนเต็มพื้นที่) */
         #stickerPreviewContainer {
             position: absolute;
             left: -9999px;
             top: -9999px;
-            width: 378px;
-            height: 151px;
+            width: 567px; 
+            height: 227px;
             background: #ffffff;
-            border: 1px solid #000;
-            padding: 10px;
+            border: 2px solid #000;
+            padding: 16px;
             box-sizing: border-box;
             display: flex;
             justify-content: space-between;
@@ -346,7 +346,6 @@
             font-family: sans-serif;
         }
 
-        /* Media Queries สำหรับมือถือและจอขนาดเล็ก */
         @media (max-width: 1024px) {
             body {
                 padding: 10px;
@@ -748,16 +747,17 @@
     <div class="sidebar" id="rightSidebar"></div>
 </div>
 
+<!-- กล่องจำลองสติกเกอร์สำหรับแปลงเป็นภาพ (ขยายตัวอักษรและ QR Code ใหญ่ขึ้น 200%) -->
 <div id="stickerPreviewContainer">
-    <div style="width: 60%; display: flex; flex-direction: column; justify-content: center;">
-        <div id="stickerDrugName" style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">-</div>
-        <div id="stickerLot" style="font-size: 11px; line-height: 1.3;">-</div>
-        <div id="stickerMfg" style="font-size: 11px; line-height: 1.3;">-</div>
-        <div id="stickerExp" style="font-size: 11px; line-height: 1.3;">-</div>
+    <div style="width: 58%; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+        <div id="stickerDrugName" style="font-weight: bold; font-size: 22px; line-height: 1.2;">-</div>
+        <div id="stickerLot" style="font-size: 16px; font-weight: 600;">-</div>
+        <div id="stickerMfg" style="font-size: 15px;">-</div>
+        <div id="stickerExp" style="font-size: 15px;">-</div>
     </div>
-    <div style="width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <div style="width: 42%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
         <div id="stickerQr"></div>
-        <div id="stickerCodeText" style="font-size: 9px; margin-top: 4px;">-</div>
+        <div id="stickerCodeText" style="font-size: 13px; font-weight: bold; margin-top: 6px;">-</div>
     </div>
 </div>
 
@@ -1196,9 +1196,11 @@
         let readerEl = document.getElementById('reader');
         readerEl.style.display = 'block';
         
+        const config = { fps: 15, qrbox: { width: 280, height: 180 } };
+        
         html5QrCode.start(
             { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 150 } },
+            config,
             (decodedText) => {
                 document.getElementById('barcodeInput').value = decodedText;
                 stageScannedDrug();
@@ -1228,9 +1230,11 @@
         let readerEl = document.getElementById('stockReader');
         readerEl.style.display = 'block';
         
+        const config = { fps: 15, qrbox: { width: 280, height: 180 } };
+        
         stockQrCode.start(
             { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 150 } },
+            config,
             (decodedText) => {
                 document.getElementById('stockSearchInput').value = decodedText;
                 handleStockSearchInput(decodedText);
@@ -1548,7 +1552,8 @@
 
         let qrBox = document.getElementById('stickerQr');
         qrBox.innerHTML = "";
-        new QRCode(qrBox, { text: lastGeneratedCode, width: 60, height: 60 });
+        // ขยายขนาด QR Code สำหรับพิมพ์ภาพใหญ่ขึ้น 200% (130x130 พิกเซล)
+        new QRCode(qrBox, { text: lastGeneratedCode, width: 130, height: 130 });
 
         let previewContainer = document.getElementById('stickerPreviewContainer');
         previewContainer.style.left = '0';
