@@ -10,6 +10,8 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- ขั้นตอนที่ 1: เพิ่ม Script Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -28,8 +30,17 @@
 
         .header-title {
             text-align: center; margin-bottom: 20px; color: var(--app-purple); font-weight: 700; font-size: 24px;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
         }
+
+        /* ปุ่มล็อกอิน Google */
+        .login-btn { 
+            background: #ffffff; color: #444; border: 1px solid var(--app-border); 
+            padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; 
+            cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            transition: 0.2s; margin-left: 15px;
+        }
+        .login-btn:hover { background: #f8fafb; border-color: var(--app-orange); }
 
         .main-container { max-width: 1450px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 16px; }
         @media(max-width: 1100px) { .main-container { grid-template-columns: 1fr; } }
@@ -112,7 +123,9 @@
 <body>
 
     <div class="header-title">
-        <i class="fa-solid fa-hospital-user" style="color: var(--app-orange);"></i> ระบบสั่งการหัตถการแพทย์แผนไทย (Online Commander)
+        <span><i class="fa-solid fa-hospital-user" style="color: var(--app-orange);"></i> ระบบสั่งการหัตถการแพทย์แผนไทย (Online Commander)</span>
+        <!-- ขั้นตอนที่ 2: สร้างปุ่มล็อกอิน -->
+        <button class="login-btn" onclick="loginWithGoogle()">🔑 เข้าสู่ระบบด้วย Gmail เจ้าหน้าที่</button>
     </div>
 
     <div class="main-container">
@@ -322,7 +335,19 @@
         let currentQueueData = {};
         let flowPatientsData = {};
         let currentFlowTab = 'inside';
-        let currentImportedQueueNo = ''; // ตัวแปรเก็บหมายเลขคิวชั่วคราวขณะกดดึงข้อมูล
+        let currentImportedQueueNo = '';
+
+        // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    alert("ยินดีต้อนรับเจ้าหน้าที่: " + result.user.displayName);
+                })
+                .catch((error) => {
+                    alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+                });
+        }
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -410,7 +435,7 @@
             let p = flowPatientsData[key];
             if (!p) return;
 
-            currentImportedQueueNo = p.queueNo || ''; // บันทึกหมายเลขคิว (เช่น A01 หรือ B01)
+            currentImportedQueueNo = p.queueNo || '';
 
             document.getElementById('input-hn').value = p.hn || '';
             document.getElementById('input-pname').value = p.pname || '';
@@ -451,10 +476,10 @@
             let index = operatorStaffList.findIndex(s => s.includes(cleanName) || cleanName.includes(s));
             
             if (index !== -1) {
-                return `imsges/staff-${index + 1}.jpg`; // ดึง path รูปภาพจากโฟลเดอร์ imsges ตามจริง
+                return `imsges/staff-${index + 1}.jpg`;
             }
             
-            return 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; // ภาพสำรองหากไม่พบรายชื่อ
+            return 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
         }
 
         function updateFormDropdownLocks() {
@@ -547,7 +572,7 @@
                 bed,
                 hn: hn || '-----',
                 pname,
-                queueNo: currentImportedQueueNo || '', // <--- แนบเลขคิว A / B ส่งต่อไปยัง Monitor ตรงนี้ครับ
+                queueNo: currentImportedQueueNo || '',
                 diagnosis: diagnosis || 'ไม่ระบุ',
                 disease: diseases.length > 0 ? diseases.join(', ') : 'ไม่มี',
                 caution: cautions.length > 0 ? cautions.join(', ') : 'ไม่มี',
@@ -567,7 +592,7 @@
                 document.getElementById('edit-key').value = "";
             }
 
-            currentImportedQueueNo = ''; // รีเซ็ตค่าคิวหลังบันทึก
+            currentImportedQueueNo = '';
             resetForm();
         }
 
