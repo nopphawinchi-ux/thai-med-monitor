@@ -470,6 +470,21 @@
                     <option value="ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น">ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น</option>
                 </select>
             </div>
+            
+            <!-- ช่องข้อมูลเพิ่มเติม: Lot (เฉพาะตัวเลข), วันบรรจุ, วันหมดอายุ -->
+            <div class="form-group">
+                <label for="stockLot">เลขที่ Lot (เฉพาะตัวเลข)</label>
+                <input type="text" id="stockLot" placeholder="เช่น 2026001" oninput="this.value = this.value.replace(/\D/g, '')">
+            </div>
+            <div class="form-group">
+                <label for="stockMfgDate">วันบรรจุ (Mfg Date)</label>
+                <input type="date" id="stockMfgDate">
+            </div>
+            <div class="form-group">
+                <label for="stockExpDate">วันหมดอายุ (Exp Date)</label>
+                <input type="date" id="stockExpDate">
+            </div>
+
             <div class="form-group">
                 <label for="stockQty">จำนวนสต็อกในคลัง</label>
                 <input type="number" id="stockQty" value="100">
@@ -481,10 +496,9 @@
                 <thead>
                     <tr>
                         <th>รหัส 13 หลัก</th>
-                        <th>ชื่อยา</th>
-                        <th>ขนาดยา</th>
-                        <th>ราคา</th>
-                        <th>วิธีใช้</th>
+                        <th>ชื่อยา / ขนาดยา</th>
+                        <th>Lot / วันบรรจุ / หมดอายุ</th>
+                        <th>ราคา / วิธีใช้</th>
                         <th>คงเหลือ</th>
                         <th>จัดการ</th>
                     </tr>
@@ -549,6 +563,21 @@
                 <label for="genDrugDoseText">ขนาดยา (แสดงผล เช่น 500mg)</label>
                 <input type="text" id="genDrugDoseText" placeholder="เช่น 500mg">
             </div>
+
+            <!-- เพิ่มช่องกรอก Lot, วันบรรจุ, วันหมดอายุ สำหรับพิมพ์สติกเกอร์ 5x2 ซม. -->
+            <div class="form-group">
+                <label for="genLotNo">เลขที่ Lot (เฉพาะตัวเลข)</label>
+                <input type="text" id="genLotNo" placeholder="เช่น 2026001" oninput="this.value = this.value.replace(/\D/g, '')">
+            </div>
+            <div class="form-group">
+                <label for="genMfgDate">วันบรรจุ (Mfg Date)</label>
+                <input type="date" id="genMfgDate">
+            </div>
+            <div class="form-group">
+                <label for="genExpDate">วันหมดอายุ (Exp Date)</label>
+                <input type="date" id="genExpDate">
+            </div>
+
             <div class="form-group">
                 <label for="genInstruction">วิธีรับประทาน</label>
                 <select id="genInstruction">
@@ -587,7 +616,11 @@
                     </div>
                 </div>
 
-                <button class="btn-success" onclick="saveGeneratedDrugToStock()" style="margin-top: 15px;">เพิ่มยานี้เข้าสู่ Stock คลังยา</button>
+                <!-- เพิ่มปุ่มพิมพ์สติกเกอร์ขนาด 5x2 ซม. -->
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button class="btn-primary" style="background: var(--accent-orange);" onclick="printLabel5x2()">🖨️ พิมพ์สติกเกอร์ยา 5x2 ซม.</button>
+                    <button class="btn-success" onclick="saveGeneratedDrugToStock()" style="margin-top: 0;">เพิ่มยานี้เข้าสู่ Stock คลังยา</button>
+                </div>
             </div>
 
             <h3 class="section-title" style="margin-top: 24px;">รายการบาร์โค้ดที่สร้างแล้ว</h3>
@@ -681,6 +714,15 @@
     let drugNotes = {}; 
     let stagedDrug = null;
 
+    let lastGeneratedCode = "";
+    let lastGeneratedName = "";
+    let lastGeneratedDose = "";
+    let lastGeneratedPrice = 0;
+    let lastGeneratedInstruction = "";
+    let lastGeneratedLot = "";
+    let lastGeneratedMfg = "";
+    let lastGeneratedExp = "";
+
     const masterDrugList = [
         { code: "001", name: "ฟ้าทะลายโจร", dose: "500mg" },
         { code: "002", name: "ยาแก้ไอมะขามป้อม", dose: "60ml" },
@@ -743,7 +785,19 @@
     ];
 
     const mockDatabase = {
-        "0015000500301": { name: "ฟ้าทะลายโจร", dose: "500mg", price: 50, instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", type: "1", qty: "030", stock: 120, isDeleted: false }
+        "0015000500301": { 
+            name: "ฟ้าทะลายโจร", 
+            dose: "500mg", 
+            price: 50, 
+            instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", 
+            type: "1", 
+            qty: "030", 
+            stock: 120, 
+            lot: "2026001", 
+            mfg: "2026-01-01", 
+            exp: "2028-01-01", 
+            isDeleted: false 
+        }
     };
 
     const typeMap = {
@@ -1120,15 +1174,12 @@
             }
         }
 
-        // ตัดสต็อกและบันทึกสถิติยอดจ่าย
         dispenseList.forEach(item => {
             if (mockDatabase[item.code]) {
                 mockDatabase[item.code].stock -= item.qty;
                 if (mockDatabase[item.code].stock < 0) {
                     mockDatabase[item.code].stock = 0;
                 }
-
-                // บันทึกสถิติสรุปยอดจ่าย
                 drugSummaryLogs[item.code] = (drugSummaryLogs[item.code] || 0) + item.qty;
             }
         });
@@ -1211,10 +1262,9 @@
             tbody.innerHTML += `
                 <tr class="${rowClass}">
                     <td>${code}</td>
-                    <td>${drug.name}</td>
-                    <td>${drug.dose}</td>
-                    <td>${drug.price} ฿</td>
-                    <td>${drug.instruction}</td>
+                    <td><strong>${drug.name}</strong><br><span style="font-size:11px; color:var(--text-secondary);">${drug.dose}</span></td>
+                    <td>Lot: ${drug.lot || '-'}<br><span style="font-size:11px; color:var(--text-secondary);">Mfg: ${drug.mfg || '-'} | Exp: ${drug.exp || '-'}</span></td>
+                    <td>${drug.price} ฿<br><span style="font-size:11px; color:var(--text-secondary);">${drug.instruction}</span></td>
                     <td><strong>${drug.stock}</strong></td>
                     <td>
                         <button class="btn-success" style="padding: 4px 8px; margin-bottom: 4px; width:100%;" onclick="addStockQuantity('${code}')">➕ เติมสต็อก</button>
@@ -1273,6 +1323,9 @@
                 document.getElementById('stockDose').value = item.dose;
                 document.getElementById('stockPrice').value = item.price;
                 document.getElementById('stockInstruction').value = item.instruction;
+                document.getElementById('stockLot').value = item.lot || "";
+                document.getElementById('stockMfgDate').value = item.mfg || "";
+                document.getElementById('stockExpDate').value = item.exp || "";
                 document.getElementById('stockQty').value = item.stock;
                 dropdown.style.display = 'none';
             };
@@ -1287,6 +1340,9 @@
         let dose = document.getElementById('stockDose').value.trim();
         let price = parseFloat(document.getElementById('stockPrice').value) || 0;
         let instruction = document.getElementById('stockInstruction').value;
+        let lot = document.getElementById('stockLot').value.trim();
+        let mfg = document.getElementById('stockMfgDate').value;
+        let exp = document.getElementById('stockExpDate').value;
         let qty = parseInt(document.getElementById('stockQty').value);
 
         if (!code || !name || code.length !== 13) {
@@ -1294,7 +1350,7 @@
             return;
         }
 
-        mockDatabase[code] = { name: name, dose: dose, price: price, instruction: instruction, stock: qty, isDeleted: false };
+        mockDatabase[code] = { name: name, dose: dose, price: price, instruction: instruction, lot: lot, mfg: mfg, exp: exp, stock: qty, isDeleted: false };
         alert('อัปเดต Stock สำเร็จ');
         renderStockTable();
     }
@@ -1341,6 +1397,10 @@
         let drugDoseText = document.getElementById('genDrugDoseText').value.trim();
         let instruction = document.getElementById('genInstruction').value;
         let priceVal = parseFloat(priceCode) || 0;
+        
+        lastGeneratedLot = document.getElementById('genLotNo').value.trim();
+        lastGeneratedMfg = document.getElementById('genMfgDate').value;
+        lastGeneratedExp = document.getElementById('genExpDate').value;
 
         if (drugCode.length !== 3 || doseCode.length !== 3 || priceCode.length !== 3 || qtyCode.length !== 3) {
             alert("กรุณากรอกรหัสแต่ละส่วนให้ครบ 3 หลัก");
@@ -1360,12 +1420,99 @@
 
         let qrContainer = document.getElementById('qrcode');
         qrContainer.innerHTML = "";
-        new QRCode(qrContainer, { text: lastGeneratedCode, width: 80, height: 80 });
+        new QRCode(qrContainer, { text: lastGeneratedCode, width: 40, height: 40 });
 
         if (!generatedList.some(item => item.code === lastGeneratedCode)) {
             generatedList.push({ code: lastGeneratedCode, name: drugName, dose: drugDoseText, price: priceVal, instruction: instruction, type: typeMap[typeCode], qty: qtyCode, isDeleted: false });
             renderGeneratedList();
         }
+    }
+
+    function printLabel5x2() {
+        if (!lastGeneratedCode) {
+            alert("กรุณาสร้างรหัสบาร์โค้ดก่อนพิมพ์");
+            return;
+        }
+
+        let printWindow = window.open('', '_blank', 'width=500,height=300');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>พิมพ์สติกเกอร์ยา 5x2 ซม.</title>
+                <style>
+                    @page {
+                        size: 5cm 2cm;
+                        margin: 0;
+                    }
+                    body {
+                        width: 5cm;
+                        height: 2cm;
+                        margin: 0;
+                        padding: 2mm;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        font-family: sans-serif;
+                        font-size: 8px;
+                        box-sizing: border-box;
+                    }
+                    .left-box {
+                        width: 60%;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    }
+                    .right-box {
+                        width: 40%;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .drug-name {
+                        font-weight: bold;
+                        font-size: 10px;
+                        margin-bottom: 1mm;
+                    }
+                    .info {
+                        font-size: 7.5px;
+                        line-height: 1.2;
+                    }
+                    #printQrcode img, #printQrcode canvas {
+                        width: 1.2cm !important;
+                        height: 1.2cm !important;
+                    }
+                </style>
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+            </head>
+            <body>
+                <div class="left-box">
+                    <div class="drug-name">${lastGeneratedName || '-'} (${lastGeneratedDose || '-'})</div>
+                    <div class="info">Lot: ${lastGeneratedLot || '-'}</div>
+                    <div class="info">Mfg: ${lastGeneratedMfg || '-'}</div>
+                    <div class="info">Exp: ${lastGeneratedExp || '-'}</div>
+                </div>
+                <div class="right-box">
+                    <div id="printQrcode"></div>
+                    <div style="font-size: 6px; margin-top: 1mm;">${lastGeneratedCode}</div>
+                </div>
+                <script>
+                    window.onload = function() {
+                        new QRCode(document.getElementById("printQrcode"), {
+                            text: "${lastGeneratedCode}",
+                            width: 50,
+                            height: 50
+                        });
+                        setTimeout(() => {
+                            window.print();
+                            window.close();
+                        }, 300);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
     }
 
     function handleGenSearchInput(val) {
@@ -1408,7 +1555,7 @@
                 JsBarcode("#barcodeCanvas", lastGeneratedCode, { format: "CODE128", width: 1.2, height: 50, displayValue: true });
                 let qrContainer = document.getElementById('qrcode');
                 qrContainer.innerHTML = "";
-                new QRCode(qrContainer, { text: lastGeneratedCode, width: 80, height: 80 });
+                new QRCode(qrContainer, { text: lastGeneratedCode, width: 40, height: 40 });
 
                 dropdown.style.display = 'none';
             };
@@ -1475,6 +1622,9 @@
             dose: lastGeneratedDose, 
             price: lastGeneratedPrice,
             instruction: lastGeneratedInstruction,
+            lot: lastGeneratedLot,
+            mfg: lastGeneratedMfg,
+            exp: lastGeneratedExp,
             stock: 100, 
             isDeleted: false 
         };
@@ -1506,7 +1656,6 @@
         a.click();
     }
 
-    // ฟังก์ชันจัดการตารางสรุปรายการยา
     function renderSummaryTable() {
         let tbody = document.getElementById('summaryTableBody');
         let typeFilter = document.getElementById('summaryTypeFilter').value;
