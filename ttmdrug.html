@@ -329,7 +329,7 @@
             background-color: #fff5f5;
         }
 
-        #stickerPreviewContainer {
+      #stickerPreviewContainer {
             position: absolute;
             left: -9999px;
             top: -9999px;
@@ -379,7 +379,7 @@
 <body>
 
 <div class="main-wrapper">
-    <!-- แถบเครื่องมือซ้ายมือ / แถบบันสำหรับมือถือ -->
+    <!-- แถบเครื่องมือซ้ายมือ / แถบบนสำหรับมือถือ -->
     <div class="toolbar">
         <h3>เมนูระบบ</h3>
         <button class="nav-btn active" id="btnDispense" onclick="switchTab('dispense')">1. จ่ายยา</button>
@@ -747,13 +747,12 @@
     <div class="sidebar" id="rightSidebar"></div>
 </div>
 
-<!-- กล่องจำลองสติกเกอร์ 5x2 ซม. (ข้อความ 70% ชิดแน่น บิ๊กเบิ้ม, QR Code 30% เต็มพื้นที่ฝั่งขวา) -->
 <div id="stickerPreviewContainer">
     <div style="width: 70%; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-        <div id="stickerDrugName" style="font-weight: bold; font-size: 26px; line-height: 1.0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">-</div>
-        <div id="stickerLot" style="font-size: 22px; font-weight: bold; line-height: 1.0;">-</div>
-        <div id="stickerMfg" style="font-size: 22px; font-weight: bold; line-height: 1.0;">-</div>
-        <div id="stickerExp" style="font-size: 22px; font-weight: bold; line-height: 1.0;">-</div>
+        <div id="stickerDrugName" style="font-weight: bold; font-size: 20px; line-height: 1.1;">-</div>
+        <div id="stickerLot" style="font-size: 18px; font-weight: bold; line-height: 1.1;">-</div>
+        <div id="stickerMfg" style="font-size: 18px; font-weight: bold; line-height: 1.1;">-</div>
+        <div id="stickerExp" style="font-size: 18px; font-weight: bold; line-height: 1.1;">-</div>
     </div>
     <div style="width: 30%; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; height: 100%;">
         <div id="stickerQr" style="display: flex; align-items: center; justify-content: center;"></div>
@@ -841,7 +840,8 @@
     generatedRef.on('value', (snapshot) => {
         let val = snapshot.val();
         if (val) {
-            generatedList = Array.isArray(val) ? val : Object.values(val);
+            let rawList = Array.isArray(val) ? val : Object.values(val);
+            generatedList = rawList.filter(item => item !== null);
         } else {
             generatedList = [
                 { code: "0015000500301", name: "ฟ้าทะลายโจร", dose: "500mg", price: 50, instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", type: "เม็ด", qty: "030", isDeleted: false }
@@ -1544,7 +1544,7 @@
         new QRCode(qrContainer, { text: lastGeneratedCode, width: 40, height: 40 });
 
         let newItem = { code: lastGeneratedCode, name: drugName, dose: drugDoseText, price: priceVal, instruction: instruction, type: typeMap[typeCode], qty: qtyCode, isDeleted: false };
-        if (!generatedList.some(item => item.code === lastGeneratedCode)) {
+        if (!generatedList.some(item => item && item.code === lastGeneratedCode)) {
             generatedList.push(newItem);
             generatedRef.set(generatedList);
         }
@@ -1563,7 +1563,6 @@
 
         let qrBox = document.getElementById('stickerQr');
         qrBox.innerHTML = "";
-        // สร้าง QR Code ใหญ่เต็มพื้นที่ฝั่งขวา 30%
         new QRCode(qrBox, { text: lastGeneratedCode, width: 180, height: 180 });
 
         let previewContainer = document.getElementById('stickerPreviewContainer');
@@ -1588,7 +1587,7 @@
             return;
         }
 
-        let matches = generatedList.filter(item => !item.isDeleted && (item.code.includes(val) || item.name.toLowerCase().includes(val.toLowerCase())));
+        let matches = generatedList.filter(item => item && !item.isDeleted && (item.code.includes(val) || item.name.toLowerCase().includes(val.toLowerCase())));
         if (matches.length === 0) {
             dropdown.style.display = 'none';
             return;
@@ -1608,6 +1607,7 @@
                 document.getElementById('genTypeCode').value = item.code.substring(12, 13);
                 document.getElementById('genDrugName').value = item.name;
                 document.getElementById('genDrugDoseText').value = item.dose;
+                document.getElementById('genInstruction').value = item.instruction;
 
                 lastGeneratedCode = item.code;
                 lastGeneratedName = item.name;
@@ -1631,22 +1631,25 @@
 
     function renderGeneratedList() {
         let tbody = document.getElementById('generatedListTableBody');
-        if (generatedList.length === 0) {
+        let activeItems = generatedList.filter(item => item && !item.isDeleted);
+
+        if (activeItems.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">ยังไม่มีรายการที่สร้าง</td></tr>`;
             return;
         }
+
         tbody.innerHTML = '';
         generatedList.forEach((item, index) => {
-            let rowClass = item.isDeleted ? 'deleted-row' : '';
+            if (!item || item.isDeleted) return;
             tbody.innerHTML += `
-                <tr class="${rowClass}">
+                <tr>
                     <td>${item.code}</td>
                     <td>${item.name}</td>
                     <td>${item.dose}</td>
                     <td>${item.price} ฿ / ${item.instruction}</td>
                     <td>
                         <button class="btn-warning" onclick="editGenerated(${index})">แก้ไข</button>
-                        <button class="btn-danger" onclick="deleteGenerated(${index})">${item.isDeleted ? 'ลบถาวร' : 'ลบ'}</button>
+                        <button class="btn-danger" onclick="deleteGenerated(${index})">ลบ</button>
                     </td>
                 </tr>`;
         });
@@ -1671,12 +1674,6 @@
         if (!item.isDeleted) {
             if (confirm("คุณต้องการลบบาร์โค้ดนี้ใช่หรือไม่?")) {
                 item.isDeleted = true;
-                generatedRef.set(generatedList);
-                renderGeneratedList();
-            }
-        } else {
-            if (confirm("ต้องการลบรายการนี้ออกจากระบบอย่างถาวร?")) {
-                generatedList.splice(index, 1);
                 generatedRef.set(generatedList);
                 renderGeneratedList();
             }
