@@ -8,6 +8,8 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- jsPDF สำหรับดาวน์โหลดรายงาน PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <!-- Firebase SDK (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -147,7 +149,7 @@
             color: var(--text-primary);
         }
 
-        input[type="text"], input[type="number"], select {
+        input[type="text"], input[type="number"], input[type="date"], select {
             width: 100%;
             padding: 10px 12px;
             box-sizing: border-box;
@@ -160,7 +162,7 @@
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+        input:focus, select:focus {
             border-color: var(--medical-primary);
             box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.15);
         }
@@ -243,12 +245,13 @@
             font-size: 13px;
         }
 
-        #reader {
+        #reader, #stockReader {
             width: 100%;
             margin-top: 10px;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border-color);
+            display: none;
         }
 
         .patient-item {
@@ -329,6 +332,7 @@
         <button class="nav-btn active" id="btnDispense" onclick="switchTab('dispense')">1. จ่ายยา</button>
         <button class="nav-btn" id="btnStock" onclick="switchTab('stock')">2. Stock ยา</button>
         <button class="nav-btn" id="btnGenerator" onclick="switchTab('generator')">3. สร้างบาร์โค้ดยา</button>
+        <button class="nav-btn" id="btnSummary" onclick="switchTab('summary')">4. สรุปรายการยา</button>
     </div>
 
     <!-- ส่วนเนื้อหาหลักตรงกลาง -->
@@ -373,9 +377,8 @@
                 </div>
             </div>
 
-            <!-- กล่องแสดงผลการสแกนและปุ่มยืนยันเพิ่มรายการ -->
             <div id="stagedDrugBox" style="display: none; background: #e0f2fe; border: 1px solid #bae6fd; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
-                <p style="margin: 0 0 6px 0; font-size: 13px; color: #0369a1; font-weight: bold;"><i class="fa-solid fa-circle-check"></i> ตรวจพบรายการยาพร้อมเพิ่ม:</p>
+                <p style="margin: 0 0 6px 0; font-size: 13px; color: #0369a1; font-weight: bold;">ตรวจพบรายการยาพร้อมเพิ่ม:</p>
                 <div style="font-size: 14px; margin-bottom: 8px;">
                     รหัส 13 หลัก: <strong id="stagedCode">-</strong> | ชื่อยา: <strong id="stagedName">-</strong> | จำนวน: <strong id="stagedQty">-</strong>
                 </div>
@@ -423,8 +426,13 @@
 
             <div class="form-group">
                 <label for="stockSearchInput">ค้นหายาในคลัง (พิมพ์ชื่อหรือรหัส)</label>
-                <input type="text" id="stockSearchInput" placeholder="พิมพ์เพื่อค้นหา..." oninput="handleStockSearchInput(this.value)">
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="stockSearchInput" placeholder="พิมพ์เพื่อค้นหา หรือสแกน..." oninput="handleStockSearchInput(this.value)">
+                    <button type="button" class="btn-warning" onclick="startStockScanner()" title="สแกนบาร์โค้ด" style="padding: 0 12px; font-size: 16px;">📷</button>
+                    <button type="button" class="btn-danger" onclick="stopStockScanner()" title="ปิดกล้อง" style="padding: 0 12px; font-size: 12px;">ปิดกล้อง</button>
+                </div>
                 <div id="stockSearchDropdown" class="autocomplete-items" style="display: none;"></div>
+                <div id="stockReader"></div>
             </div>
 
             <div class="form-group">
@@ -598,6 +606,50 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- ================= TAB 4: สรุปรายการยา ================= -->
+        <div id="tabSummary" class="tab-content" style="display: none;">
+            <h3 class="section-title">สรุปรายการยาทั้งหมด</h3>
+
+            <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 180px;">
+                    <label for="summaryDate">เลือกวันที่:</label>
+                    <input type="date" id="summaryDate" onchange="renderSummaryTable()">
+                </div>
+                <div style="flex: 1; min-width: 180px;">
+                    <label for="summaryTypeFilter">แยกประเภท (ยา 1-7):</label>
+                    <select id="summaryTypeFilter" onchange="renderSummaryTable()">
+                        <option value="all">ทุกประเภท</option>
+                        <option value="1">1 - เม็ด (Tablet)</option>
+                        <option value="2">2 - ขวด (Bottle)</option>
+                        <option value="3">3 - แคปซูล (Capsule)</option>
+                        <option value="4">4 - หลอด (Tube/Cream)</option>
+                        <option value="5">5 - ซอง (Sachet/Pack)</option>
+                        <option value="6">6 - เม็ดอม (Lozenge)</option>
+                        <option value="7">7 - ชิ้น (Piece)</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: flex-end;">
+                    <button class="btn-primary" style="height: 41px; padding: 0 20px;" onclick="downloadSummaryPDF()">📥 ดาวน์โหลด PDF</button>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>รหัส / ประเภท</th>
+                        <th>ชื่อยา</th>
+                        <th>คงเหลือ</th>
+                        <th>จ่ายทั้งหมด</th>
+                        <th>รวมทั้งหมด</th>
+                        <th>หมายเหตุ</th>
+                    </tr>
+                </thead>
+                <tbody id="summaryTableBody">
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">ไม่มีข้อมูลสรุป</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- แถบด้านขวา -->
@@ -621,15 +673,12 @@
 
     let allPatientsData = {};
     let activePatientKey = null;
-    let html5QrCode;
+    let html5QrCode = null;
+    let stockQrCode = null;
     let dispenseList = [];
     let dispensedPatients = {};
-    let currentEditingHN = null;
-    let lastGeneratedCode = "";
-    let lastGeneratedName = "";
-    let lastGeneratedDose = "";
-    let lastGeneratedPrice = 0;
-    let lastGeneratedInstruction = "";
+    let drugSummaryLogs = {}; 
+    let drugNotes = {}; 
     let stagedDrug = null;
 
     const masterDrugList = [
@@ -710,7 +759,11 @@
         if (tabName === 'dispense') {
             let pharmacyKeys = Object.keys(allPatientsData).filter(k => {
                 let p = allPatientsData[k];
-                return p.currentPoint && (p.currentPoint.includes('ห้องยา') || p.status === 'รอจัดยา');
+                return p && (
+                    (p.currentPoint && (p.currentPoint.includes('ห้องยา') || p.currentPoint.includes('จุดที่ 3'))) || 
+                    p.status === 'รอจัดยา' ||
+                    (p.pharmacyFeedback && p.pharmacyFeedback.includes('รอจัดยา'))
+                );
             });
             
             let queueHtml = '';
@@ -719,7 +772,7 @@
                     let p = allPatientsData[k];
                     queueHtml += `
                         <div class="patient-item" onclick="loadPatientFromFlow('${k}')">
-                            <h4>${p.pname} (${p.hn})</h4>
+                            <h4>${p.pname} (${p.hn || '-'})</h4>
                             <p>คิว: ${p.queueNo || '-'} | คลินิก: ${p.clinic || '-'}</p>
                         </div>
                     `;
@@ -729,7 +782,7 @@
             }
 
             sidebar.innerHTML = `
-                <h3>ผู้ป่วยรอรับยา</h3>
+                <h3>ผู้ป่วยรอรับยา (${pharmacyKeys.length} คน)</h3>
                 <div id="patientListContainer">${queueHtml}</div>
                 <h3 style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 10px;">ผู้ป่วยที่จ่ายยาแล้ว</h3>
                 <div id="patientDoneContainer">
@@ -763,6 +816,9 @@
 
     window.onload = function() {
         updateRightSidebar('dispense');
+        let today = new Date().toISOString().split('T')[0];
+        let dateInput = document.getElementById('summaryDate');
+        if(dateInput) dateInput.value = today;
     };
 
     function filterMasterDrugs(tab, val) {
@@ -813,13 +869,18 @@
     }
 
     function switchTab(tabName) {
+        stopScanner();
+        stopStockScanner();
+
         document.getElementById('btnDispense').classList.remove('active');
         document.getElementById('btnStock').classList.remove('active');
         document.getElementById('btnGenerator').classList.remove('active');
+        document.getElementById('btnSummary').classList.remove('active');
         
         document.getElementById('tabDispense').style.display = 'none';
         document.getElementById('tabStock').style.display = 'none';
         document.getElementById('tabGenerator').style.display = 'none';
+        document.getElementById('tabSummary').style.display = 'none';
         
         if (tabName === 'dispense') {
             document.getElementById('btnDispense').classList.add('active');
@@ -832,6 +893,10 @@
             document.getElementById('btnGenerator').classList.add('active');
             document.getElementById('tabGenerator').style.display = 'block';
             renderGeneratedList();
+        } else if (tabName === 'summary') {
+            document.getElementById('btnSummary').classList.add('active');
+            document.getElementById('tabSummary').style.display = 'block';
+            renderSummaryTable();
         }
         updateRightSidebar(tabName);
     }
@@ -896,6 +961,13 @@
         if (!drug || drug.isDeleted) {
             alert(`ไม่พบรหัสโค้ด "${code}" ในระบบคลังยา (แนะนำให้เพิ่มลง Stock ก่อน)`);
             return;
+        }
+
+        if (drug.stock <= 0) {
+            alert(`⚠️ แจ้งเตือน: ยา "${drug.name}" ในคลังหมดแล้ว! (คงเหลือ 0) กรุณาพิจารณาใช้ยาตัวอื่นทดแทน`);
+            return;
+        } else if (drug.stock < 100) {
+            alert(`⚠️ แจ้งเตือน: ยา "${drug.name}" ใกล้หมดแล้ว! (คงเหลือเพียง ${drug.stock} ชิ้น)`);
         }
 
         let defaultQty = parseInt(code.substring(9, 12)) || 1;
@@ -969,6 +1041,9 @@
         if (!html5QrCode) {
             html5QrCode = new Html5Qrcode("reader");
         }
+        let readerEl = document.getElementById('reader');
+        readerEl.style.display = 'block';
+        
         html5QrCode.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 250, height: 150 } },
@@ -984,8 +1059,45 @@
     }
 
     function stopScanner() {
-        if (html5QrCode && html5QrCode.isScanning) {
-            html5QrCode.stop().then(() => html5QrCode.clear());
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+                document.getElementById('reader').style.display = 'none';
+            }).catch(err => {
+                document.getElementById('reader').style.display = 'none';
+            });
+        }
+    }
+
+    function startStockScanner() {
+        if (!stockQrCode) {
+            stockQrCode = new Html5Qrcode("stockReader");
+        }
+        let readerEl = document.getElementById('stockReader');
+        readerEl.style.display = 'block';
+        
+        stockQrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 150 } },
+            (decodedText) => {
+                document.getElementById('stockSearchInput').value = decodedText;
+                handleStockSearchInput(decodedText);
+                stopStockScanner();
+            },
+            (errorMessage) => {}
+        ).catch(err => {
+            alert("ไม่สามารถเปิดกล้องได้: " + err);
+        });
+    }
+
+    function stopStockScanner() {
+        if (stockQrCode) {
+            stockQrCode.stop().then(() => {
+                stockQrCode.clear();
+                document.getElementById('stockReader').style.display = 'none';
+            }).catch(err => {
+                document.getElementById('stockReader').style.display = 'none';
+            });
         }
     }
 
@@ -1000,6 +1112,27 @@
             return;
         }
 
+        for (let item of dispenseList) {
+            let drug = mockDatabase[item.code];
+            if (drug && drug.stock <= 0) {
+                alert(`❌ ไม่สามารถบันทึกการจ่ายยาได้!\n\nยา "${drug.name}" (รหัส: ${item.code}) ในคลังหมดแล้ว (คงเหลือ 0)\nกรุณาลบรายการนี้ออกหรือพิจารณาใช้ยาตัวอื่นทดแทน`);
+                return;
+            }
+        }
+
+        // ตัดสต็อกและบันทึกสถิติยอดจ่าย
+        dispenseList.forEach(item => {
+            if (mockDatabase[item.code]) {
+                mockDatabase[item.code].stock -= item.qty;
+                if (mockDatabase[item.code].stock < 0) {
+                    mockDatabase[item.code].stock = 0;
+                }
+
+                // บันทึกสถิติสรุปยอดจ่าย
+                drugSummaryLogs[item.code] = (drugSummaryLogs[item.code] || 0) + item.qty;
+            }
+        });
+
         if (activePatientKey) {
             flowRef.child(activePatientKey).update({
                 currentPoint: 'จุดที่ 4: การเงิน',
@@ -1009,7 +1142,7 @@
         }
 
         dispensedPatients[hn] = { key: activePatientKey, list: [...dispenseList] };
-        alert(`บันทึกการจ่ายยาให้ผู้ป่วย HN: ${hn} เรียบร้อย!`);
+        alert(`บันทึกการจ่ายยาและตัดสต็อกให้ผู้ป่วย HN: ${hn} เรียบร้อย!`);
         renderDonePatients();
         
         dispenseList = [];
@@ -1084,10 +1217,27 @@
                     <td>${drug.instruction}</td>
                     <td><strong>${drug.stock}</strong></td>
                     <td>
-                        <button class="btn-warning" onclick="editStockItem('${code}')">แก้ไข</button>
-                        <button class="btn-danger" onclick="deleteStockItem('${code}')">${drug.isDeleted ? 'ลบถาวร' : 'ลบ'}</button>
+                        <button class="btn-success" style="padding: 4px 8px; margin-bottom: 4px; width:100%;" onclick="addStockQuantity('${code}')">➕ เติมสต็อก</button>
+                        <div style="display: flex; gap: 4px;">
+                            <button class="btn-warning" style="flex:1;" onclick="editStockItem('${code}')">แก้ไข</button>
+                            <button class="btn-danger" style="flex:1;" onclick="deleteStockItem('${code}')">${drug.isDeleted ? 'ลบถาวร' : 'ลบ'}</button>
+                        </div>
                     </td>
                 </tr>`;
+        }
+    }
+
+    function addStockQuantity(code) {
+        let addQty = prompt(`ระบุจำนวนยาที่ต้องการเติมเพิ่มสำหรับ "${mockDatabase[code].name}":`, "50");
+        if (addQty !== null) {
+            let qty = parseInt(addQty);
+            if (!isNaN(qty) && qty > 0) {
+                mockDatabase[code].stock += qty;
+                alert(`เติมสต็อกสำเร็จ! คงเหลือปัจจุบัน: ${mockDatabase[code].stock}`);
+                renderStockTable();
+            } else {
+                alert("กรุณาระบุตัวเลขจำนวนเต็มบวกที่ถูกต้อง");
+            }
         }
     }
 
@@ -1354,6 +1504,61 @@
         a.href = url;
         a.download = `qrcode_${lastGeneratedCode}.png`;
         a.click();
+    }
+
+    // ฟังก์ชันจัดการตารางสรุปรายการยา
+    function renderSummaryTable() {
+        let tbody = document.getElementById('summaryTableBody');
+        let typeFilter = document.getElementById('summaryTypeFilter').value;
+        tbody.innerHTML = '';
+
+        let hasItem = false;
+        for (let code in mockDatabase) {
+            let drug = mockDatabase[code];
+            let typeCode = code.length === 13 ? code.substring(12, 13) : "1";
+
+            if (typeFilter !== 'all' && typeCode !== typeFilter) {
+                continue;
+            }
+
+            hasItem = true;
+            let dispensedQty = drugSummaryLogs[code] || 0;
+            let totalQty = drug.stock + dispensedQty;
+            let noteText = drugNotes[code] || "";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${code} (ประเภท ${typeCode})</td>
+                    <td><strong>${drug.name}</strong> (${drug.dose})</td>
+                    <td>${drug.stock}</td>
+                    <td style="color: var(--accent-green); font-weight: bold;">${dispensedQty}</td>
+                    <td><strong>${totalQty}</strong></td>
+                    <td>
+                        <input type="text" value="${noteText}" placeholder="พิมพ์หมายเหตุ..." oninput="updateDrugNote('${code}', this.value)" style="padding: 6px 8px; font-size: 12px;">
+                    </td>
+                </tr>
+            `;
+        }
+
+        if (!hasItem) {
+            tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">ไม่พบข้อมูลยาตามเงื่อนไขที่เลือก</td></tr>`;
+        }
+    }
+
+    function updateDrugNote(code, val) {
+        drugNotes[code] = val;
+    }
+
+    function downloadSummaryPDF() {
+        let toolbar = document.querySelector('.toolbar');
+        let originalDisplay = toolbar.style.display;
+        toolbar.style.display = 'none';
+
+        window.print();
+
+        setTimeout(() => {
+            toolbar.style.display = originalDisplay;
+        }, 500);
     }
 </script>
 
