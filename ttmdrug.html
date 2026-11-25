@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจ่ายยาและคลังยา รพ.พระอาจารย์มั่น ภูริทัตโต</title>
+    <!-- ไลบรารีสแกนและสร้างโค้ด -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Firebase SDK (Compat Version) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    
+    <style>
+        :root {
+            --medical-primary: #00796b;
+            --medical-primary-hover: #004d40;
+            --medical-bg: #f4f9f9;
+            --card-bg: #ffffff;
+            --text-primary: #263238;
+            --text-secondary: #546e7a;
+            --border-color: #cfd8dc;
+            --accent-green: #2e7d32;
+            --accent-red: #c62828;
+            --accent-orange: #f57c00;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "SF Pro Display", "Helvetica Neue", sans-serif;
+            background-color: var(--medical-bg);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .main-wrapper {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1450px;
+        }
+
+        .toolbar {
+            width: 180px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .toolbar h3 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin: 0 0 10px 0;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-btn {
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: var(--medical-bg);
+            border-color: var(--medical-primary);
+        }
+
+        .nav-btn.active {
+            background: var(--medical-primary);
+            color: white;
+            border-color: var(--medical-primary);
+        }
+
+        .container {
+            flex: 2;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar {
+            flex: 1.2;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            max-height: 650px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            width: 320px;
+        }
+
+        .hospital-header {
+            text-align: center;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--medical-bg);
+            padding-bottom: 16px;
+        }
+
+        .hospital-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--medical-primary);
+            margin: 0 0 4px 0;
+        }
+
+        .hospital-header p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 10px 12px;
+            box-sizing: border-box;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: var(--medical-primary);
+            box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.15);
+        }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-radius: 0 0 8px 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .autocomplete-item:hover {
+            background-color: var(--medical-bg);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary { background: var(--medical-primary); color: white; width: 100%; padding: 10px; font-size: 14px; }
+        .btn-primary:hover { background: var(--medical-primary-hover); }
+        
+        .btn-danger { background: #ffebee; color: var(--accent-red); border: 1px solid #ffcdd2; }
+        .btn-danger:hover { background: #ffcdd2; }
+
+        .btn-warning { background: #fff3e0; color: var(--accent-orange); border: 1px solid #ffe0b2; }
+        .btn-warning:hover { background: #ffe0b2; }
+
+        .btn-success { background: var(--accent-green); color: white; width: 100%; margin-top: 14px; padding: 12px; font-size: 14px; }
+        .btn-success:hover { background: #1b5e20; }
+
+        .patient-box, .code-result-box {
+            background: #f8fafb;
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 12px;
+            color: var(--medical-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        #reader {
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .patient-item {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            background: #fff;
+        }
+
+        .patient-item:hover {
+            background: var(--medical-bg);
+            border-color: var(--medical-primary);
+        }
+
+        .patient-item.done {
+            background: #e8f5e9;
+            border-color: #a5d6a7;
+        }
+
+        .patient-item h4 {
+            margin: 0 0 4px 0;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+
+        .patient-item p {
+            margin: 0;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafb;
+            color: var(--medical-primary);
+        }
+
+        .code-display-area {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-around;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+        }
+
+        .deleted-row {
+            color: var(--accent-red);
+            text-decoration: line-through;
+            background-color: #fff5f5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <!-- แถบเครื่องมือซ้ายมือ -->
+    <div class="toolbar">
+        <h3>เมนูระบบ</h3>
+        <button class="nav-btn active" id="btnDispense" onclick="switchTab('dispense')">1. จ่ายยา</button>
+        <button class="nav-btn" id="btnStock" onclick="switchTab('stock')">2. Stock ยา</button>
+        <button class="nav-btn" id="btnGenerator" onclick="switchTab('generator')">3. สร้างบาร์โค้ดยา</button>
+    </div>
+
+    <!-- ส่วนเนื้อหาหลักตรงกลาง -->
+    <div class="container">
+        <div class="hospital-header">
+            <h1>รพ.พระอาจารย์มั่น ภูริทัตโต</h1>
+            <p>ระบบจ่ายยาและจัดการคลังยา</p>
+        </div>
+
+        <!-- ================= TAB 1: จ่ายยา ================= -->
+        <div id="tabDispense" class="tab-content">
+            <div class="form-group">
+                <label for="patientSearch">ค้นหาผู้ป่วย (ระบุ HN ตัวเลข เช่น 670123)</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="patientSearch" placeholder="พิมพ์ HN ตัวเลข..." oninput="handlePatientInput(this)">
+                    <button class="btn-primary" style="width: 120px; padding: 8px;" onclick="searchPatient()">ค้นหา</button>
+                </div>
+            </div>
+
+            <div class="patient-box">
+                <h3 class="section-title">ข้อมูลผู้ป่วย <span id="lblEditStatus" style="color: var(--accent-orange); font-size: 12px; float: right;"></span></h3>
+                <div class="info-grid">
+                    <div><span>HN:</span> <strong id="pHN">-</strong></div>
+                    <div><span>ชื่อ-นามสกุล:</span> <strong id="pName">-</strong></div>
+                    <div><span>รหัสคิว:</span> <strong id="pQueue">-</strong></div>
+                    <div><span>สิทธิ์การรักษา:</span> <strong id="pRight">-</strong></div>
+                    <div><span>คลินิก:</span> <strong id="pClinic">-</strong></div>
+                    <div><span>Dx (การวินิจฉัย):</span> <strong id="pDx">-</strong></div>
+                </div>
+                <div style="margin-top: 8px; font-size: 13px;">
+                    <span>Vital Signs:</span> <strong id="pVitals">-</strong>
+                </div>
+            </div>
+
+            <hr style="border: none; height: 1px; background: var(--border-color); margin: 16px 0;">
+
+            <div class="form-group">
+                <label for="barcodeInput">สแกนบาร์โค้ด / QR Code (13 หลัก) หรือพิมพ์รหัสยา</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="barcodeInput" placeholder="คลิกช่องนี้แล้วยิงบาร์โค้ด 13 หลัก..." autofocus onkeypress="handleBarcodeInputKeypress(event)">
+                    <button class="btn-primary" style="width: 150px;" onclick="stageScannedDrug()">ตรวจสอบรหัส</button>
+                </div>
+            </div>
+
+            <!-- กล่องแสดงผลการสแกนและปุ่มยืนยันเพิ่มรายการ -->
+            <div id="stagedDrugBox" style="display: none; background: #e0f2fe; border: 1px solid #bae6fd; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                <p style="margin: 0 0 6px 0; font-size: 13px; color: #0369a1; font-weight: bold;"><i class="fa-solid fa-circle-check"></i> ตรวจพบรายการยาพร้อมเพิ่ม:</p>
+                <div style="font-size: 14px; margin-bottom: 8px;">
+                    รหัส 13 หลัก: <strong id="stagedCode">-</strong> | ชื่อยา: <strong id="stagedName">-</strong> | จำนวน: <strong id="stagedQty">-</strong>
+                </div>
+                <button class="btn-success" style="margin-top: 0; background: #0284c7;" onclick="confirmAddStagedDrug()">📌 ยืนยันเพิ่มรายการยานี้ลงตาราง</button>
+            </div>
+
+            <div class="form-group">
+                <div class="btn-row">
+                    <button class="btn-primary" style="padding: 8px;" onclick="startScanner()">เปิดกล้องสแกน</button>
+                    <button class="btn-danger" onclick="stopScanner()">ปิดกล้อง</button>
+                </div>
+                <div id="reader"></div>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <h3 class="section-title">รายการยาที่ต้องการจ่าย</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>รหัส 13 หลัก</th>
+                            <th>ชื่อยา</th>
+                            <th>จำนวน</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dispenseTableBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-secondary);">ยังไม่มีรายการยาในระบบ</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn-success" id="btnConfirmDispense" onclick="confirmDispense()">ยืนยันการจ่ายยาและตัดสต็อก</button>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: STOCK ยา ================= -->
+        <div id="tabStock" class="tab-content" style="display: none;">
+            <h3 class="section-title">จัดการ Stock ยา (เพิ่ม / ตัด / เช็ค)</h3>
+            
+            <div class="form-group">
+                <label for="stockMasterSearch">เลือกจากบัญชียาสมุนไพรและยาแผนไทย (38 รายการ)</label>
+                <input type="text" id="stockMasterSearch" placeholder="พิมพ์ชื่อยาเพื่อค้นหาและเลือก..." oninput="filterMasterDrugs('stock', this.value)">
+                <div id="stockMasterDropdown" class="autocomplete-items" style="display: none;"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="stockSearchInput">ค้นหายาในคลัง (พิมพ์ชื่อหรือรหัส)</label>
+                <input type="text" id="stockSearchInput" placeholder="พิมพ์เพื่อค้นหา..." oninput="handleStockSearchInput(this.value)">
+                <div id="stockSearchDropdown" class="autocomplete-items" style="display: none;"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="stockCode">รหัสบาร์โค้ด / QR Code (13 หลัก)</label>
+                <input type="text" id="stockCode" placeholder="ระบุรหัส 13 หลัก...">
+            </div>
+            <div class="form-group">
+                <label for="stockName">ชื่อยา</label>
+                <input type="text" id="stockName" placeholder="ระบุชื่อยา...">
+            </div>
+            <div class="form-group">
+                <label for="stockDose">ขนาดยา</label>
+                <input type="text" id="stockDose" placeholder="ระบุขนาดยา เช่น 500mg...">
+            </div>
+            <div class="form-group">
+                <label for="stockPrice">ราคายา (บาท)</label>
+                <input type="number" id="stockPrice" value="50">
+            </div>
+            <div class="form-group">
+                <label for="stockInstruction">วิธีรับประทาน</label>
+                <select id="stockInstruction">
+                    <option value="2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น">2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น</option>
+                    <option value="2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น">2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น</option>
+                    <option value="2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น ก่อนนอน">2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น ก่อนนอน</option>
+                    <option value="2 แคปซูล ก่อนนอน">2 แคปซูล ก่อนนอน</option>
+                    <option value="1 ช้อนชา เช้า เย็น">1 ช้อนชา เช้า เย็น</option>
+                    <option value="1 ช้อนชา ก่อนนอน">1 ช้อนชา ก่อนนอน</option>
+                    <option value="จิบกินเมื่อมีอาการ">จิบกินเมื่อมีอาการ</option>
+                    <option value="2 แคปซูลเมื่อมีไข้ ทุกๆ 4 ชั่วโมง">2 แคปซูลเมื่อมีไข้ ทุกๆ 4 ชั่วโมง</option>
+                    <option value="ประคบบริเวณที่ปวด เช้าหรือเย็น">ประคบบริเวณที่ปวด เช้าหรือเย็น</option>
+                    <option value="ทาบริเวณที่มีอาการ เช้า เย็น">ทาบริเวณที่มีอาการ เช้า เย็น</option>
+                    <option value="ครั้งละ 1-2 ช้อนโต๊ะ">ครั้งละ 1-2 ช้อนโต๊ะ</option>
+                    <option value="ครั้งละ 2 หยด ก่อนนอน">ครั้งละ 2 หยด ก่อนนอน</option>
+                    <option value="พอกทิ้งไว้ครั้งละ 15 นาที เช้า-เย็น">พอกทิ้งไว้ครั้งละ 15 นาที เช้า-เย็น</option>
+                    <option value="ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น">ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="stockQty">จำนวนสต็อกในคลัง</label>
+                <input type="number" id="stockQty" value="100">
+            </div>
+            <button class="btn-primary" onclick="updateStock()">บันทึกอัปเดต Stock</button>
+
+            <h3 class="section-title" style="margin-top: 24px;">รายการยาคงเหลือทั้งหมดในคลัง</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>รหัส 13 หลัก</th>
+                        <th>ชื่อยา</th>
+                        <th>ขนาดยา</th>
+                        <th>ราคา</th>
+                        <th>วิธีใช้</th>
+                        <th>คงเหลือ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="stockTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- ================= TAB 3: สร้างบาร์โค้ดยา ================= -->
+        <div id="tabGenerator" class="tab-content" style="display: none;">
+            <h3 class="section-title">ระบบสร้างบาร์โค้ดและ QR Code (รหัส 13 หลัก)</h3>
+
+            <div class="form-group">
+                <label for="genMasterSearch">เลือกจากบัญชียาสมุนไพรและยาแผนไทย (38 รายการ)</label>
+                <input type="text" id="genMasterSearch" placeholder="พิมพ์ชื่อยาเพื่อค้นหาและเลือก..." oninput="filterMasterDrugs('gen', this.value)">
+                <div id="genMasterDropdown" class="autocomplete-items" style="display: none;"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="genSearchInput">ค้นหารหัสที่เคยสร้างไว้ (พิมพ์ชื่อหรือรหัส)</label>
+                <input type="text" id="genSearchInput" placeholder="พิมพ์เพื่อค้นหา..." oninput="handleGenSearchInput(this.value)">
+                <div id="genSearchDropdown" class="autocomplete-items" style="display: none;"></div>
+            </div>
+
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+                * รูปแบบ 13 หลัก: <strong>[3 หลักแรก: ชื่อ] [3 หลักกลาง: ขนาดยา] [3 หลักราคา] [3 หลักปริมาณ] [1 หลักประเภท]</strong>
+            </p>
+
+            <div class="form-group">
+                <label for="genDrugCode">รหัสชื่อยา (3 หลัก เช่น 001)</label>
+                <input type="text" id="genDrugCode" maxlength="3" placeholder="เช่น 001">
+            </div>
+            <div class="form-group">
+                <label for="genDoseCode">รหัสขนาดยา (3 หลัก เช่น 500)</label>
+                <input type="text" id="genDoseCode" maxlength="3" placeholder="เช่น 500">
+            </div>
+            <div class="form-group">
+                <label for="genPriceCode">รหัสราคา (3 หลัก เช่น 050)</label>
+                <input type="text" id="genPriceCode" maxlength="3" placeholder="เช่น 050">
+            </div>
+            <div class="form-group">
+                <label for="genQtyCode">ปริมาณยา (3 หลัก เช่น 030)</label>
+                <input type="text" id="genQtyCode" maxlength="3" placeholder="เช่น 030">
+            </div>
+            <div class="form-group">
+                <label for="genTypeCode">ประเภทของยา (1 หลัก)</label>
+                <select id="genTypeCode">
+                    <option value="1">1 - เม็ด (Tablet)</option>
+                    <option value="2">2 - ขวด (Bottle)</option>
+                    <option value="3">3 - แคปซูล (Capsule)</option>
+                    <option value="4">4 - หลอด (Tube/Cream)</option>
+                    <option value="5">5 - ซอง (Sachet/Pack)</option>
+                    <option value="6">6 - เม็ดอม (Lozenge)</option>
+                    <option value="7">7 - ชิ้น (Piece)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="genDrugName">ชื่อยาเต็ม</label>
+                <input type="text" id="genDrugName" placeholder="เช่น ฟ้าทะลายโจร">
+            </div>
+            <div class="form-group">
+                <label for="genDrugDoseText">ขนาดยา (แสดงผล เช่น 500mg)</label>
+                <input type="text" id="genDrugDoseText" placeholder="เช่น 500mg">
+            </div>
+            <div class="form-group">
+                <label for="genInstruction">วิธีรับประทาน</label>
+                <select id="genInstruction">
+                    <option value="2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น">2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น</option>
+                    <option value="2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น">2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น</option>
+                    <option value="2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น ก่อนนอน">2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น ก่อนนอน</option>
+                    <option value="2 แคปซูล ก่อนนอน">2 แคปซูล ก่อนนอน</option>
+                    <option value="1 ช้อนชา เช้า เย็น">1 ช้อนชา เช้า เย็น</option>
+                    <option value="1 ช้อนชา ก่อนนอน">1 ช้อนชา ก่อนนอน</option>
+                    <option value="จิบกินเมื่อมีอาการ">จิบกินเมื่อมีอาการ</option>
+                    <option value="2 แคปซูลเมื่อมีไข้ ทุกๆ 4 ชั่วโมง">2 แคปซูลเมื่อมีไข้ ทุกๆ 4 ชั่วโมง</option>
+                    <option value="ประคบบริเวณที่ปวด เช้าหรือเย็น">ประคบบริเวณที่ปวด เช้าหรือเย็น</option>
+                    <option value="ทาบริเวณที่มีอาการ เช้า เย็น">ทาบริเวณที่มีอาการ เช้า เย็น</option>
+                    <option value="ครั้งละ 1-2 ช้อนโต๊ะ">ครั้งละ 1-2 ช้อนโต๊ะ</option>
+                    <option value="ครั้งละ 2 หยด ก่อนนอน">ครั้งละ 2 หยด ก่อนนอน</option>
+                    <option value="พอกทิ้งไว้ครั้งละ 15 นาที เช้า-เย็น">พอกทิ้งไว้ครั้งละ 15 นาที เช้า-เย็น</option>
+                    <option value="ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น">ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น</option>
+                </select>
+            </div>
+
+            <button class="btn-primary" onclick="generateBarcodeAndQR()">สร้างรหัสบาร์โค้ดและ QR Code</button>
+
+            <div class="code-result-box" id="resultBox" style="display: none; margin-top: 20px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--medical-primary);">ผลลัพธ์รหัส 13 หลัก: <span id="lblGeneratedCode" style="font-weight: 700;">-</span></h4>
+                
+                <div class="code-display-area">
+                    <div style="text-align: center;">
+                        <svg id="barcodeCanvas"></svg>
+                        <p style="font-size: 11px; margin: 4px 0 0 0; color: var(--text-secondary);">Barcode (1D)</p>
+                        <button class="btn-warning" style="margin-top: 6px;" onclick="downloadBarcode()">ดาวน์โหลด Barcode</button>
+                    </div>
+                    <div style="text-align: center;">
+                        <div id="qrcode" style="display: inline-block;"></div>
+                        <p style="font-size: 11px; margin: 4px 0 0 0; color: var(--text-secondary);">QR Code (2D)</p>
+                        <button class="btn-warning" style="margin-top: 6px;" onclick="downloadQR()">ดาวน์โหลด QR</button>
+                    </div>
+                </div>
+
+                <button class="btn-success" onclick="saveGeneratedDrugToStock()" style="margin-top: 15px;">เพิ่มยานี้เข้าสู่ Stock คลังยา</button>
+            </div>
+
+            <h3 class="section-title" style="margin-top: 24px;">รายการบาร์โค้ดที่สร้างแล้ว</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>รหัส 13 หลัก</th>
+                        <th>ชื่อยา</th>
+                        <th>ขนาดยา</th>
+                        <th>ราคา/วิธีใช้</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="generatedListTableBody">
+                    <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">ยังไม่มีรายการที่สร้าง</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- แถบด้านขวา -->
+    <div class="sidebar" id="rightSidebar"></div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "***************************************",
+        authDomain: "thai-med-monitor.firebaseapp.com",
+        projectId: "thai-med-monitor",
+        storageBucket: "thai-med-monitor.firebasestorage.app",
+        messagingSenderId: "894864632905",
+        appId: "1:894864632905:web:521452d40ea00653a72398",
+        measurementId: "G-7SXZRHE5F9"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
+
+    let allPatientsData = {};
+    let activePatientKey = null;
+    let html5QrCode;
+    let dispenseList = [];
+    let dispensedPatients = {};
+    let currentEditingHN = null;
+    let lastGeneratedCode = "";
+    let lastGeneratedName = "";
+    let lastGeneratedDose = "";
+    let lastGeneratedPrice = 0;
+    let lastGeneratedInstruction = "";
+    let stagedDrug = null;
+
+    const masterDrugList = [
+        { code: "001", name: "ฟ้าทะลายโจร", dose: "500mg" },
+        { code: "002", name: "ยาแก้ไอมะขามป้อม", dose: "60ml" },
+        { code: "003", name: "ยาปราบชมพูทวีป", dose: "500mg" },
+        { code: "004", name: "ยาจันทน์ลีลา", dose: "500mg" },
+        { code: "005", name: "ยาเขียวหอม", dose: "500mg" },
+        { code: "006", name: "ยาห้าราก (เบญจโลกวิเชียร)", dose: "500mg" },
+        { code: "007", name: "ยาประสะจันทน์แดง", dose: "500mg" },
+        { code: "008", name: "ขมิ้นชัน", dose: "500mg" },
+        { code: "009", name: "ยาธาตุอบเชย", dose: "60ml" },
+        { code: "010", name: "ยาธาตุบรรจบ", dose: "500mg" },
+        { code: "011", name: "ยาประสะกะเพรา", dose: "500mg" },
+        { code: "012", name: "ยาเหลืองปิดสมุทร", dose: "500mg" },
+        { code: "013", name: "ยากล้วย", dose: "500mg" },
+        { code: "014", name: "มะขามแขก", dose: "500mg" },
+        { code: "015", name: "ชุมเห็ดเทศ", dose: "500mg" },
+        { code: "016", name: "ยาธรณีสัณฑะฆาต", dose: "500mg" },
+        { code: "017", name: "เถาวัลย์เปรียง", dose: "500mg" },
+        { code: "018", name: "ยาสหัศธารา", dose: "500mg" },
+        { code: "019", name: "ครีมไพล / น้ำมันไพล", dose: "30g" },
+        { code: "020", name: "ยาประคบสมุนไพร", dose: "150g" },
+        { code: "021", name: "ยาหม่องผสมไพล / ยาขี้ผึ้งไพล", dose: "15g" },
+        { code: "022", name: "ยาพญายอ", dose: "10g" },
+        { code: "023", name: "เปลือกมังคุด", dose: "30g" },
+        { code: "024", name: "ทิงเจอร์ทองพันชั่ง", dose: "15ml" },
+        { code: "025", name: "ยาหอมเทพจิตร", dose: "500mg" },
+        { code: "026", name: "ยาหอมนวโกฐ", dose: "500mg" },
+        { code: "027", name: "ยาหอมอินทจักร์", dose: "500mg" },
+        { code: "028", name: "ยาเลือดงาม", dose: "500mg" },
+        { code: "029", name: "ยาประสะไพล", dose: "500mg" },
+        { code: "030", name: "ยาไฟห้ากอง", dose: "500mg" },
+        { code: "031", name: "ยาไฟประลัยกัลป์", dose: "500mg" },
+        { code: "032", name: "ยาพอกเข่า", dose: "100g" },
+        { code: "033", name: "น้ำมันกัญชาหมอเดชา", dose: "5ml" },
+        { code: "034", name: "ยาปรุงเฉพาะราย", dose: "1 dose" },
+        { code: "035", name: "ยาแก้ลมแก้เส้น", dose: "500mg" },
+        { code: "036", name: "ยาทำลายพระสุเมรุ", dose: "500mg" },
+        { code: "037", name: "ยาศุขไสยาศน์", dose: "500mg" },
+        { code: "038", name: "ยาอมมะแว้ง", dose: "เม็ด" }
+    ];
+
+    function getInstructionByName(name) {
+        if (["ฟ้าทะลายโจร", "ยาปราบชมพูทวีป", "ยาจันทน์ลีลา", "ยาเขียวหอม", "ยาห้าราก (เบญจโลกวิเชียร)", "ยาประสะจันทน์แดง", "ยาธรณีสัณฑะฆาต", "เถาวัลย์เปรียง", "ยาสหัศธารา", "ยาแก้ลมแก้เส้น", "ยาทำลายพระสุเมรุ"].includes(name)) return "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น";
+        if (["ขมิ้นชัน", "ยาธาตุบรรจบ", "ยาประสะกะเพรา", "ยาเหลืองปิดสมุทร"].includes(name)) return "2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น";
+        if (["ยาศุขไสยาศน์"].includes(name)) return "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น ก่อนนอน";
+        if (["มะขามแขก"].includes(name)) return "2 แคปซูล ก่อนนอน";
+        if (["ยาหอมเทพจิตร", "ยาหอมนวโกฐ", "ยาหอมอินทจักร์", "ยากล้วย"].includes(name)) return "1 ช้อนชา เช้า เย็น";
+        if (["ยาแก้ไอมะขามป้อม"].includes(name)) return "จิบกินเมื่อมีอาการ";
+        if (["ยาประคบสมุนไพร"].includes(name)) return "ประคบบริเวณที่ปวด เช้าหรือเย็น";
+        if (["ยาพญายอ", "เปลือกมังคุด", "ทิงเจอร์ทองพันชั่ง", "ยาหม่องผสมไพล / ยาขี้ผึ้งไพล"].includes(name)) return "ทาบริเวณที่มีอาการ เช้า เย็น";
+        if (["ยาธาตุอบเชย"].includes(name)) return "ครั้งละ 1-2 ช้อนโต๊ะ";
+        if (["น้ำมันกัญชาหมอเดชา"].includes(name)) return "ครั้งละ 2 หยด ก่อนนอน";
+        if (["ยาพอกเข่า"].includes(name)) return "พอกทิ้งไว้ครั้งละ 15 นาที เช้า-เย็น";
+        if (["ยาปรุงเฉพาะราย"].includes(name)) return "ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น";
+        return "2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น";
+    }
+
+    let generatedList = [
+        { code: "0015000500301", name: "ฟ้าทะลายโจร", dose: "500mg", price: 50, instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", type: "เม็ด", qty: "030", isDeleted: false }
+    ];
+
+    const mockDatabase = {
+        "0015000500301": { name: "ฟ้าทะลายโจร", dose: "500mg", price: 50, instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", type: "1", qty: "030", stock: 120, isDeleted: false }
+    };
+
+    const typeMap = {
+        "1": "เม็ด", "2": "ขวด", "3": "แคปซูล", "4": "หลอด", "5": "ซอง", "6": "เม็ดอม", "7": "ชิ้น"
+    };
+
+    function handlePatientInput(input) {
+        input.value = input.value.replace(/\D/g, '');
+    }
+
+    function updateRightSidebar(tabName) {
+        let sidebar = document.getElementById('rightSidebar');
+        if (tabName === 'dispense') {
+            let pharmacyKeys = Object.keys(allPatientsData).filter(k => {
+                let p = allPatientsData[k];
+                return p.currentPoint && (p.currentPoint.includes('ห้องยา') || p.status === 'รอจัดยา');
+            });
+            
+            let queueHtml = '';
+            if (pharmacyKeys.length > 0) {
+                pharmacyKeys.forEach(k => {
+                    let p = allPatientsData[k];
+                    queueHtml += `
+                        <div class="patient-item" onclick="loadPatientFromFlow('${k}')">
+                            <h4>${p.pname} (${p.hn})</h4>
+                            <p>คิว: ${p.queueNo || '-'} | คลินิก: ${p.clinic || '-'}</p>
+                        </div>
+                    `;
+                });
+            } else {
+                queueHtml = `<p style="font-size: 12px; color: var(--text-secondary);">ไม่มีผู้ป่วยรอรับยาจากห้องตรวจ</p>`;
+            }
+
+            sidebar.innerHTML = `
+                <h3>ผู้ป่วยรอรับยา</h3>
+                <div id="patientListContainer">${queueHtml}</div>
+                <h3 style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 10px;">ผู้ป่วยที่จ่ายยาแล้ว</h3>
+                <div id="patientDoneContainer">
+                    <p style="font-size: 12px; color: var(--text-secondary);">ยังไม่มีประวัติการจ่ายยา</p>
+                </div>
+            `;
+            renderDonePatients();
+        } else {
+            let listHtml = masterDrugList.map(item => `
+                <div style="padding: 6px 8px; border-bottom: 1px solid #f0f0f0; font-size: 12px; display: flex; justify-content: space-between;">
+                    <span><strong>[${item.code}]</strong> ${item.name}</span>
+                    <span style="color: var(--text-secondary);">${item.dose}</span>
+                </div>
+            `).join('');
+
+            sidebar.innerHTML = `
+                <h3 style="color: var(--medical-primary); border-bottom: 2px solid var(--medical-primary); padding-bottom: 8px;">ทะเบียนบัญชียา (38 รายการ)</h3>
+                <div style="max-height: 560px; overflow-y: auto; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 4px;">
+                    ${listHtml}
+                </div>
+            `;
+        }
+    }
+
+    flowRef.on('value', (snapshot) => {
+        allPatientsData = snapshot.val() || {};
+        if(document.getElementById('tabDispense').style.display !== 'none') {
+            updateRightSidebar('dispense');
+        }
+    });
+
+    window.onload = function() {
+        updateRightSidebar('dispense');
+    };
+
+    function filterMasterDrugs(tab, val) {
+        let dropdownId = tab === 'stock' ? 'stockMasterDropdown' : 'genMasterDropdown';
+        let dropdown = document.getElementById(dropdownId);
+        
+        if (!val.trim()) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        let matches = masterDrugList.filter(item => item.code.includes(val) || item.name.toLowerCase().includes(val.toLowerCase()));
+        if (matches.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        dropdown.innerHTML = "";
+        matches.forEach(item => {
+            let div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = `<strong>[${item.code}]</strong> ${item.name} (${item.dose})`;
+            div.onclick = function() {
+                selectMasterDrug(tab, item.code, item.name, item.dose);
+                dropdown.style.display = 'none';
+            };
+            dropdown.appendChild(div);
+        });
+        dropdown.style.display = 'block';
+    }
+
+    function selectMasterDrug(tab, code, name, dose) {
+        let mappedInstruction = getInstructionByName(name);
+        
+        if (tab === 'gen') {
+            document.getElementById('genMasterSearch').value = name;
+            document.getElementById('genDrugCode').value = code;
+            document.getElementById('genDrugName').value = name;
+            document.getElementById('genDrugDoseText').value = dose;
+            document.getElementById('genInstruction').value = mappedInstruction;
+        } else if (tab === 'stock') {
+            document.getElementById('stockMasterSearch').value = name;
+            document.getElementById('stockCode').value = code + "5000500301";
+            document.getElementById('stockName').value = name;
+            document.getElementById('stockDose').value = dose;
+            document.getElementById('stockInstruction').value = mappedInstruction;
+        }
+    }
+
+    function switchTab(tabName) {
+        document.getElementById('btnDispense').classList.remove('active');
+        document.getElementById('btnStock').classList.remove('active');
+        document.getElementById('btnGenerator').classList.remove('active');
+        
+        document.getElementById('tabDispense').style.display = 'none';
+        document.getElementById('tabStock').style.display = 'none';
+        document.getElementById('tabGenerator').style.display = 'none';
+        
+        if (tabName === 'dispense') {
+            document.getElementById('btnDispense').classList.add('active');
+            document.getElementById('tabDispense').style.display = 'block';
+        } else if (tabName === 'stock') {
+            document.getElementById('btnStock').classList.add('active');
+            document.getElementById('tabStock').style.display = 'block';
+            renderStockTable();
+        } else if (tabName === 'generator') {
+            document.getElementById('btnGenerator').classList.add('active');
+            document.getElementById('tabGenerator').style.display = 'block';
+            renderGeneratedList();
+        }
+        updateRightSidebar(tabName);
+    }
+
+    function searchPatient() {
+        let rawInput = document.getElementById('patientSearch').value.trim();
+        if (!rawInput) {
+            alert("กรุณากรอกเลข HN");
+            return;
+        }
+
+        let foundKey = Object.keys(allPatientsData).find(k => allPatientsData[k].hn === rawInput);
+        if (foundKey) {
+            loadPatientFromFlow(foundKey);
+        } else {
+            alert("ไม่พบข้อมูลผู้ป่วย HN: " + rawInput + " ในฐานข้อมูล Firebase");
+        }
+    }
+
+    function loadPatientFromFlow(key) {
+        activePatientKey = key;
+        let p = allPatientsData[key];
+        document.getElementById('pHN').innerText = p.hn || "-";
+        document.getElementById('pName').innerText = p.pname || "-";
+        document.getElementById('pQueue').innerText = p.queueNo || "-";
+        document.getElementById('pRight').innerText = p.rightScheme || "-";
+        document.getElementById('pClinic').innerText = p.clinic || "-";
+        document.getElementById('pDx').innerText = p.chiefComplaint || "-";
+        
+        let vs = p.vitalSign || {};
+        document.getElementById('pVitals').innerText = `BP: ${vs.bp || '-'}, PR: ${vs.pr || '-'}, Temp: ${vs.temp || '-'}`;
+
+        dispenseList = [];
+        if (p.prescriptions && p.prescriptions.length > 0) {
+            p.prescriptions.forEach(rx => {
+                let matchedCode = Object.keys(mockDatabase).find(code => mockDatabase[code].name === rx.name) || "0015000500301";
+                dispenseList.push({
+                    code: matchedCode,
+                    name: `${rx.name} (${rx.instruction || ''})`,
+                    qty: parseInt(rx.qty) || 1
+                });
+            });
+        }
+        renderDispenseTable();
+        alert(`ดึงข้อมูลผู้ป่วย ${p.pname} เรียบร้อย!`);
+    }
+
+    function handleBarcodeInputKeypress(e) {
+        if (e.key === 'Enter') {
+            stageScannedDrug();
+        }
+    }
+
+    function stageScannedDrug() {
+        let code = document.getElementById('barcodeInput').value.trim();
+        if (!code || code.length !== 13) {
+            alert("กรุณาระบุหรือสแกนรหัสบาร์โค้ดให้ครบ 13 หลัก");
+            return;
+        }
+
+        const drug = mockDatabase[code];
+        if (!drug || drug.isDeleted) {
+            alert(`ไม่พบรหัสโค้ด "${code}" ในระบบคลังยา (แนะนำให้เพิ่มลง Stock ก่อน)`);
+            return;
+        }
+
+        let defaultQty = parseInt(code.substring(9, 12)) || 1;
+        stagedDrug = {
+            code: code,
+            name: `${drug.name} (${drug.dose})`,
+            qty: defaultQty
+        };
+
+        document.getElementById('stagedCode').innerText = stagedDrug.code;
+        document.getElementById('stagedName').innerText = stagedDrug.name;
+        document.getElementById('stagedQty').innerText = stagedDrug.qty;
+        document.getElementById('stagedDrugBox').style.display = 'block';
+        document.getElementById('barcodeInput').value = '';
+    }
+
+    function confirmAddStagedDrug() {
+        if (!stagedDrug) return;
+        let existing = dispenseList.find(item => item.code === stagedDrug.code);
+        if (existing) {
+            existing.qty += stagedDrug.qty;
+        } else {
+            dispenseList.push(stagedDrug);
+        }
+        renderDispenseTable();
+        stagedDrug = null;
+        document.getElementById('stagedDrugBox').style.display = 'none';
+        document.getElementById('barcodeInput').focus();
+    }
+
+    function renderDispenseTable() {
+        let tbody = document.getElementById('dispenseTableBody');
+        if (dispenseList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">ยังไม่มีรายการยาในระบบ</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        dispenseList.forEach((item, index) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${item.code}</td>
+                    <td>${item.name}</td>
+                    <td>${item.qty}</td>
+                    <td>
+                        <button class="btn-warning" onclick="editQty(${index})">แก้ไข</button>
+                        <button class="btn-danger" onclick="removeDrug(${index})">ลบ</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    function editQty(index) {
+        let newQty = prompt("ระบุจำนวนยาที่ต้องการ:", dispenseList[index].qty);
+        if (newQty !== null) {
+            let qty = parseInt(newQty);
+            if (!isNaN(qty) && qty > 0) {
+                dispenseList[index].qty = qty;
+                renderDispenseTable();
+            }
+        }
+    }
+
+    function removeDrug(index) {
+        dispenseList.splice(index, 1);
+        renderDispenseTable();
+    }
+
+    function startScanner() {
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 150 } },
+            (decodedText) => {
+                document.getElementById('barcodeInput').value = decodedText;
+                stageScannedDrug();
+                stopScanner();
+            },
+            (errorMessage) => {}
+        ).catch(err => {
+            alert("ไม่สามารถเปิดกล้องได้: " + err);
+        });
+    }
+
+    function stopScanner() {
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => html5QrCode.clear());
+        }
+    }
+
+    function confirmDispense() {
+        let hn = document.getElementById('pHN').innerText;
+        if (hn === '-') {
+            alert('กรุณาเลือกหรือค้นหาข้อมูลผู้ป่วยก่อนยืนยันการจ่ายยา');
+            return;
+        }
+        if (dispenseList.length === 0) {
+            alert('กรุณาสแกนหรือเพิ่มรายการยาอย่างน้อย 1 รายการ');
+            return;
+        }
+
+        if (activePatientKey) {
+            flowRef.child(activePatientKey).update({
+                currentPoint: 'จุดที่ 4: การเงิน',
+                status: 'รอชำระเงิน',
+                pharmacyFeedback: 'จ่ายยาแล้ว'
+            });
+        }
+
+        dispensedPatients[hn] = { key: activePatientKey, list: [...dispenseList] };
+        alert(`บันทึกการจ่ายยาให้ผู้ป่วย HN: ${hn} เรียบร้อย!`);
+        renderDonePatients();
+        
+        dispenseList = [];
+        renderDispenseTable();
+        document.getElementById('patientSearch').value = '';
+        document.getElementById('pHN').innerText = '-';
+        document.getElementById('pName').innerText = '-';
+        document.getElementById('pQueue').innerText = '-';
+        document.getElementById('pRight').innerText = '-';
+        document.getElementById('pClinic').innerText = '-';
+        document.getElementById('pDx').innerText = '-';
+        document.getElementById('pVitals').innerText = '-';
+        activePatientKey = null;
+    }
+
+    function renderDonePatients() {
+        let container = document.getElementById('patientDoneContainer');
+        if (!container) return;
+        container.innerHTML = "";
+        let hasData = false;
+
+        for (let hn in dispensedPatients) {
+            hasData = true;
+            let data = dispensedPatients[hn];
+            container.innerHTML += `
+                <div class="patient-item done">
+                    <h4>ผู้ป่วย (${hn})</h4>
+                    <p style="color: var(--accent-green); font-weight: 600;">สถานะ: จ่ายยาแล้ว</p>
+                    <button class="btn-warning" style="margin-top: 6px; width: 100%;" onclick="editDispensedPatient('${hn}')">แก้ไขรายการยา</button>
+                </div>
+            `;
+        }
+
+        if (!hasData) {
+            container.innerHTML = `<p style="font-size: 12px; color: var(--text-secondary);">ยังไม่มีประวัติการจ่ายยา</p>`;
+        }
+    }
+
+    function editDispensedPatient(hn) {
+        let data = dispensedPatients[hn];
+        if (!data) return;
+        activePatientKey = data.key;
+        dispenseList = JSON.parse(JSON.stringify(data.list));
+        
+        let p = allPatientsData[data.key];
+        if (p) {
+            document.getElementById('pHN').innerText = p.hn || "-";
+            document.getElementById('pName').innerText = p.pname || "-";
+            document.getElementById('pQueue').innerText = p.queueNo || "-";
+            document.getElementById('pRight').innerText = p.rightScheme || "-";
+            document.getElementById('pClinic').innerText = p.clinic || "-";
+            document.getElementById('pDx').innerText = p.chiefComplaint || "-";
+            let vs = p.vitalSign || {};
+            document.getElementById('pVitals').innerText = `BP: ${vs.bp || '-'}, PR: ${vs.pr || '-'}, Temp: ${vs.temp || '-'}`;
+        }
+        renderDispenseTable();
+        alert(`ดึงข้อมูลเคส HN: ${hn} กลับมาแก้ไขรายการยาแล้ว`);
+    }
+
+    function renderStockTable() {
+        let tbody = document.getElementById('stockTableBody');
+        tbody.innerHTML = '';
+        for (let code in mockDatabase) {
+            let drug = mockDatabase[code];
+            let rowClass = drug.isDeleted ? 'deleted-row' : '';
+            tbody.innerHTML += `
+                <tr class="${rowClass}">
+                    <td>${code}</td>
+                    <td>${drug.name}</td>
+                    <td>${drug.dose}</td>
+                    <td>${drug.price} ฿</td>
+                    <td>${drug.instruction}</td>
+                    <td><strong>${drug.stock}</strong></td>
+                    <td>
+                        <button class="btn-warning" onclick="editStockItem('${code}')">แก้ไข</button>
+                        <button class="btn-danger" onclick="deleteStockItem('${code}')">${drug.isDeleted ? 'ลบถาวร' : 'ลบ'}</button>
+                    </td>
+                </tr>`;
+        }
+    }
+
+    function handleStockSearchInput(val) {
+        let dropdown = document.getElementById('stockSearchDropdown');
+        if (!val.trim()) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        let matches = [];
+        for (let code in mockDatabase) {
+            let drug = mockDatabase[code];
+            if (code.includes(val) || drug.name.toLowerCase().includes(val.toLowerCase())) {
+                matches.push({ code: code, ...drug });
+            }
+        }
+
+        if (matches.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        dropdown.innerHTML = "";
+        matches.forEach(item => {
+            let div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = `<strong>${item.code}</strong> - ${item.name} (${item.dose})`;
+            div.onclick = function() {
+                document.getElementById('stockSearchInput').value = item.name;
+                document.getElementById('stockCode').value = item.code;
+                document.getElementById('stockName').value = item.name;
+                document.getElementById('stockDose').value = item.dose;
+                document.getElementById('stockPrice').value = item.price;
+                document.getElementById('stockInstruction').value = item.instruction;
+                document.getElementById('stockQty').value = item.stock;
+                dropdown.style.display = 'none';
+            };
+            dropdown.appendChild(div);
+        });
+        dropdown.style.display = 'block';
+    }
+
+    function updateStock() {
+        let code = document.getElementById('stockCode').value.trim();
+        let name = document.getElementById('stockName').value.trim();
+        let dose = document.getElementById('stockDose').value.trim();
+        let price = parseFloat(document.getElementById('stockPrice').value) || 0;
+        let instruction = document.getElementById('stockInstruction').value;
+        let qty = parseInt(document.getElementById('stockQty').value);
+
+        if (!code || !name || code.length !== 13) {
+            alert('กรุณากรอกข้อมูลให้ครบถ้วน และรหัสต้องเป็น 13 หลัก');
+            return;
+        }
+
+        mockDatabase[code] = { name: name, dose: dose, price: price, instruction: instruction, stock: qty, isDeleted: false };
+        alert('อัปเดต Stock สำเร็จ');
+        renderStockTable();
+    }
+
+    function editStockItem(code) {
+        let drug = mockDatabase[code];
+        let newName = prompt("แก้ไขชื่อยา:", drug.name);
+        if (newName !== null) {
+            let newDose = prompt("แก้ไขขนาดยา:", drug.dose);
+            if (newDose !== null) {
+                let newPrice = prompt("แก้ไขราคายา:", drug.price);
+                if (newPrice !== null) {
+                    drug.name = newName;
+                    drug.dose = newDose;
+                    drug.price = parseFloat(newPrice) || drug.price;
+                    renderStockTable();
+                }
+            }
+        }
+    }
+
+    function deleteStockItem(code) {
+        let drug = mockDatabase[code];
+        if (!drug.isDeleted) {
+            if (confirm("คุณต้องการลบยานี้ออกจากคลังใช่หรือไม่?")) {
+                drug.isDeleted = true;
+                renderStockTable();
+            }
+        } else {
+            if (confirm("ต้องการลบรายการนี้ออกจากระบบอย่างถาวร?")) {
+                delete mockDatabase[code];
+                renderStockTable();
+            }
+        }
+    }
+
+    function generateBarcodeAndQR() {
+        let drugCode = document.getElementById('genDrugCode').value.trim();
+        let doseCode = document.getElementById('genDoseCode').value.trim();
+        let priceCode = document.getElementById('genPriceCode').value.trim();
+        let qtyCode = document.getElementById('genQtyCode').value.trim();
+        let typeCode = document.getElementById('genTypeCode').value;
+        let drugName = document.getElementById('genDrugName').value.trim();
+        let drugDoseText = document.getElementById('genDrugDoseText').value.trim();
+        let instruction = document.getElementById('genInstruction').value;
+        let priceVal = parseFloat(priceCode) || 0;
+
+        if (drugCode.length !== 3 || doseCode.length !== 3 || priceCode.length !== 3 || qtyCode.length !== 3) {
+            alert("กรุณากรอกรหัสแต่ละส่วนให้ครบ 3 หลัก");
+            return;
+        }
+
+        lastGeneratedCode = drugCode + doseCode + priceCode + qtyCode + typeCode;
+        lastGeneratedName = drugName;
+        lastGeneratedDose = drugDoseText;
+        lastGeneratedPrice = priceVal;
+        lastGeneratedInstruction = instruction;
+
+        document.getElementById('lblGeneratedCode').innerText = lastGeneratedCode;
+        document.getElementById('resultBox').style.display = 'block';
+
+        JsBarcode("#barcodeCanvas", lastGeneratedCode, { format: "CODE128", width: 1.2, height: 50, displayValue: true });
+
+        let qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = "";
+        new QRCode(qrContainer, { text: lastGeneratedCode, width: 80, height: 80 });
+
+        if (!generatedList.some(item => item.code === lastGeneratedCode)) {
+            generatedList.push({ code: lastGeneratedCode, name: drugName, dose: drugDoseText, price: priceVal, instruction: instruction, type: typeMap[typeCode], qty: qtyCode, isDeleted: false });
+            renderGeneratedList();
+        }
+    }
+
+    function handleGenSearchInput(val) {
+        let dropdown = document.getElementById('genSearchDropdown');
+        if (!val.trim()) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        let matches = generatedList.filter(item => !item.isDeleted && (item.code.includes(val) || item.name.toLowerCase().includes(val.toLowerCase())));
+        if (matches.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+        }
+
+        dropdown.innerHTML = "";
+        matches.forEach(item => {
+            let div = document.createElement('div');
+            div.className = 'autocomplete-item';
+            div.innerHTML = `<strong>${item.code}</strong> - ${item.name} (${item.dose})`;
+            div.onclick = function() {
+                document.getElementById('genSearchInput').value = item.name;
+                document.getElementById('genDrugCode').value = item.code.substring(0, 3);
+                document.getElementById('genDoseCode').value = item.code.substring(3, 6);
+                document.getElementById('genPriceCode').value = item.code.substring(6, 9);
+                document.getElementById('genQtyCode').value = item.code.substring(9, 12);
+                document.getElementById('genTypeCode').value = item.code.substring(12, 13);
+                document.getElementById('genDrugName').value = item.name;
+                document.getElementById('genDrugDoseText').value = item.dose;
+                document.getElementById('genInstruction').value = item.instruction;
+
+                lastGeneratedCode = item.code;
+                lastGeneratedName = item.name;
+                lastGeneratedDose = item.dose;
+                lastGeneratedPrice = item.price;
+                lastGeneratedInstruction = item.instruction;
+
+                document.getElementById('lblGeneratedCode').innerText = lastGeneratedCode;
+                document.getElementById('resultBox').style.display = 'block';
+                JsBarcode("#barcodeCanvas", lastGeneratedCode, { format: "CODE128", width: 1.2, height: 50, displayValue: true });
+                let qrContainer = document.getElementById('qrcode');
+                qrContainer.innerHTML = "";
+                new QRCode(qrContainer, { text: lastGeneratedCode, width: 80, height: 80 });
+
+                dropdown.style.display = 'none';
+            };
+            dropdown.appendChild(div);
+        });
+        dropdown.style.display = 'block';
+    }
+
+    function renderGeneratedList() {
+        let tbody = document.getElementById('generatedListTableBody');
+        if (generatedList.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">ยังไม่มีรายการที่สร้าง</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = '';
+        generatedList.forEach((item, index) => {
+            let rowClass = item.isDeleted ? 'deleted-row' : '';
+            tbody.innerHTML += `
+                <tr class="${rowClass}">
+                    <td>${item.code}</td>
+                    <td>${item.name}</td>
+                    <td>${item.dose}</td>
+                    <td>${item.price} ฿ / ${item.instruction}</td>
+                    <td>
+                        <button class="btn-warning" onclick="editGenerated(${index})">แก้ไข</button>
+                        <button class="btn-danger" onclick="deleteGenerated(${index})">${item.isDeleted ? 'ลบถาวร' : 'ลบ'}</button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    function editGenerated(index) {
+        let item = generatedList[index];
+        let newName = prompt("แก้ไขชื่อยา:", item.name);
+        if (newName !== null) {
+            let newDose = prompt("แก้ไขขนาดยา:", item.dose);
+            if (newDose !== null) {
+                item.name = newName;
+                item.dose = newDose;
+                renderGeneratedList();
+            }
+        }
+    }
+
+    function deleteGenerated(index) {
+        let item = generatedList[index];
+        if (!item.isDeleted) {
+            if (confirm("คุณต้องการลบบาร์โค้ดนี้ใช่หรือไม่?")) {
+                item.isDeleted = true;
+                renderGeneratedList();
+            }
+        } else {
+            if (confirm("ต้องการลบรายการนี้ออกจากระบบอย่างถาวร?")) {
+                generatedList.splice(index, 1);
+                renderGeneratedList();
+            }
+        }
+    }
+
+    function saveGeneratedDrugToStock() {
+        if (!lastGeneratedCode) return;
+        mockDatabase[lastGeneratedCode] = { 
+            name: lastGeneratedName, 
+            dose: lastGeneratedDose, 
+            price: lastGeneratedPrice,
+            instruction: lastGeneratedInstruction,
+            stock: 100, 
+            isDeleted: false 
+        };
+        alert(`เพิ่มรหัส ${lastGeneratedCode} เข้า Stock เรียบร้อย`);
+        switchTab('stock');
+    }
+
+    function downloadBarcode() {
+        let svg = document.getElementById('barcodeCanvas');
+        let svgData = new XMLSerializer().serializeToString(svg);
+        let blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = `barcode_${lastGeneratedCode}.svg`;
+        a.click();
+    }
+
+    function downloadQR() {
+        let qrImg = document.querySelector('#qrcode img') || document.querySelector('#qrcode canvas');
+        if (!qrImg) {
+            alert("ยังไม่ได้สร้าง QR Code");
+            return;
+        }
+        let url = qrImg.src || qrImg.toDataURL("image/png");
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = `qrcode_${lastGeneratedCode}.png`;
+        a.click();
+    }
+</script>
+
+</body>
+</html>
