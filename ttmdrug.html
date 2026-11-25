@@ -329,8 +329,7 @@
             background-color: #fff5f5;
         }
 
-        /* ฟอร์มสติกเกอร์ 5x2 ซม. (ข้อความ 70%, QR Code 30% ชิดมุมเต็มพื้นที่) */
-      #stickerPreviewContainer {
+        #stickerPreviewContainer {
             position: absolute;
             left: -9999px;
             top: -9999px;
@@ -380,7 +379,7 @@
 <body>
 
 <div class="main-wrapper">
-    <!-- แถบเครื่องมือซ้ายมือ / แถบบนสำหรับมือถือ -->
+    <!-- แถบเครื่องมือซ้ายมือ / แถบบันสำหรับมือถือ -->
     <div class="toolbar">
         <h3>เมนูระบบ</h3>
         <button class="nav-btn active" id="btnDispense" onclick="switchTab('dispense')">1. จ่ายยา</button>
@@ -748,13 +747,13 @@
     <div class="sidebar" id="rightSidebar"></div>
 </div>
 
-<!-- กล่องจำลองสติกเกอร์ 5x2 ซม. (ข้อความ 70% ตัวอักษรใหญ่เท่ากัน, QR Code 30% ชิดมุมเต็มพื้นที่) -->
+<!-- กล่องจำลองสติกเกอร์ 5x2 ซม. (ข้อความ 70% ชิดแน่น บิ๊กเบิ้ม, QR Code 30% เต็มพื้นที่ฝั่งขวา) -->
 <div id="stickerPreviewContainer">
     <div style="width: 70%; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-        <div id="stickerDrugName" style="font-weight: bold; font-size: 20px; line-height: 1.1;">-</div>
-        <div id="stickerLot" style="font-size: 18px; font-weight: bold; line-height: 1.1;">-</div>
-        <div id="stickerMfg" style="font-size: 18px; font-weight: bold; line-height: 1.1;">-</div>
-        <div id="stickerExp" style="font-size: 18px; font-weight: bold; line-height: 1.1;">-</div>
+        <div id="stickerDrugName" style="font-weight: bold; font-size: 26px; line-height: 1.0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">-</div>
+        <div id="stickerLot" style="font-size: 22px; font-weight: bold; line-height: 1.0;">-</div>
+        <div id="stickerMfg" style="font-size: 22px; font-weight: bold; line-height: 1.0;">-</div>
+        <div id="stickerExp" style="font-size: 22px; font-weight: bold; line-height: 1.0;">-</div>
     </div>
     <div style="width: 30%; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; height: 100%;">
         <div id="stickerQr" style="display: flex; align-items: center; justify-content: center;"></div>
@@ -778,6 +777,7 @@
     const stockRef = database.ref('hospitalStockDatabase');
     const summaryRef = database.ref('hospitalDrugSummary');
     const notesRef = database.ref('hospitalDrugNotes');
+    const generatedRef = database.ref('hospitalGeneratedBarcodes');
 
     let allPatientsData = {};
     let activePatientKey = null;
@@ -788,6 +788,7 @@
     let drugDatabase = {};
     let drugSummaryLogs = {}; 
     let drugNotes = {}; 
+    let generatedList = [];
     let stagedDrug = null;
 
     let lastGeneratedCode = "";
@@ -834,6 +835,20 @@
         drugNotes = snapshot.val() || {};
         if(document.getElementById('tabSummary').style.display !== 'none') {
             renderSummaryTable();
+        }
+    });
+
+    generatedRef.on('value', (snapshot) => {
+        let val = snapshot.val();
+        if (val) {
+            generatedList = Array.isArray(val) ? val : Object.values(val);
+        } else {
+            generatedList = [
+                { code: "0015000500301", name: "ฟ้าทะลายโจร", dose: "500mg", price: 50, instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", type: "เม็ด", qty: "030", isDeleted: false }
+            ];
+        }
+        if(document.getElementById('tabGenerator').style.display !== 'none') {
+            renderGeneratedList();
         }
     });
 
@@ -893,10 +908,6 @@
         if (["ยาปรุงเฉพาะราย"].includes(name)) return "ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น";
         return "2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น";
     }
-
-    let generatedList = [
-        { code: "0015000500301", name: "ฟ้าทะลายโจร", dose: "500mg", price: 50, instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", type: "เม็ด", qty: "030", isDeleted: false }
-    ];
 
     const typeMap = {
         "1": "เม็ด", "2": "ขวด", "3": "แคปซูล", "4": "หลอด", "5": "ซอง", "6": "เม็ดอม", "7": "ชิ้น"
@@ -1532,11 +1543,13 @@
         qrContainer.innerHTML = "";
         new QRCode(qrContainer, { text: lastGeneratedCode, width: 40, height: 40 });
 
+        let newItem = { code: lastGeneratedCode, name: drugName, dose: drugDoseText, price: priceVal, instruction: instruction, type: typeMap[typeCode], qty: qtyCode, isDeleted: false };
         if (!generatedList.some(item => item.code === lastGeneratedCode)) {
-            generatedList.push({ code: lastGeneratedCode, name: drugName, dose: drugDoseText, price: priceVal, instruction: instruction, type: typeMap[typeCode], qty: qtyCode, isDeleted: false });
-            renderGeneratedList();
+            generatedList.push(newItem);
+            generatedRef.set(generatedList);
         }
     }
+
     function saveLabelAsImage() {
         if (!lastGeneratedCode) {
             alert("กรุณาสร้างรหัสบาร์โค้ดก่อนบันทึกภาพ");
@@ -1550,8 +1563,8 @@
 
         let qrBox = document.getElementById('stickerQr');
         qrBox.innerHTML = "";
-        // ขยาย QR Code ให้ใหญ่เต็มพื้นที่ฝั่งขวา (165x165 พิกเซล)
-        new QRCode(qrBox, { text: lastGeneratedCode, width: 165, height: 165 });
+        // สร้าง QR Code ใหญ่เต็มพื้นที่ฝั่งขวา 30%
+        new QRCode(qrBox, { text: lastGeneratedCode, width: 180, height: 180 });
 
         let previewContainer = document.getElementById('stickerPreviewContainer');
         previewContainer.style.left = '0';
@@ -1595,7 +1608,6 @@
                 document.getElementById('genTypeCode').value = item.code.substring(12, 13);
                 document.getElementById('genDrugName').value = item.name;
                 document.getElementById('genDrugDoseText').value = item.dose;
-                document.getElementById('genInstruction').value = item.instruction;
 
                 lastGeneratedCode = item.code;
                 lastGeneratedName = item.name;
@@ -1648,6 +1660,7 @@
             if (newDose !== null) {
                 item.name = newName;
                 item.dose = newDose;
+                generatedRef.set(generatedList);
                 renderGeneratedList();
             }
         }
@@ -1658,11 +1671,13 @@
         if (!item.isDeleted) {
             if (confirm("คุณต้องการลบบาร์โค้ดนี้ใช่หรือไม่?")) {
                 item.isDeleted = true;
+                generatedRef.set(generatedList);
                 renderGeneratedList();
             }
         } else {
             if (confirm("ต้องการลบรายการนี้ออกจากระบบอย่างถาวร?")) {
                 generatedList.splice(index, 1);
+                generatedRef.set(generatedList);
                 renderGeneratedList();
             }
         }
