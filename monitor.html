@@ -10,6 +10,8 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- ขั้นตอนที่ 1: เพิ่ม Script Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -55,6 +57,10 @@
 
         .saver-btn { background: rgba(123, 44, 191, 0.2); color: #d8b4fe; border: 1px solid rgba(123, 44, 191, 0.4); }
         .saver-btn:hover { background: rgba(123, 44, 191, 0.4); }
+
+        /* ปุ่มล็อกอิน Google */
+        .login-btn { background: rgba(255, 122, 0, 0.2); color: #ffab40; border: 1px solid rgba(255, 122, 0, 0.4); }
+        .login-btn:hover { background: rgba(255, 122, 0, 0.4); }
 
         .main-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; max-width: 1900px; margin: 0 auto; }
         @media(max-width: 1200px) { .main-layout { grid-template-columns: 1fr; } }
@@ -157,6 +163,8 @@
 
         <div class="header-datetime" id="liveDateTime">กำลังโหลดวันเวลา...</div>
         <div class="header-actions">
+            <!-- ขั้นตอนที่ 2: เพิ่มปุ่มล็อกอินด้วย Google -->
+            <button class="control-btn login-btn" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> เข้าสู่ระบบด้วย Gmail</button>
             <button class="control-btn saver-btn" onclick="toggleManualScreenSaver()"><i class="fa-solid fa-moon"></i> พักหน้าจอ</button>
             <button id="audioToggleBtn" class="control-btn audio-btn" onclick="initAudio()"><i class="fa-solid fa-volume-xmark"></i> เปิดเสียง</button>
         </div>
@@ -204,6 +212,18 @@
             "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด", "ฉัตรลดา หงษ์วิลัย",
             "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"
         ];
+
+        // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    alert("ยินดีต้อนรับเจ้าหน้าที่: " + result.user.displayName);
+                })
+                .catch((error) => {
+                    alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+                });
+        }
 
         // 🛠️ แก้ไขจุดที่ 1: ดึงรูป Staff จากโฟลเดอร์ imsges/ และรองรับการตัดคำนำหน้า
         function getStaffImagePath(operatorName) {
