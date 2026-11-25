@@ -37,7 +37,7 @@
             padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
         }
 
@@ -59,6 +59,7 @@
             flex-direction: column;
             gap: 10px;
             flex-shrink: 0;
+            height: fit-content;
         }
 
         .toolbar h3 {
@@ -100,6 +101,7 @@
             border-radius: 16px;
             padding: 28px;
             box-shadow: var(--shadow);
+            min-width: 0;
         }
 
         .sidebar {
@@ -198,10 +200,10 @@
         }
 
         button {
-            padding: 6px 10px;
+            padding: 8px 12px;
             border: none;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s;
@@ -285,11 +287,18 @@
             color: var(--text-secondary);
         }
 
+        /* Responsive Table wrapper */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
             margin-top: 10px;
+            min-width: 500px;
         }
 
         th, td {
@@ -321,12 +330,11 @@
             background-color: #fff5f5;
         }
 
-        /* สไตล์สำหรับกล่องจำลองสติกเกอร์ 5x2 ซม. (ซ่อนไว้สำหรับแปลงภาพ) */
         #stickerPreviewContainer {
             position: absolute;
             left: -9999px;
             top: -9999px;
-            width: 378px; /* อัตราส่วนเทียบเท่า 5x2 ซม. ที่ความละเอียดคมชัด */
+            width: 378px;
             height: 151px;
             background: #ffffff;
             border: 1px solid #000;
@@ -337,12 +345,42 @@
             align-items: center;
             font-family: sans-serif;
         }
+
+        /* Media Queries สำหรับมือถือและจอขนาดเล็ก */
+        @media (max-width: 1024px) {
+            body {
+                padding: 10px;
+            }
+            .main-wrapper {
+                flex-direction: column;
+            }
+            .toolbar {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 10px;
+                gap: 6px;
+            }
+            .toolbar h3 {
+                display: none;
+            }
+            .nav-btn {
+                flex-shrink: 0;
+                padding: 8px 14px;
+                font-size: 13px;
+                text-align: center;
+            }
+            .sidebar {
+                width: 100%;
+                max-height: 250px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="main-wrapper">
-    <!-- แถบเครื่องมือซ้ายมือ -->
+    <!-- แถบเครื่องมือซ้ายมือ / แถบบนสำหรับมือถือ -->
     <div class="toolbar">
         <h3>เมนูระบบ</h3>
         <button class="nav-btn active" id="btnDispense" onclick="switchTab('dispense')">1. จ่ายยา</button>
@@ -411,21 +449,23 @@
 
             <div style="margin-top: 20px;">
                 <h3 class="section-title">รายการยาที่ต้องการจ่าย</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>รหัส 13 หลัก</th>
-                            <th>ชื่อยา</th>
-                            <th>จำนวน</th>
-                            <th>จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dispenseTableBody">
-                        <tr>
-                            <td colspan="4" style="text-align: center; color: var(--text-secondary);">ยังไม่มีรายการยาในระบบ</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>รหัส 13 หลัก</th>
+                                <th>ชื่อยา</th>
+                                <th>จำนวน</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dispenseTableBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-secondary);">ยังไม่มีรายการยาในระบบ</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
                 <button class="btn-success" id="btnConfirmDispense" onclick="confirmDispense()">ยืนยันการจ่ายยาและตัดสต็อก</button>
             </div>
         </div>
@@ -507,19 +547,21 @@
             <button class="btn-primary" onclick="updateStock()">บันทึกอัปเดต Stock</button>
 
             <h3 class="section-title" style="margin-top: 24px;">รายการยาคงเหลือทั้งหมดในคลัง</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>รหัส 13 หลัก</th>
-                        <th>ชื่อยา / ขนาดยา</th>
-                        <th>Lot / วันบรรจุ / หมดอายุ</th>
-                        <th>ราคา / วิธีใช้</th>
-                        <th>คงเหลือ</th>
-                        <th>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="stockTableBody"></tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>รหัส 13 หลัก</th>
+                            <th>ชื่อยา / ขนาดยา</th>
+                            <th>Lot / วันบรรจุ / หมดอายุ</th>
+                            <th>ราคา / วิธีใช้</th>
+                            <th>คงเหลือ</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stockTableBody"></tbody>
+                </table>
+            </div>
         </div>
 
         <!-- ================= TAB 3: สร้างบาร์โค้ดยา ================= -->
@@ -630,28 +672,29 @@
                     </div>
                 </div>
 
-                <!-- ปุ่มเซฟสติกเกอร์เป็นภาพ (PNG) -->
-                <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    <button class="btn-primary" style="background: var(--accent-orange);" onclick="saveLabelAsImage()">💾 บันทึกสติกเกอร์เป็นภาพ (5x2 ซม.)</button>
-                    <button class="btn-success" onclick="saveGeneratedDrugToStock()" style="margin-top: 0;">เพิ่มยานี้เข้าสู่ Stock คลังยา</button>
+                <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-primary" style="background: var(--accent-orange); flex: 1;" onclick="saveLabelAsImage()">💾 บันทึกสติกเกอร์เป็นภาพ (5x2 ซม.)</button>
+                    <button class="btn-success" onclick="saveGeneratedDrugToStock()" style="margin-top: 0; flex: 1;">เพิ่มยานี้เข้าสู่ Stock คลังยา</button>
                 </div>
             </div>
 
             <h3 class="section-title" style="margin-top: 24px;">รายการบาร์โค้ดที่สร้างแล้ว</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>รหัส 13 หลัก</th>
-                        <th>ชื่อยา</th>
-                        <th>ขนาดยา</th>
-                        <th>ราคา/วิธีใช้</th>
-                        <th>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="generatedListTableBody">
-                    <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">ยังไม่มีรายการที่สร้าง</td></tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>รหัส 13 หลัก</th>
+                            <th>ชื่อยา</th>
+                            <th>ขนาดยา</th>
+                            <th>ราคา/วิธีใช้</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="generatedListTableBody">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">ยังไม่มีรายการที่สร้าง</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- ================= TAB 4: สรุปรายการยา ================= -->
@@ -681,21 +724,23 @@
                 </div>
             </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>รหัส / ประเภท</th>
-                        <th>ชื่อยา</th>
-                        <th>คงเหลือ</th>
-                        <th>จ่ายทั้งหมด</th>
-                        <th>รวมทั้งหมด</th>
-                        <th>หมายเหตุ</th>
-                    </tr>
-                </thead>
-                <tbody id="summaryTableBody">
-                    <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">ไม่มีข้อมูลสรุป</td></tr>
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>รหัส / ประเภท</th>
+                            <th>ชื่อยา</th>
+                            <th>คงเหลือ</th>
+                            <th>จ่ายทั้งหมด</th>
+                            <th>รวมทั้งหมด</th>
+                            <th>หมายเหตุ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTableBody">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">ไม่มีข้อมูลสรุป</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -703,7 +748,6 @@
     <div class="sidebar" id="rightSidebar"></div>
 </div>
 
-<!-- กล่องจำลองสติกเกอร์สำหรับแปลงเป็นภาพ (ซ่อนไว้) -->
 <div id="stickerPreviewContainer">
     <div style="width: 60%; display: flex; flex-direction: column; justify-content: center;">
         <div id="stickerDrugName" style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">-</div>
@@ -755,7 +799,6 @@
     let lastGeneratedMfg = "";
     let lastGeneratedExp = "";
 
-    // Sync ข้อมูลจาก Firebase แบบ Realtime
     stockRef.on('value', (snapshot) => {
         drugDatabase = snapshot.val() || {
             "0015000500301": { 
@@ -1239,7 +1282,6 @@
             }
         });
 
-        // อัปเดตข้อมูลขึ้น Firebase
         stockRef.set(drugDatabase);
         summaryRef.set(drugSummaryLogs);
 
@@ -1492,7 +1534,6 @@
         }
     }
 
-    // ฟังก์ชันบันทึกสติกเกอร์เป็นภาพ (PNG) ขนาด 5x2 ซม. พร้อมข้อมูลครบถ้วน
     function saveLabelAsImage() {
         if (!lastGeneratedCode) {
             alert("กรุณาสร้างรหัสบาร์โค้ดก่อนบันทึกภาพ");
