@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจ่ายยาและคลังยา รพ.พระอาจารย์มั่น ภูริทัตโต</title>
-    <!-- ไลบรารีสแกนและสร้างโค้ด -->
+    <!-- ไลบรารีสแกน สร้างโค้ด และแปลงภาพ -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- jsPDF สำหรับดาวน์โหลดรายงาน PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <!-- Firebase SDK (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -321,6 +320,23 @@
             text-decoration: line-through;
             background-color: #fff5f5;
         }
+
+        /* สไตล์สำหรับกล่องจำลองสติกเกอร์ 5x2 ซม. (ซ่อนไว้สำหรับแปลงภาพ) */
+        #stickerPreviewContainer {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 378px; /* อัตราส่วนเทียบเท่า 5x2 ซม. ที่ความละเอียดคมชัด */
+            height: 151px;
+            background: #ffffff;
+            border: 1px solid #000;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: sans-serif;
+        }
     </style>
 </head>
 <body>
@@ -471,7 +487,6 @@
                 </select>
             </div>
             
-            <!-- ช่องข้อมูลเพิ่มเติม: Lot (เฉพาะตัวเลข), วันบรรจุ, วันหมดอายุ -->
             <div class="form-group">
                 <label for="stockLot">เลขที่ Lot (เฉพาะตัวเลข)</label>
                 <input type="text" id="stockLot" placeholder="เช่น 2026001" oninput="this.value = this.value.replace(/\D/g, '')">
@@ -564,7 +579,6 @@
                 <input type="text" id="genDrugDoseText" placeholder="เช่น 500mg">
             </div>
 
-            <!-- เพิ่มช่องกรอก Lot, วันบรรจุ, วันหมดอายุ สำหรับพิมพ์สติกเกอร์ 5x2 ซม. -->
             <div class="form-group">
                 <label for="genLotNo">เลขที่ Lot (เฉพาะตัวเลข)</label>
                 <input type="text" id="genLotNo" placeholder="เช่น 2026001" oninput="this.value = this.value.replace(/\D/g, '')">
@@ -616,9 +630,9 @@
                     </div>
                 </div>
 
-                <!-- เพิ่มปุ่มพิมพ์สติกเกอร์ขนาด 5x2 ซม. -->
+                <!-- ปุ่มเซฟสติกเกอร์เป็นภาพ (PNG) -->
                 <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    <button class="btn-primary" style="background: var(--accent-orange);" onclick="printLabel5x2()">🖨️ พิมพ์สติกเกอร์ยา 5x2 ซม.</button>
+                    <button class="btn-primary" style="background: var(--accent-orange);" onclick="saveLabelAsImage()">💾 บันทึกสติกเกอร์เป็นภาพ (5x2 ซม.)</button>
                     <button class="btn-success" onclick="saveGeneratedDrugToStock()" style="margin-top: 0;">เพิ่มยานี้เข้าสู่ Stock คลังยา</button>
                 </div>
             </div>
@@ -689,6 +703,20 @@
     <div class="sidebar" id="rightSidebar"></div>
 </div>
 
+<!-- กล่องจำลองสติกเกอร์สำหรับแปลงเป็นภาพ (ซ่อนไว้) -->
+<div id="stickerPreviewContainer">
+    <div style="width: 60%; display: flex; flex-direction: column; justify-content: center;">
+        <div id="stickerDrugName" style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">-</div>
+        <div id="stickerLot" style="font-size: 11px; line-height: 1.3;">-</div>
+        <div id="stickerMfg" style="font-size: 11px; line-height: 1.3;">-</div>
+        <div id="stickerExp" style="font-size: 11px; line-height: 1.3;">-</div>
+    </div>
+    <div style="width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div id="stickerQr"></div>
+        <div id="stickerCodeText" style="font-size: 9px; margin-top: 4px;">-</div>
+    </div>
+</div>
+
 <script>
     const firebaseConfig = {
         apiKey: "***************************************",
@@ -703,6 +731,9 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     const flowRef = database.ref('hospitalFlowQueryGreenThemeV48');
+    const stockRef = database.ref('hospitalStockDatabase');
+    const summaryRef = database.ref('hospitalDrugSummary');
+    const notesRef = database.ref('hospitalDrugNotes');
 
     let allPatientsData = {};
     let activePatientKey = null;
@@ -710,6 +741,7 @@
     let stockQrCode = null;
     let dispenseList = [];
     let dispensedPatients = {};
+    let drugDatabase = {};
     let drugSummaryLogs = {}; 
     let drugNotes = {}; 
     let stagedDrug = null;
@@ -722,6 +754,45 @@
     let lastGeneratedLot = "";
     let lastGeneratedMfg = "";
     let lastGeneratedExp = "";
+
+    // Sync ข้อมูลจาก Firebase แบบ Realtime
+    stockRef.on('value', (snapshot) => {
+        drugDatabase = snapshot.val() || {
+            "0015000500301": { 
+                name: "ฟ้าทะลายโจร", 
+                dose: "500mg", 
+                price: 50, 
+                instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", 
+                type: "1", 
+                qty: "030", 
+                stock: 120, 
+                lot: "2026001", 
+                mfg: "2026-01-01", 
+                exp: "2028-01-01", 
+                isDeleted: false 
+            }
+        };
+        if(document.getElementById('tabStock').style.display !== 'none') {
+            renderStockTable();
+        }
+        if(document.getElementById('tabSummary').style.display !== 'none') {
+            renderSummaryTable();
+        }
+    });
+
+    summaryRef.on('value', (snapshot) => {
+        drugSummaryLogs = snapshot.val() || {};
+        if(document.getElementById('tabSummary').style.display !== 'none') {
+            renderSummaryTable();
+        }
+    });
+
+    notesRef.on('value', (snapshot) => {
+        drugNotes = snapshot.val() || {};
+        if(document.getElementById('tabSummary').style.display !== 'none') {
+            renderSummaryTable();
+        }
+    });
 
     const masterDrugList = [
         { code: "001", name: "ฟ้าทะลายโจร", dose: "500mg" },
@@ -783,22 +854,6 @@
     let generatedList = [
         { code: "0015000500301", name: "ฟ้าทะลายโจร", dose: "500mg", price: 50, instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", type: "เม็ด", qty: "030", isDeleted: false }
     ];
-
-    const mockDatabase = {
-        "0015000500301": { 
-            name: "ฟ้าทะลายโจร", 
-            dose: "500mg", 
-            price: 50, 
-            instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", 
-            type: "1", 
-            qty: "030", 
-            stock: 120, 
-            lot: "2026001", 
-            mfg: "2026-01-01", 
-            exp: "2028-01-01", 
-            isDeleted: false 
-        }
-    };
 
     const typeMap = {
         "1": "เม็ด", "2": "ขวด", "3": "แคปซูล", "4": "หลอด", "5": "ซอง", "6": "เม็ดอม", "7": "ชิ้น"
@@ -986,7 +1041,7 @@
         dispenseList = [];
         if (p.prescriptions && p.prescriptions.length > 0) {
             p.prescriptions.forEach(rx => {
-                let matchedCode = Object.keys(mockDatabase).find(code => mockDatabase[code].name === rx.name) || "0015000500301";
+                let matchedCode = Object.keys(drugDatabase).find(code => drugDatabase[code].name === rx.name) || "0015000500301";
                 dispenseList.push({
                     code: matchedCode,
                     name: `${rx.name} (${rx.instruction || ''})`,
@@ -1011,7 +1066,7 @@
             return;
         }
 
-        const drug = mockDatabase[code];
+        const drug = drugDatabase[code];
         if (!drug || drug.isDeleted) {
             alert(`ไม่พบรหัสโค้ด "${code}" ในระบบคลังยา (แนะนำให้เพิ่มลง Stock ก่อน)`);
             return;
@@ -1167,7 +1222,7 @@
         }
 
         for (let item of dispenseList) {
-            let drug = mockDatabase[item.code];
+            let drug = drugDatabase[item.code];
             if (drug && drug.stock <= 0) {
                 alert(`❌ ไม่สามารถบันทึกการจ่ายยาได้!\n\nยา "${drug.name}" (รหัส: ${item.code}) ในคลังหมดแล้ว (คงเหลือ 0)\nกรุณาลบรายการนี้ออกหรือพิจารณาใช้ยาตัวอื่นทดแทน`);
                 return;
@@ -1175,14 +1230,18 @@
         }
 
         dispenseList.forEach(item => {
-            if (mockDatabase[item.code]) {
-                mockDatabase[item.code].stock -= item.qty;
-                if (mockDatabase[item.code].stock < 0) {
-                    mockDatabase[item.code].stock = 0;
+            if (drugDatabase[item.code]) {
+                drugDatabase[item.code].stock -= item.qty;
+                if (drugDatabase[item.code].stock < 0) {
+                    drugDatabase[item.code].stock = 0;
                 }
                 drugSummaryLogs[item.code] = (drugSummaryLogs[item.code] || 0) + item.qty;
             }
         });
+
+        // อัปเดตข้อมูลขึ้น Firebase
+        stockRef.set(drugDatabase);
+        summaryRef.set(drugSummaryLogs);
 
         if (activePatientKey) {
             flowRef.child(activePatientKey).update({
@@ -1256,8 +1315,8 @@
     function renderStockTable() {
         let tbody = document.getElementById('stockTableBody');
         tbody.innerHTML = '';
-        for (let code in mockDatabase) {
-            let drug = mockDatabase[code];
+        for (let code in drugDatabase) {
+            let drug = drugDatabase[code];
             let rowClass = drug.isDeleted ? 'deleted-row' : '';
             tbody.innerHTML += `
                 <tr class="${rowClass}">
@@ -1278,12 +1337,13 @@
     }
 
     function addStockQuantity(code) {
-        let addQty = prompt(`ระบุจำนวนยาที่ต้องการเติมเพิ่มสำหรับ "${mockDatabase[code].name}":`, "50");
+        let addQty = prompt(`ระบุจำนวนยาที่ต้องการเติมเพิ่มสำหรับ "${drugDatabase[code].name}":`, "50");
         if (addQty !== null) {
             let qty = parseInt(addQty);
             if (!isNaN(qty) && qty > 0) {
-                mockDatabase[code].stock += qty;
-                alert(`เติมสต็อกสำเร็จ! คงเหลือปัจจุบัน: ${mockDatabase[code].stock}`);
+                drugDatabase[code].stock += qty;
+                stockRef.set(drugDatabase);
+                alert(`เติมสต็อกสำเร็จ! คงเหลือปัจจุบัน: ${drugDatabase[code].stock}`);
                 renderStockTable();
             } else {
                 alert("กรุณาระบุตัวเลขจำนวนเต็มบวกที่ถูกต้อง");
@@ -1299,8 +1359,8 @@
         }
 
         let matches = [];
-        for (let code in mockDatabase) {
-            let drug = mockDatabase[code];
+        for (let code in drugDatabase) {
+            let drug = drugDatabase[code];
             if (code.includes(val) || drug.name.toLowerCase().includes(val.toLowerCase())) {
                 matches.push({ code: code, ...drug });
             }
@@ -1350,13 +1410,14 @@
             return;
         }
 
-        mockDatabase[code] = { name: name, dose: dose, price: price, instruction: instruction, lot: lot, mfg: mfg, exp: exp, stock: qty, isDeleted: false };
-        alert('อัปเดต Stock สำเร็จ');
+        drugDatabase[code] = { name: name, dose: dose, price: price, instruction: instruction, lot: lot, mfg: mfg, exp: exp, stock: qty, isDeleted: false };
+        stockRef.set(drugDatabase);
+        alert('อัปเดต Stock สำเร็จและบันทึกลง Firebase แล้ว');
         renderStockTable();
     }
 
     function editStockItem(code) {
-        let drug = mockDatabase[code];
+        let drug = drugDatabase[code];
         let newName = prompt("แก้ไขชื่อยา:", drug.name);
         if (newName !== null) {
             let newDose = prompt("แก้ไขขนาดยา:", drug.dose);
@@ -1366,6 +1427,7 @@
                     drug.name = newName;
                     drug.dose = newDose;
                     drug.price = parseFloat(newPrice) || drug.price;
+                    stockRef.set(drugDatabase);
                     renderStockTable();
                 }
             }
@@ -1373,15 +1435,17 @@
     }
 
     function deleteStockItem(code) {
-        let drug = mockDatabase[code];
+        let drug = drugDatabase[code];
         if (!drug.isDeleted) {
             if (confirm("คุณต้องการลบยานี้ออกจากคลังใช่หรือไม่?")) {
                 drug.isDeleted = true;
+                stockRef.set(drugDatabase);
                 renderStockTable();
             }
         } else {
             if (confirm("ต้องการลบรายการนี้ออกจากระบบอย่างถาวร?")) {
-                delete mockDatabase[code];
+                delete drugDatabase[code];
+                stockRef.set(drugDatabase);
                 renderStockTable();
             }
         }
@@ -1428,91 +1492,36 @@
         }
     }
 
-    function printLabel5x2() {
+    // ฟังก์ชันบันทึกสติกเกอร์เป็นภาพ (PNG) ขนาด 5x2 ซม. พร้อมข้อมูลครบถ้วน
+    function saveLabelAsImage() {
         if (!lastGeneratedCode) {
-            alert("กรุณาสร้างรหัสบาร์โค้ดก่อนพิมพ์");
+            alert("กรุณาสร้างรหัสบาร์โค้ดก่อนบันทึกภาพ");
             return;
         }
 
-        let printWindow = window.open('', '_blank', 'width=500,height=300');
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>พิมพ์สติกเกอร์ยา 5x2 ซม.</title>
-                <style>
-                    @page {
-                        size: 5cm 2cm;
-                        margin: 0;
-                    }
-                    body {
-                        width: 5cm;
-                        height: 2cm;
-                        margin: 0;
-                        padding: 2mm;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        font-family: sans-serif;
-                        font-size: 8px;
-                        box-sizing: border-box;
-                    }
-                    .left-box {
-                        width: 60%;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: center;
-                    }
-                    .right-box {
-                        width: 40%;
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                    .drug-name {
-                        font-weight: bold;
-                        font-size: 10px;
-                        margin-bottom: 1mm;
-                    }
-                    .info {
-                        font-size: 7.5px;
-                        line-height: 1.2;
-                    }
-                    #printQrcode img, #printQrcode canvas {
-                        width: 1.2cm !important;
-                        height: 1.2cm !important;
-                    }
-                </style>
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
-            </head>
-            <body>
-                <div class="left-box">
-                    <div class="drug-name">${lastGeneratedName || '-'} (${lastGeneratedDose || '-'})</div>
-                    <div class="info">Lot: ${lastGeneratedLot || '-'}</div>
-                    <div class="info">Mfg: ${lastGeneratedMfg || '-'}</div>
-                    <div class="info">Exp: ${lastGeneratedExp || '-'}</div>
-                </div>
-                <div class="right-box">
-                    <div id="printQrcode"></div>
-                    <div style="font-size: 6px; margin-top: 1mm;">${lastGeneratedCode}</div>
-                </div>
-                <script>
-                    window.onload = function() {
-                        new QRCode(document.getElementById("printQrcode"), {
-                            text: "${lastGeneratedCode}",
-                            width: 50,
-                            height: 50
-                        });
-                        setTimeout(() => {
-                            window.print();
-                            window.close();
-                        }, 300);
-                    };
-                <\/script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
+        document.getElementById('stickerDrugName').innerText = `${lastGeneratedName || '-'} (${lastGeneratedDose || '-'})`;
+        document.getElementById('stickerLot').innerText = `Lot: ${lastGeneratedLot || '-'}`;
+        document.getElementById('stickerMfg').innerText = `Mfg: ${lastGeneratedMfg || '-'}`;
+        document.getElementById('stickerExp').innerText = `Exp: ${lastGeneratedExp || '-'}`;
+        document.getElementById('stickerCodeText').innerText = lastGeneratedCode;
+
+        let qrBox = document.getElementById('stickerQr');
+        qrBox.innerHTML = "";
+        new QRCode(qrBox, { text: lastGeneratedCode, width: 60, height: 60 });
+
+        let previewContainer = document.getElementById('stickerPreviewContainer');
+        previewContainer.style.left = '0';
+        previewContainer.style.top = '0';
+
+        html2canvas(previewContainer, { scale: 3 }).then(canvas => {
+            previewContainer.style.left = '-9999px';
+            previewContainer.style.top = '-9999px';
+
+            let link = document.createElement('a');
+            link.download = `sticker_${lastGeneratedCode}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
     }
 
     function handleGenSearchInput(val) {
@@ -1617,7 +1626,7 @@
 
     function saveGeneratedDrugToStock() {
         if (!lastGeneratedCode) return;
-        mockDatabase[lastGeneratedCode] = { 
+        drugDatabase[lastGeneratedCode] = { 
             name: lastGeneratedName, 
             dose: lastGeneratedDose, 
             price: lastGeneratedPrice,
@@ -1628,7 +1637,8 @@
             stock: 100, 
             isDeleted: false 
         };
-        alert(`เพิ่มรหัส ${lastGeneratedCode} เข้า Stock เรียบร้อย`);
+        stockRef.set(drugDatabase);
+        alert(`เพิ่มรหัส ${lastGeneratedCode} เข้า Stock บน Firebase เรียบร้อย`);
         switchTab('stock');
     }
 
@@ -1662,8 +1672,8 @@
         tbody.innerHTML = '';
 
         let hasItem = false;
-        for (let code in mockDatabase) {
-            let drug = mockDatabase[code];
+        for (let code in drugDatabase) {
+            let drug = drugDatabase[code];
             let typeCode = code.length === 13 ? code.substring(12, 13) : "1";
 
             if (typeFilter !== 'all' && typeCode !== typeFilter) {
@@ -1696,6 +1706,7 @@
 
     function updateDrugNote(code, val) {
         drugNotes[code] = val;
+        notesRef.set(drugNotes);
     }
 
     function downloadSummaryPDF() {
