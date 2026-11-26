@@ -745,16 +745,24 @@
         let currentPharmacyFilter = 'ในสถานบริการ';
 
         // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google
-        function loginWithGoogle() {
+                function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider)
-                .then((result) => {
-                    alert("ยินดีต้อนรับเจ้าหน้าที่: " + result.user.displayName);
-                })
-                .catch((error) => {
-                    alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
-                });
+            // เปลี่ยนจาก signInWithPopup เป็น signInWithRedirect เพื่อป้องกัน Safari บล็อก Pop-up
+            firebase.auth().signInWithRedirect(provider).catch((error) => {
+                alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+            });
         }
+
+        // เพิ่มฟังก์ชันตรวจสอบผลลัพธ์หลังจาก Google Redirect กลับมาที่หน้าเว็บ
+        firebase.auth().getRedirectResult()
+            .then((result) => {
+                if (result.user) {
+                    localStorage.setItem('ttm_logged_in', 'true');
+                    alert("ยินดีต้อนรับเจ้าหน้าที่: " + result.user.displayName);
+                }
+            }).catch((error) => {
+                console.error("Redirect Auth Error: ", error);
+            });
 
         const staffList = [
             "พรสิน เฮียงราช", "พฤษาพันธ์ บุบผาลา", "จิรวัฒณ์ สีตาแสน", "ฐิติมา บุญแฮด",
