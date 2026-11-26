@@ -807,25 +807,62 @@
     let lastGeneratedMfg = "";
     let lastGeneratedExp = "";
 
-    // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google
-            function loginWithGoogle() {
+            // 1. ฟังก์ชันล็อกอินผ่าน Google (รองรับทั้ง Popup และ Redirect ป้องกัน Safari บล็อก)
+        function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // เปลี่ยนจาก signInWithPopup เป็น signInWithRedirect เพื่อป้องกัน Safari บล็อก Pop-up
-            firebase.auth().signInWithRedirect(provider).catch((error) => {
-                alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
-            });
-        }
-
-        // เพิ่มฟังก์ชันตรวจสอบผลลัพธ์หลังจาก Google Redirect กลับมาที่หน้าเว็บ
-        firebase.auth().getRedirectResult()
-            .then((result) => {
-                if (result.user) {
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
                     localStorage.setItem('ttm_logged_in', 'true');
                     alert("ยินดีต้อนรับเจ้าหน้าที่: " + result.user.displayName);
-                }
-            }).catch((error) => {
-                console.error("Redirect Auth Error: ", error);
-            });
+                })
+                .catch((error) => {
+                    // หากถูกบล็อกบน Safari ให้ลองใช้ Redirect แทน
+                    if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+                        firebase.auth().signInWithRedirect(provider);
+                    } else {
+                        alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+                    }
+                });
+        }
+
+        // 2. ฟังก์ชันออกจากระบบ (Log Out)
+        function logoutFromGoogle() {
+            if (confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) {
+                firebase.auth().signOut().then(() => {
+                    localStorage.removeItem('ttm_logged_in');
+                    localStorage.removeItem('docCurrentLoggedInStaff');
+                    alert("ออกจากระบบสำเร็จ");
+                    location.reload();
+                }).catch((error) => {
+                    alert("เกิดข้อผิดพลาดในการออกจากระบบ: " + error.message);
+                });
+            }
+        }
+
+        // 3. ตรวจสอบสถานะการล็อกอินแบบ Real-time (เปลี่ยน UI อัตโนมัติ)
+        firebase.auth().onAuthStateChanged((user) => {
+            const loginBtn = document.getElementById('loginGoogleBtn');
+            const userProfileArea = document.getElementById('userProfileArea');
+            const userNameDisplay = document.getElementById('userNameDisplay');
+            const userAvatarImg = document.getElementById('userAvatarImg');
+
+            if (user) {
+                // ถ้าล็อกอินแล้ว: ซ่อนปุ่มเข้าสู่ระบบ -> แสดงชื่อ รูปภาพ และปุ่ม Logout
+                if (loginBtn) loginBtn.style.display = 'none';
+                if (userProfileArea) userProfileArea.style.display = 'flex';
+                
+                if (userNameDisplay) userNameDisplay.innerText = user.displayName || user.email;
+                if (userAvatarImg && user.photoURL) userAvatarImg.src = user.photoURL;
+                
+                localStorage.setItem('ttm_logged_in', 'true');
+            } else {
+                // ถ้ายังไม่ล็อกอิน: แสดงปุ่มเข้าสู่ระบบ -> ซ่อนโปรไฟล์
+                if (loginBtn) loginBtn.style.display = 'flex';
+                if (userProfileArea) userProfileArea.style.display = 'none';
+                
+                localStorage.removeItem('ttm_logged_in');
+            }
+        });
     }
 
     stockRef.on('value', (snapshot) => {
