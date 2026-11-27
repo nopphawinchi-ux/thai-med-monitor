@@ -799,35 +799,38 @@
     let lastGeneratedMfg = "";
     let lastGeneratedExp = "";
 
-    // ระบบรองรับ USB 2D Barcode Scanner (พิมพ์เร็วและจบด้วย Enter)
+        // ระบบรองรับ USB 2D Barcode Scanner (บังคับอ่านเฉพาะตัวเลขเท่านั้น)
     let usbBarcodeBuffer = "";
     let usbLastKeyTime = Date.now();
 
     document.addEventListener('keypress', function(e) {
         let currentTime = Date.now();
-        // เครื่องสแกน USB จะส่งข้อมูลเร็วมาก (ระยะห่างระหว่างตัวอักษรน้อยกว่า 50ms)
-        if (currentTime - usbLastKeyTime > 60) {
+        if (currentTime - usbLastKeyTime > 80) {
             usbBarcodeBuffer = ""; 
         }
         usbLastKeyTime = currentTime;
 
         if (e.key === 'Enter') {
-            if (usbBarcodeBuffer.length >= 10) {
-                let scannedCode = usbBarcodeBuffer.trim();
-                let activeTab = document.querySelector('.tab-content:not([style*="display: none"])');
+            if (usbBarcodeBuffer.length > 0) {
+                // กรองเอาเฉพาะตัวเลขเท่านั้น (ตัดตัวอักษรและอักขระพิเศษอื่นๆ ทิ้งทั้งหมด)
+                let scannedCode = usbBarcodeBuffer.replace(/\D/g, '').trim();
                 
-                if (activeTab && activeTab.id === 'tabDispense') {
-                    document.getElementById('barcodeInput').value = scannedCode;
-                    stageScannedDrug();
-                } else if (activeTab && activeTab.id === 'tabStock') {
-                    document.getElementById('stockSearchInput').value = scannedCode;
-                    handleStockSearchInput(scannedCode);
+                if (scannedCode.length > 0) {
+                    let activeTab = document.querySelector('.tab-content:not([style*="display: none"])');
+                    
+                    if (activeTab && activeTab.id === 'tabDispense') {
+                        document.getElementById('barcodeInput').value = scannedCode;
+                        stageScannedDrug();
+                    } else if (activeTab && activeTab.id === 'tabStock') {
+                        document.getElementById('stockSearchInput').value = scannedCode;
+                        handleStockSearchInput(scannedCode);
+                    }
                 }
                 usbBarcodeBuffer = "";
                 e.preventDefault();
             }
         } else {
-            // เก็บเฉพาะตัวอักษรหรือตัวเลขที่เป็นส่วนหนึ่งของบาร์โค้ด
+            // รับเฉพาะตัวเลขและตัวอักษรภาษาอังกฤษเข้ามาในบัฟเฟอร์
             if (e.key.length === 1) {
                 usbBarcodeBuffer += e.key;
             }
