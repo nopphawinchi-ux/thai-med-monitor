@@ -13,6 +13,8 @@
     <!-- Firebase SDK (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <!-- Firebase Auth SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     
     <style>
         :root {
@@ -36,8 +38,8 @@
             margin: 0;
             padding: 20px;
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
             min-height: 100vh;
         }
 
@@ -377,6 +379,13 @@
     </style>
 </head>
 <body>
+
+<!-- ส่วนที่ 1: แถบสถานะผู้ใช้งานและปุ่ม Log in / Log out -->
+<div style="width: 100%; max-width: 1450px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 12px; background: #fff; padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow); box-sizing: border-box;">
+    <div id="userStatus" style="font-size: 13px; color: var(--text-secondary);">สถานะ: กำลังตรวจสอบการเข้าสู่ระบบ...</div>
+    <button id="btnLogin" class="btn-primary" style="width: auto; padding: 6px 14px; background: #db4437; display: none;" onclick="loginWithGoogle()">🔑 Login ด้วย Gmail</button>
+    <button id="btnLogout" class="btn-danger" style="display: none; width: auto; padding: 6px 14px;" onclick="logoutGoogle()">🚪 ออกจากระบบ</button>
+</div>
 
 <div class="main-wrapper">
     <!-- แถบเครื่องมือซ้ายมือ / แถบบนสำหรับมือถือ -->
@@ -736,7 +745,7 @@
                         </tr>
                     </thead>
                     <tbody id="summaryTableBody">
-                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">ไม่พบข้อมูลสรุป</td></tr>
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">ไม่มีข้อมูลสรุป</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -778,6 +787,42 @@
     const notesRef = database.ref('hospitalDrugNotes');
     const generatedRef = database.ref('hospitalGeneratedBarcodes');
 
+    // ส่วนที่ 2: ระบบ Google Authentication (Firebase Auth)
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    function loginWithGoogle() {
+        auth.signInWithPopup(provider).then((result) => {
+            alert(`เข้าสู่ระบบสำเร็จ: ${result.user.displayName}`);
+        }).catch((error) => {
+            alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+        });
+    }
+
+    function logoutGoogle() {
+        auth.signOut().then(() => {
+            alert("ออกจากระบบเรียบร้อยแล้ว");
+        }).catch((error) => {
+            console.error(error);
+        });
+    }
+
+    auth.onAuthStateChanged((user) => {
+        let statusEl = document.getElementById('userStatus');
+        let btnLogin = document.getElementById('btnLogin');
+        let btnLogout = document.getElementById('btnLogout');
+
+        if (user) {
+            statusEl.innerHTML = `👤 ผู้ใช้งาน: <strong>${user.displayName}</strong> (${user.email})`;
+            btnLogin.style.display = 'none';
+            btnLogout.style.display = 'inline-block';
+        } else {
+            statusEl.innerHTML = `สถานะ: <span style="color: var(--accent-red);">ยังไม่ได้เข้าสู่ระบบ</span>`;
+            btnLogin.style.display = 'inline-block';
+            btnLogout.style.display = 'none';
+        }
+    });
+
     let allPatientsData = {};
     let activePatientKey = null;
     let html5QrCode = null;
@@ -799,7 +844,7 @@
     let lastGeneratedMfg = "";
     let lastGeneratedExp = "";
 
-                // ระบบรองรับ USB 2D Barcode Scanner (แสดงผลและกดยืนยันเพิ่มลงตารางอัตโนมัติ)
+    // ระบบรองรับ USB 2D Barcode Scanner (แสดงผลและกดยืนยันเพิ่มลงตารางอัตโนมัติ)
     let usbBarcodeBuffer = "";
     let usbLastKeyTime = Date.now();
 
