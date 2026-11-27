@@ -329,7 +329,7 @@
             background-color: #fff5f5;
         }
 
-      #stickerPreviewContainer {
+        #stickerPreviewContainer {
             position: absolute;
             left: -9999px;
             top: -9999px;
@@ -736,7 +736,7 @@
                         </tr>
                     </thead>
                     <tbody id="summaryTableBody">
-                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">ไม่มีข้อมูลสรุป</td></tr>
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">ไม่พบข้อมูลสรุป</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -798,6 +798,41 @@
     let lastGeneratedLot = "";
     let lastGeneratedMfg = "";
     let lastGeneratedExp = "";
+
+    // ระบบรองรับ USB 2D Barcode Scanner (พิมพ์เร็วและจบด้วย Enter)
+    let usbBarcodeBuffer = "";
+    let usbLastKeyTime = Date.now();
+
+    document.addEventListener('keypress', function(e) {
+        let currentTime = Date.now();
+        // เครื่องสแกน USB จะส่งข้อมูลเร็วมาก (ระยะห่างระหว่างตัวอักษรน้อยกว่า 50ms)
+        if (currentTime - usbLastKeyTime > 60) {
+            usbBarcodeBuffer = ""; 
+        }
+        usbLastKeyTime = currentTime;
+
+        if (e.key === 'Enter') {
+            if (usbBarcodeBuffer.length >= 10) {
+                let scannedCode = usbBarcodeBuffer.trim();
+                let activeTab = document.querySelector('.tab-content:not([style*="display: none"])');
+                
+                if (activeTab && activeTab.id === 'tabDispense') {
+                    document.getElementById('barcodeInput').value = scannedCode;
+                    stageScannedDrug();
+                } else if (activeTab && activeTab.id === 'tabStock') {
+                    document.getElementById('stockSearchInput').value = scannedCode;
+                    handleStockSearchInput(scannedCode);
+                }
+                usbBarcodeBuffer = "";
+                e.preventDefault();
+            }
+        } else {
+            // เก็บเฉพาะตัวอักษรหรือตัวเลขที่เป็นส่วนหนึ่งของบาร์โค้ด
+            if (e.key.length === 1) {
+                usbBarcodeBuffer += e.key;
+            }
+        }
+    });
 
     stockRef.on('value', (snapshot) => {
         drugDatabase = snapshot.val() || {
