@@ -799,7 +799,7 @@
     let lastGeneratedMfg = "";
     let lastGeneratedExp = "";
 
-        // ระบบรองรับ USB 2D Barcode Scanner (บังคับอ่านเฉพาะตัวเลขเท่านั้น)
+            // ระบบรองรับ USB 2D Barcode Scanner (เพิ่มลงตารางอัตโนมัติเมื่ออยู่หน้าจ่ายยา)
     let usbBarcodeBuffer = "";
     let usbLastKeyTime = Date.now();
 
@@ -812,7 +812,6 @@
 
         if (e.key === 'Enter') {
             if (usbBarcodeBuffer.length > 0) {
-                // กรองเอาเฉพาะตัวเลขเท่านั้น (ตัดตัวอักษรและอักขระพิเศษอื่นๆ ทิ้งทั้งหมด)
                 let scannedCode = usbBarcodeBuffer.replace(/\D/g, '').trim();
                 
                 if (scannedCode.length > 0) {
@@ -820,7 +819,32 @@
                     
                     if (activeTab && activeTab.id === 'tabDispense') {
                         document.getElementById('barcodeInput').value = scannedCode;
-                        stageScannedDrug();
+                        
+                        // ตรวจสอบและเพิ่มลงตารางจ่ายยาอัตโนมัติทันที
+                        if (scannedCode.length === 13) {
+                            const drug = drugDatabase[scannedCode];
+                            if (!drug || drug.isDeleted) {
+                                alert(`ไม่พบรหัสโค้ด "${scannedCode}" ในระบบคลังยา`);
+                            } else if (drug.stock <= 0) {
+                                alert(`⚠️ แจ้งเตือน: ยา "${drug.name}" ในคลังหมดแล้ว! (คงเหลือ 0)`);
+                            } else {
+                                let defaultQty = parseInt(scannedCode.substring(9, 12)) || 1;
+                                let stagedItem = {
+                                    code: scannedCode,
+                                    name: `${drug.name} (${drug.dose})`,
+                                    qty: defaultQty
+                                };
+
+                                let existing = dispenseList.find(item => item.code === stagedItem.code);
+                                if (existing) {
+                                    existing.qty += stagedItem.qty;
+                                } else {
+                                    dispenseList.push(stagedItem);
+                                }
+                                renderDispenseTable();
+                                document.getElementById('barcodeInput').value = '';
+                            }
+                        }
                     } else if (activeTab && activeTab.id === 'tabStock') {
                         document.getElementById('stockSearchInput').value = scannedCode;
                         handleStockSearchInput(scannedCode);
@@ -830,7 +854,6 @@
                 e.preventDefault();
             }
         } else {
-            // รับเฉพาะตัวเลขและตัวอักษรภาษาอังกฤษเข้ามาในบัฟเฟอร์
             if (e.key.length === 1) {
                 usbBarcodeBuffer += e.key;
             }
