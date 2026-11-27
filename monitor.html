@@ -10,7 +10,6 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <!-- ขั้นตอนที่ 1: เพิ่ม Script Firebase Auth -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
@@ -28,6 +27,14 @@
         body { 
             background: radial-gradient(circle at 50% 0%, #29153d 0%, var(--app-bg) 100%); 
             margin: 0; padding: 24px; min-height: 100vh; color: #fff; 
+        }
+
+        /* แถบสถานะผู้ใช้งานและ Google Login / Logout */
+        .auth-bar {
+            display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+            background: rgba(30, 15, 45, 0.9); backdrop-filter: blur(20px);
+            padding: 8px 20px; border-radius: 14px; border: 1px solid var(--app-border);
+            margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 13px;
         }
         
         .header-container {
@@ -58,9 +65,11 @@
         .saver-btn { background: rgba(123, 44, 191, 0.2); color: #d8b4fe; border: 1px solid rgba(123, 44, 191, 0.4); }
         .saver-btn:hover { background: rgba(123, 44, 191, 0.4); }
 
-        /* ปุ่มล็อกอิน Google */
         .login-btn { background: rgba(255, 122, 0, 0.2); color: #ffab40; border: 1px solid rgba(255, 122, 0, 0.4); }
         .login-btn:hover { background: rgba(255, 122, 0, 0.4); }
+
+        .logout-btn { background: rgba(255, 69, 58, 0.2); color: var(--app-red); border: 1px solid rgba(255, 69, 58, 0.4); }
+        .logout-btn:hover { background: var(--app-red); color: #fff; }
 
         .main-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; max-width: 1900px; margin: 0 auto; }
         @media(max-width: 1200px) { .main-layout { grid-template-columns: 1fr; } }
@@ -151,6 +160,13 @@
         </div>
     </div>
 
+    <!-- แถบสถานะผู้ใช้งานและปุ่ม Google Login / Logout -->
+    <div class="auth-bar">
+        <div id="userStatus" style="color: rgba(255,255,255,0.7); font-size: 13px;">สถานะ: กำลังตรวจสอบการเข้าสู่ระบบ...</div>
+        <button id="btnLogin" class="control-btn login-btn" style="display: none; padding: 6px 14px; font-size: 13px;" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> Login ด้วย Gmail</button>
+        <button id="btnLogout" class="control-btn logout-btn" style="display: none; padding: 6px 14px; font-size: 13px;" onclick="logoutGoogle()"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
+    </div>
+
     <div class="header-container">
         <div class="header-title">
             <i class="fa-solid fa-desktop" style="color: var(--app-orange);"></i> Live Treatment Dashboard
@@ -163,8 +179,6 @@
 
         <div class="header-datetime" id="liveDateTime">กำลังโหลดวันเวลา...</div>
         <div class="header-actions">
-            <!-- ขั้นตอนที่ 2: เพิ่มปุ่มล็อกอินด้วย Google -->
-            <button class="control-btn login-btn" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> เข้าสู่ระบบด้วย Gmail</button>
             <button class="control-btn saver-btn" onclick="toggleManualScreenSaver()"><i class="fa-solid fa-moon"></i> พักหน้าจอ</button>
             <button id="audioToggleBtn" class="control-btn audio-btn" onclick="initAudio()"><i class="fa-solid fa-volume-xmark"></i> เปิดเสียง</button>
         </div>
@@ -187,18 +201,54 @@
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
-            authDomain: "thai-med-monitor.firebaseapp.com",
-            projectId: "thai-med-monitor",
-            storageBucket: "thai-med-monitor.firebasestorage.app",
-            messagingSenderId: "894864632905",
-            appId: "1:894864632905:web:521452d40ea00653a72398",
-            measurementId: "G-7SXZRHE5F9"
+    		authDomain: "thai-med-monitor.firebaseapp.com",
+    		projectId: "thai-med-monitor",
+    		storageBucket: "thai-med-monitor.firebasestorage.app",
+    		messagingSenderId: "894864632905",
+    		appId: "1:894864632905:web:521452d40ea00653a72398",
+    		measurementId: "G-7SXZRHE5F9"
         };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const queueRef = database.ref('patientQueue');
         const hospitalFlowRef = database.ref('hospitalFlowQueryGreenThemeV48');
+
+        // ระบบ Google Authentication (Firebase Auth)
+        const auth = firebase.auth();
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        function loginWithGoogle() {
+            auth.signInWithPopup(provider).then((result) => {
+                alert(`เข้าสู่ระบบสำเร็จ: ${result.user.displayName}`);
+            }).catch((error) => {
+                alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+            });
+        }
+
+        function logoutGoogle() {
+            auth.signOut().then(() => {
+                alert("ออกจากระบบเรียบร้อยแล้ว");
+            }).catch((error) => {
+                console.error(error);
+            });
+        }
+
+        auth.onAuthStateChanged((user) => {
+            let statusEl = document.getElementById('userStatus');
+            let btnLogin = document.getElementById('btnLogin');
+            let btnLogout = document.getElementById('btnLogout');
+
+            if (user) {
+                statusEl.innerHTML = `👤 ผู้ใช้งาน Google: <strong>${user.displayName}</strong> (${user.email})`;
+                btnLogin.style.display = 'none';
+                btnLogout.style.display = 'inline-block';
+            } else {
+                statusEl.innerHTML = `สถานะ Google: <span style="color: var(--app-red);">ยังไม่ได้เข้าสู่ระบบ Gmail</span>`;
+                btnLogin.style.display = 'inline-block';
+                btnLogout.style.display = 'none';
+            }
+        });
 
         let previousKeys = [];
         let notifiedTimeUpKeys = [];
@@ -213,28 +263,6 @@
             "ประกายรัตน์ กาลสุข", "นพวินทร์ จิรศศิภิรมย์", "สุนิสา อินทะเสย์", "นายแพทย์กฤตธนัท วงค์วิเศษ"
         ];
 
-        // ขั้นตอนที่ 3: เพิ่มฟังก์ชัน JavaScript สำหรับล็อกอิน Google
-                function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            // เปลี่ยนจาก signInWithPopup เป็น signInWithRedirect เพื่อป้องกัน Safari บล็อก Pop-up
-            firebase.auth().signInWithRedirect(provider).catch((error) => {
-                alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
-            });
-        }
-
-        // เพิ่มฟังก์ชันตรวจสอบผลลัพธ์หลังจาก Google Redirect กลับมาที่หน้าเว็บ
-        firebase.auth().getRedirectResult()
-            .then((result) => {
-                if (result.user) {
-                    localStorage.setItem('ttm_logged_in', 'true');
-                    alert("ยินดีต้อนรับเจ้าหน้าที่: " + result.user.displayName);
-                }
-            }).catch((error) => {
-                console.error("Redirect Auth Error: ", error);
-            });
-        }
-
-        // 🛠️ แก้ไขจุดที่ 1: ดึงรูป Staff จากโฟลเดอร์ imsges/ และรองรับการตัดคำนำหน้า
         function getStaffImagePath(operatorName) {
             if (!operatorName) return '';
             let cleanName = operatorName.replace(/^\d+\./, '').replace(/^(พท\.|พทป\.|นายแพทย์|ดร\.|นพ\.)/g, '').trim();
@@ -323,7 +351,6 @@
             renderDashboard();
         }
 
-        // 🛠️ แก้ไขจุดที่ 2: กดเสร็จสิ้นเฉพาะคิวของแถวนั้นๆ เคสใครเคสมัน ไม่เหมาหมด
         function removePatient(key) { 
             let p = currentQueueData[key];
             if (p && p.queueNo) { 
