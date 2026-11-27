@@ -1,4 +1,4 @@
-ดสนำ<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -7,9 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (Compat Version) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
         :root {
@@ -44,6 +45,13 @@
         .agency-title { font-size: 15px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 10px; }
         .live-clock { font-size: 13px; font-weight: 600; color: #fef08a; background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 6px; }
 
+        /* แถบสถานะผู้ใช้งานและ Google Login / Logout */
+        .auth-bar {
+            display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+            background: var(--card-bg); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--card-border);
+            margin-bottom: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); font-size: 13px;
+        }
+
         .top-nav {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--card-bg); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--card-border);
@@ -64,7 +72,6 @@
         .nav-tab-admin { background: #fce7f3; border-color: #fbcfe8; color: #be185d; }
         .nav-tab-admin.active { background: #db2777; color: #fff; border-color: #f472b6; }
 
-        /* Workspace ปรับให้รองรับการพับ Slide Bar ไปด้านข้าง */
         .workspace { display: grid; grid-template-columns: 1fr 400px; gap: 14px; max-width: 1800px; margin: 0 auto; transition: 0.3s ease; }
         .workspace.sidebar-collapsed { grid-template-columns: 1fr 50px !important; }
         @media(max-width: 1100px) { .workspace { grid-template-columns: 1fr; } }
@@ -79,7 +86,6 @@
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
         }
 
-        /* Slide Bar ด้านข้าง พร้อมปุ่มพับเก็บไปด้านข้าง */
         .status-sidebar {
             background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px;
             max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 12px rgba(0,0,0,0.04);
@@ -248,7 +254,6 @@
         .btn-row-add { background: #0284c7; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 4px; font-size: 13px; }
         .btn-row-del { background: #dc2626; color: #fff; border: none; padding: 4px; border-radius: 6px; cursor: pointer; font-weight: bold; height: 34px; font-size: 12px; }
 
-        /* จุดที่ 5: ตารางสรุปรายวัน ปรับบรรทัดชิด ช่องไฟน้อยลง เพื่อความกระชับ */
         .admin-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid var(--card-border); }
         .admin-table th, .admin-table td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 5px 8px; text-align: left; color: var(--text-main); line-height: 1.25; }
         .admin-table th { background: #f8fafc; color: var(--primary-teal); font-weight: 700; padding: 6px 8px; }
@@ -302,6 +307,13 @@
         <div class="live-clock" id="liveClockDisplay">กำลังโหลดเวลา...</div>
     </div>
 
+    <!-- แถบแสดงสถานะผู้ใช้งานและปุ่ม Google Login / Logout -->
+    <div class="auth-bar">
+        <div id="userStatus" style="color: var(--text-muted); font-size: 13px;">สถานะ: กำลังตรวจสอบการเข้าสู่ระบบ...</div>
+        <button id="btnLogin" class="btn-action-main" style="width: auto; padding: 6px 14px; background: #db4437; display: none;" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> Login ด้วย Gmail</button>
+        <button id="btnLogout" class="btn-action-warning" style="background: var(--accent-red); width: auto; padding: 6px 14px; display: none;" onclick="logoutGoogle()"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
+    </div>
+
     <!-- แถบเมนูด้านบน -->
     <div class="top-nav">
         <div class="nav-login-area">
@@ -312,7 +324,7 @@
             <button class="nav-tab-btn" id="tab-btn-2" onclick="switchView('view-2', this)" disabled><i class="fa-solid fa-stethoscope"></i> 2. ห้องตรวจ</button>
             <button class="nav-tab-btn" id="tab-btn-3" onclick="switchView('view-3', this)" disabled><i class="fa-solid fa-pills"></i> 3. ห้องยา</button>
             <button class="nav-tab-btn" id="tab-btn-4" onclick="switchView('view-4', this)" disabled><i class="fa-solid fa-cash-register"></i> 4. การเงิน</button>
-            <button class="nav-tab-btn nav-tab-admin" id="tab-btn-5" onclick="switchView('view-5', this)" disabled><i class="fa-solid fa-file-invoice"></i> 5. สรุปรายวัน</button>
+            <button class="nav-tab-btn nav-tab-admin" id="tab-btn-5" onclick="checkAdminAccess(this)" disabled><i class="fa-solid fa-file-invoice"></i> 5. สรุปรายวัน</button>
         </div>
     </div>
 
@@ -370,7 +382,7 @@
                 <div class="camera-box-container">
                     <img id="scannedAvatarPreview" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="crop-avatar-preview" alt="Patient Card Preview" style="object-fit: contain;">
                     <div style="color: var(--primary-teal); font-weight: 700; font-size: 13px; margin-bottom: 6px;">
-                        <i class="fa-solid fa-camera"></i> ถ่ายรูปหรืออัปโหลดภาพ (ตัดครอบกรอบสี่เหลี่ยมผืนผ้า)
+                        <i class="fa-solid fa-camera"></i> ถ่ายรูปหรืออัปโหลดภาพ
                     </div>
                     
                     <div class="camera-btn-row">
@@ -638,7 +650,7 @@
 
         </div>
 
-        <!-- Right Sidebar (ปรับให้มีปุ่มพับเก็บไปด้านข้างได้) -->
+        <!-- Right Sidebar (พร้อมปุ่มพับเก็บไปด้านข้าง) -->
         <div class="status-sidebar" id="rightSidebarPanel">
             <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 700; font-size: 14px;">
                 <span class="sidebar-content-wrap"><i class="fa-solid fa-users-line" style="color:var(--primary-teal);"></i> สถานะผู้ป่วย</span>
@@ -717,7 +729,7 @@
 
     <script>
         const firebaseConfig = {
-            apiKey: "***************************************",
+            apiKey: "AIzaSyDY8iVK3odMUspUk4gSrzzwJUvx2EycCyg",
     		authDomain: "thai-med-monitor.firebaseapp.com",
     		projectId: "thai-med-monitor",
     		storageBucket: "thai-med-monitor.firebasestorage.app",
@@ -729,6 +741,42 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const sysRef = database.ref('hospitalFlowQueryGreenThemeV48');
+
+        // ระบบ Google Authentication (Firebase Auth)
+        const auth = firebase.auth();
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        function loginWithGoogle() {
+            auth.signInWithPopup(provider).then((result) => {
+                alert(`เข้าสู่ระบบสำเร็จ: ${result.user.displayName}`);
+            }).catch((error) => {
+                alert("การเข้าสู่ระบบล้มเหลว: " + error.message);
+            });
+        }
+
+        function logoutGoogle() {
+            auth.signOut().then(() => {
+                alert("ออกจากระบบเรียบร้อยแล้ว");
+            }).catch((error) => {
+                console.error(error);
+            });
+        }
+
+        auth.onAuthStateChanged((user) => {
+            let statusEl = document.getElementById('userStatus');
+            let btnLogin = document.getElementById('btnLogin');
+            let btnLogout = document.getElementById('btnLogout');
+
+            if (user) {
+                statusEl.innerHTML = `👤 ผู้ใช้งาน Google: <strong>${user.displayName}</strong> (${user.email})`;
+                btnLogin.style.display = 'none';
+                btnLogout.style.display = 'inline-block';
+            } else {
+                statusEl.innerHTML = `สถานะ Google: <span style="color: var(--accent-red);">ยังไม่ได้เข้าสู่ระบบ Gmail</span>`;
+                btnLogin.style.display = 'inline-block';
+                btnLogout.style.display = 'none';
+            }
+        });
 
         let allPatientsData = {};
         let selectedDoctorKey = null;
@@ -756,45 +804,45 @@
         ];
 
         const herbDrugMaster = [
-    { code: "001", name: "ฟ้าทะลายโจร", dose: "500mg" },
-    { code: "002", name: "ยาแก้ไอมะขามป้อม", dose: "60ml" },
-    { code: "003", name: "ยาปราบชมพูทวีป", dose: "500mg" },
-    { code: "004", name: "ยาจันทน์ลีลา", dose: "500mg" },
-    { code: "005", name: "ยาเขียวหอม", dose: "500mg" },
-    { code: "006", name: "ยาห้าราก (เบญจโลกวิเชียร)", dose: "500mg" },
-    { code: "007", name: "ยาประสะจันทน์แดง", dose: "500mg" },
-    { code: "008", name: "ขมิ้นชัน", dose: "500mg" },
-    { code: "009", name: "ยาธาตุอบเชย", dose: "60ml" },
-    { code: "010", name: "ยาธาตุบรรจบ", dose: "500mg" },
-    { code: "011", name: "ยาประสะกะเพรา", dose: "500mg" },
-    { code: "012", name: "ยาเหลืองปิดสมุทร", dose: "500mg" },
-    { code: "013", name: "ยากล้วย", dose: "500mg" },
-    { code: "014", name: "มะขามแขก", dose: "500mg" },
-    { code: "015", name: "ชุมเห็ดเทศ", dose: "500mg" },
-    { code: "016", name: "ยาธรณีสัณฑะฆาต", dose: "500mg" },
-    { code: "017", name: "เถาวัลย์เปรียง", dose: "500mg" },
-    { code: "018", name: "ยาสหัศธารา", dose: "500mg" },
-    { code: "019", name: "ครีมไพล / น้ำมันไพล", dose: "30g" },
-    { code: "020", name: "ยาประคบสมุนไพร", dose: "150g" },
-    { code: "021", name: "ยาหม่องผสมไพล / ยาขี้ผึ้งไพล", dose: "15g" },
-    { code: "022", name: "ยาพญายอ", dose: "10g" },
-    { code: "023", name: "เปลือกมังคุด", dose: "30g" },
-    { code: "024", name: "ทิงเจอร์ทองพันชั่ง", dose: "15ml" },
-    { code: "025", name: "ยาหอมเทพจิตร", dose: "500mg" },
-    { code: "026", name: "ยาหอมนวโกฐ", dose: "500mg" },
-    { code: "027", name: "ยาหอมอินทจักร์", dose: "500mg" },
-    { code: "028", name: "ยาเลือดงาม", dose: "500mg" },
-    { code: "029", name: "ยาประสะไพล", dose: "500mg" },
-    { code: "030", name: "ยาไฟห้ากอง", dose: "500mg" },
-    { code: "031", name: "ยาไฟประลัยกัลป์", dose: "500mg" },
-    { code: "032", name: "ยาพอกเข่า", dose: "100g" },
-    { code: "033", name: "น้ำมันกัญชาหมอเดชา", dose: "5ml" },
-    { code: "034", name: "ยาปรุงเฉพาะราย", dose: "1 dose" },
-    { code: "035", name: "ยาแก้ลมแก้เส้น", dose: "500mg" },
-    { code: "036", name: "ยาทำลายพระสุเมรุ", dose: "500mg" },
-    { code: "037", name: "ยาศุขไสยาศน์", dose: "500mg" },
-    { code: "038", name: "ยาอมมะแว้ง", dose: "เม็ด" }
-];
+            { code: "001", name: "ฟ้าทะลายโจร", dose: "500mg" },
+            { code: "002", name: "ยาแก้ไอมะขามป้อม", dose: "60ml" },
+            { code: "003", name: "ยาปราบชมพูทวีป", dose: "500mg" },
+            { code: "004", name: "ยาจันทน์ลีลา", dose: "500mg" },
+            { code: "005", name: "ยาเขียวหอม", dose: "500mg" },
+            { code: "006", name: "ยาห้าราก (เบญจโลกวิเชียร)", dose: "500mg" },
+            { code: "007", name: "ยาประสะจันทน์แดง", dose: "500mg" },
+            { code: "008", name: "ขมิ้นชัน", dose: "500mg" },
+            { code: "009", name: "ยาธาตุอบเชย", dose: "60ml" },
+            { code: "010", name: "ยาธาตุบรรจบ", dose: "500mg" },
+            { code: "011", name: "ยาประสะกะเพรา", dose: "500mg" },
+            { code: "012", name: "ยาเหลืองปิดสมุทร", dose: "500mg" },
+            { code: "013", name: "ยากล้วย", dose: "500mg" },
+            { code: "014", name: "มะขามแขก", dose: "500mg" },
+            { code: "015", name: "ชุมเห็ดเทศ", dose: "500mg" },
+            { code: "016", name: "ยาธรณีสัณฑะฆาต", dose: "500mg" },
+            { code: "017", name: "เถาวัลย์เปรียง", dose: "500mg" },
+            { code: "018", name: "ยาสหัศธารา", dose: "500mg" },
+            { code: "019", name: "ครีมไพล / น้ำมันไพล", dose: "30g" },
+            { code: "020", name: "ยาประคบสมุนไพร", dose: "150g" },
+            { code: "021", name: "ยาหม่องผสมไพล / ยาขี้ผึ้งไพล", dose: "15g" },
+            { code: "022", name: "ยาพญายอ", dose: "10g" },
+            { code: "023", name: "เปลือกมังคุด", dose: "30g" },
+            { code: "024", name: "ทิงเจอร์ทองพันชั่ง", dose: "15ml" },
+            { code: "025", name: "ยาหอมเทพจิตร", dose: "500mg" },
+            { code: "026", name: "ยาหอมนวโกฐ", dose: "500mg" },
+            { code: "027", name: "ยาหอมอินทจักร์", dose: "500mg" },
+            { code: "028", name: "ยาเลือดงาม", dose: "500mg" },
+            { code: "029", name: "ยาประสะไพล", dose: "500mg" },
+            { code: "030", name: "ยาไฟห้ากอง", dose: "500mg" },
+            { code: "031", name: "ยาไฟประลัยกัลป์", dose: "500mg" },
+            { code: "032", name: "ยาพอกเข่า", dose: "100g" },
+            { code: "033", name: "น้ำมันกัญชาหมอเดชา", dose: "5ml" },
+            { code: "034", name: "ยาปรุงเฉพาะราย", dose: "1 dose" },
+            { code: "035", name: "ยาแก้ลมแก้เส้น", dose: "500mg" },
+            { code: "036", name: "ยาทำลายพระสุเมรุ", dose: "500mg" },
+            { code: "037", name: "ยาศุขไสยาศน์", dose: "500mg" },
+            { code: "038", name: "ยาอมมะแว้ง", dose: "เม็ด" }
+        ];
 
         const herbInstructionMaster = [
             "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น",
@@ -814,38 +862,28 @@
         ];
 
         function getInstructionByName(name) {
-        if (["ฟ้าทะลายโจร", "ยาปราบชมพูทวีป", "ยาจันทน์ลีลา", "ยาเขียวหอม", "ยาห้าราก (เบญจโลกวิเชียร)", "ยาประสะจันทน์แดง", "ยาธรณีสัณฑะฆาต", "เถาวัลย์เปรียง", "ยาสหัศธารา", "ยาแก้ลมแก้เส้น", "ยาทำลายพระสุเมรุ"].includes(name)) return "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น";
-        if (["ขมิ้นชัน", "ยาธาตุบรรจบ", "ยาประสะกะเพรา", "ยาเหลืองปิดสมุทร"].includes(name)) return "2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น";
-        if (["ยาศุขไสยาศน์"].includes(name)) return "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น ก่อนนอน";
-        if (["มะขามแขก"].includes(name)) return "2 แคปซูล ก่อนนอน";
-        if (["ยาหอมเทพจิตร", "ยาหอมนวโกฐ", "ยาหอมอินทจักร์", "ยากล้วย"].includes(name)) return "1 ช้อนชา เช้า เย็น";
-        if (["ยาแก้ไอมะขามป้อม"].includes(name)) return "จิบกินเมื่อมีอาการ";
-        if (["ยาประคบสมุนไพร"].includes(name)) return "ประคบบริเวณที่ปวด เช้าหรือเย็น";
-        if (["ยาพญายอ", "เปลือกมังคุด", "ทิงเจอร์ทองพันชั่ง", "ยาหม่องผสมไพล / ยาขี้ผึ้งไพล"].includes(name)) return "ทาบริเวณที่มีอาการ เช้า เย็น";
-        if (["ยาธาตุอบเชย"].includes(name)) return "ครั้งละ 1-2 ช้อนโต๊ะ";
-        if (["น้ำมันกัญชาหมอเดชา"].includes(name)) return "ครั้งละ 2 หยด ก่อนนอน";
-        if (["ยาพอกเข่า"].includes(name)) return "พอกทิ้งไว้ครั้งละ 15 นาที เช้า-เย็น";
-        if (["ยาปรุงเฉพาะราย"].includes(name)) return "ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น";
-        return "2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น";
-    }
+            if (["ฟ้าทะลายโจร", "ยาปราบชมพูทวีป", "ยาจันทน์ลีลา", "ยาเขียวหอม", "ยาห้าราก (เบญจโลกวิเชียร)", "ยาประสะจันทน์แดง", "ยาธรณีสัณฑะฆาต", "เถาวัลย์เปรียง", "ยาสหัศธารา", "ยาแก้ลมแก้เส้น", "ยาทำลายพระสุเมรุ"].includes(name)) return "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น";
+            if (["ขมิ้นชัน", "ยาธาตุบรรจบ", "ยาประสะกะเพรา", "ยาเหลืองปิดสมุทร"].includes(name)) return "2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น";
+            if (["ยาศุขไสยาศน์"].includes(name)) return "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น ก่อนนอน";
+            if (["มะขามแขก"].includes(name)) return "2 แคปซูล ก่อนนอน";
+            if (["ยาหอมเทพจิตร", "ยาหอมนวโกฐ", "ยาหอมอินทจักร์", "ยากล้วย"].includes(name)) return "1 ช้อนชา เช้า เย็น";
+            if (["ยาแก้ไอมะขามป้อม"].includes(name)) return "จิบกินเมื่อมีอาการ";
+            if (["ยาประคบสมุนไพร"].includes(name)) return "ประคบบริเวณที่ปวด เช้าหรือเย็น";
+            if (["ยาพญายอ", "เปลือกมังคุด", "ทิงเจอร์ทองพันชั่ง", "ยาหม่องผสมไพล / ยาขี้ผึ้งไพล"].includes(name)) return "ทาบริเวณที่มีอาการ เช้า เย็น";
+            if (["ยาธาตุอบเชย"].includes(name)) return "ครั้งละ 1-2 ช้อนโต๊ะ";
+            if (["น้ำมันกัญชาหมอเดชา"].includes(name)) return "ครั้งละ 2 หยด ก่อนนอน";
+            if (["ยาพอกเข่า"].includes(name)) return "พอกทิ้งไว้ครั้งละ 15 นาที เช้า-เย็น";
+            if (["ยาปรุงเฉพาะราย"].includes(name)) return "ต้มดื่มครั้งละ 200 มล. ก่อนอาหารเช้า กลางวัน เย็น";
+            return "2 แคปซูล หลังอาหาร เช้า กลางวัน เย็น";
+        }
 
-    let generatedList = [
-        { code: "0015000500301", name: "ฟ้าทะลายโจร", dose: "500mg", price: 50, instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", type: "เม็ด", qty: "030", isDeleted: false }
-    ];
+        function getPresetInstruction(name) { return getInstructionByName(name); }
+        function getPresetQuantity(name) { return 30; }
 
-    const mockDatabase = {
-        "0015000500301": { name: "ฟ้าทะลายโจร", dose: "500mg", price: 50, instruction: "2 แคปซูล ก่อนอาหาร เช้า กลางวัน เย็น", type: "1", qty: "030", stock: 120, isDeleted: false }
-    };
+        function handlePatientInput(input) {
+            input.value = input.value.replace(/\D/g, '');
+        }
 
-    const typeMap = {
-        "1": "เม็ด", "2": "ขวด", "3": "แคปซูล", "4": "หลอด", "5": "ซอง", "6": "เม็ดอม", "7": "ชิ้น"
-    };
-
-    function handlePatientInput(input) {
-        input.value = input.value.replace(/\D/g, '');
-    }
-
-        // ฟังก์ชันพับเก็บ/ขยาย Sidebar ไปด้านข้าง
         function toggleSidebarCollapse() {
             let workspace = document.getElementById('mainWorkspace');
             let btnIcon = document.getElementById('sidebarToggleBtn').querySelector('i');
@@ -857,7 +895,6 @@
             }
         }
 
-        // ระบบกด Enter เพื่อข้ามไปยังฟิลด์ถัดไป
         function handleVitalEnter(event, nextFieldId) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -892,7 +929,7 @@
 
             let guideListHtml = '';
             herbDrugMaster.forEach((drug) => {
-                guideListHtml += `<li>${drug}</li>`;
+                guideListHtml += `<li><b>[${drug.code}]</b> ${drug.name} (${drug.dose})</li>`;
             });
             document.getElementById('drugGuideList').innerHTML = guideListHtml;
 
@@ -946,7 +983,7 @@
             const randomName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
             
             document.getElementById('user-point-1').selectedIndex = 1;
-            document.getElementById('reg-idcard').value = "1103701234567";
+            document.getElementById('reg-idcard').value = "1459900123456";
             document.getElementById('reg-hn').value = "670123";
             document.getElementById('reg-pname').value = randomName;
             autoDetectGender(randomName);
@@ -1120,7 +1157,6 @@
             return prefix + String(nextNum).padStart(2, '0');
         }
 
-        // ฟังก์ชันบันทึกและส่งข้อมูล (รองรับทั้งสร้างใหม่และอัปเดตเคสเดิมหลังแก้ไข)
         function submitRegistration() {
             if (!isSystemLoggedIn) { alert("กรุณาเข้าสู่ระบบก่อนบันทึกข้อมูล"); return; }
             const staffUser = document.getElementById('user-point-1').value;
@@ -1183,7 +1219,7 @@
 
             if (targetQ.startsWith('C')) {
                 assignedQueueNo = targetQ;
-                selectedGlobalDoc = doctorListWithTitle[5]; // นายแพทย์กฤตธนัท วงค์วิเศษ
+                selectedGlobalDoc = doctorListWithTitle[5]; 
                 selectedClinicVal = 'แพทย์แผนจีน';
                 serviceType = 'ในสถานบริการ';
             } else if (editingKey && allPatientsData[editingKey]) {
@@ -1583,46 +1619,44 @@
                 </div>
                 <div style="margin-top:10px;">
                     <button type="button" class="btn-action-warning" style="background:#0284c7; padding:8px; font-size:13px;" onclick="loadPatientIntoRegistration('${key}')">
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i> ดึงเคสนี้กลับมาที่ฟอร์มจุดที่ 1 (เพื่อกรอก Vital Sign / แก้ไขละเอียด)
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> ดึงเคสนี้กลับมาที่ฟอร์มจุดที่ 1
                     </button>
                 </div>
             `;
             document.getElementById('editPatientModal').style.display = 'flex';
         }
 
-        	function loadPatientIntoRegistration(key) {
-    let p = allPatientsData[key];
-    closeEditModal();
-    switchView('view-1', document.getElementById('tab-btn-1'));
+        function loadPatientIntoRegistration(key) {
+            let p = allPatientsData[key];
+            closeEditModal();
+            switchView('view-1', document.getElementById('tab-btn-1'));
 
-    document.getElementById('reg-idcard').value = p.idcard || '';
-    document.getElementById('reg-hn').value = p.hn || '';
-    document.getElementById('reg-pname').value = p.pname || '';
-    
-    // 👉 เพิ่มบรรทัดนี้เพื่อให้ดึงเบอร์โทรศัพท์ที่ผู้ป่วยกรอกไว้กลับมาแสดงที่ฟอร์มครับ
-    document.getElementById('reg-phone').value = p.phone || '';
-    
-    if (p.gender) selectGender(p.gender);
-    if (p.serviceType) selectServiceType(p.serviceType);
+            document.getElementById('reg-idcard').value = p.idcard || '';
+            document.getElementById('reg-hn').value = p.hn || '';
+            document.getElementById('reg-pname').value = p.pname || '';
+            document.getElementById('reg-phone').value = p.phone || '';
+            
+            if (p.gender) selectGender(p.gender);
+            if (p.serviceType) selectServiceType(p.serviceType);
 
-    if (p.vitalSign) {
-        let bpParts = (p.vitalSign.bp || '').split('/');
-        if (bpParts.length === 2) {
-            document.getElementById('reg-sys').value = bpParts[0];
-            document.getElementById('reg-dia').value = bpParts[1];
+            if (p.vitalSign) {
+                let bpParts = (p.vitalSign.bp || '').split('/');
+                if (bpParts.length === 2) {
+                    document.getElementById('reg-sys').value = bpParts[0];
+                    document.getElementById('reg-dia').value = bpParts[1];
+                }
+                document.getElementById('reg-pr').value = p.vitalSign.pr !== '-' ? p.vitalSign.pr : '';
+                document.getElementById('reg-temp').value = p.vitalSign.temp !== '-' ? p.vitalSign.temp : '';
+                document.getElementById('reg-weight').value = p.vitalSign.weight !== '-' ? p.vitalSign.weight : '';
+                document.getElementById('reg-height').value = p.vitalSign.height !== '-' ? p.vitalSign.height : '';
+            }
+
+            document.getElementById('reg-right').value = "";
+            checkRightSchemeValidation();
+
+            document.getElementById('reg-service-type').dataset.editingKey = key;
+            alert(`ดึงข้อมูลของ "${p.pname}" มาที่จุดลงทะเบียนแล้ว!`);
         }
-        document.getElementById('reg-pr').value = p.vitalSign.pr !== '-' ? p.vitalSign.pr : '';
-        document.getElementById('reg-temp').value = p.vitalSign.temp !== '-' ? p.vitalSign.temp : '';
-        document.getElementById('reg-weight').value = p.vitalSign.weight !== '-' ? p.vitalSign.weight : '';
-        document.getElementById('reg-height').value = p.vitalSign.height !== '-' ? p.vitalSign.height : '';
-    }
-
-    document.getElementById('reg-right').value = "";
-    checkRightSchemeValidation();
-
-    document.getElementById('reg-service-type').dataset.editingKey = key;
-    alert(`ดึงข้อมูลของ "${p.pname}" มาที่จุดลงทะเบียนแล้ว!\nกรุณาตรวจสอบ Vital Sign และเลือกสิทธิ์การรักษาใหม่ จากนั้นกด "บันทึกและส่งต่อไปยังห้องตรวจ"`);
-}
 
         function closeEditModal() { document.getElementById('editPatientModal').style.display = 'none'; }
 
@@ -1720,7 +1754,7 @@
             let kidneyWarning = "";
             if (p.diseases && p.diseases.includes('โรคไตเรื้อรัง')) {
                 kidneyWarning = `<div style="background:#dc2626; color:#fff; padding:6px 10px; border-radius:6px; margin-bottom:10px; font-size:12px; font-weight:bold;">
-                    <i class="fa-solid fa-triangle-exclamation"></i> คำเตือน: ผู้ป่วยมี "โรคไตเรื้อรัง" ควรระมัดระวังเป็นพิเศษในการสั่งจ่ายยาสมุนไพร
+                    <i class="fa-solid fa-triangle-exclamation"></i> คำเตือน: ผู้ป่วยมี "โรคไตเรื้อรัง" ควรระมัดระวังเป็นพิเศษ
                 </div>`;
             }
 
@@ -1829,11 +1863,6 @@
                 finalCost = 30;
             }
 
-            if (selectedTreatments.includes('สปาบำบัด') && (!finalCost || finalCost <= (isGold30 ? 30 : 0))) {
-                alert("กรุณาระบุยอดค่าใช้จ่ายให้ถูกต้อง เนื่องจากเลือกหัตถการสปาบำบัด");
-                return;
-            }
-
             let hasHerbPharmacy = selectedTreatments.includes('จ่ายยาสมุนไพร');
             let nextPoint = hasHerbPharmacy ? 'จุดที่ 3: ห้องยา' : 'จุดที่ 4: การเงิน';
             let nextStatus = hasHerbPharmacy ? 'รอจัดยา' : 'รอชำระเงิน';
@@ -1918,7 +1947,7 @@
             let kidneyWarning = "";
             if (p.diseases && p.diseases.includes('โรคไตเรื้อรัง')) {
                 kidneyWarning = `<div style="background:#dc2626; color:#fff; padding:6px 10px; border-radius:6px; margin-bottom:10px; font-size:12px; font-weight:bold;">
-                    <i class="fa-solid fa-triangle-exclamation"></i> คำเตือน: ผู้ป่วยมีประวัติ "โรคไตเรื้อรัง" ต้องตรวจสอบความปลอดภัยก่อนกดยืนยันจ่ายยา!
+                    <i class="fa-solid fa-triangle-exclamation"></i> คำเตือน: ผู้ป่วยมีประวัติ "โรคไตเรื้อรัง"
                 </div>`;
             }
 
@@ -1943,7 +1972,7 @@
                     <i class="fa-solid fa-triangle-exclamation" style="color:#dc2626;"></i> <b>โรคประจำตัว:</b> <span style="color:#dc2626; font-weight:bold;">${p.diseases || 'ไม่มี'}</span>
                 </div>
 
-                <label style="color:var(--primary-teal); margin-bottom:6px; font-size:13px;"><i class="fa-solid fa-bolt"></i> พรีเซตกลุ่มอาการ (คลิกเลือกเพื่อเพิ่มยาและบวกค่าใช้จ่ายอัตโนมัติ)</label>
+                <label style="color:var(--primary-teal); margin-bottom:6px; font-size:13px;"><i class="fa-solid fa-bolt"></i> พรีเซตกลุ่มอาการ</label>
                 <div class="preset-syndrome-group" id="syndrome-preset-container">
                     <div class="btn-syndrome" data-type="muscle" onclick="applySyndromePreset(this, 'muscle', 150)">1. โรคกล้ามเนื้อ (+150฿)</div>
                     <div class="btn-syndrome" data-type="gastro" onclick="applySyndromePreset(this, 'gastro', 100)">2. ทางเดินอาหาร (+100฿)</div>
@@ -1997,7 +2026,7 @@
 
         function addPharmacyDrugRow(selectedDrug, selectedInst, qty) {
             const rowsContainer = document.getElementById('pharmacy-drug-rows-container');
-            let drugOptsHtml = herbDrugMaster.map(d => `<option value="${d}" ${d===selectedDrug?'selected':''}>${d}</option>`).join('');
+            let drugOptsHtml = herbDrugMaster.map(d => `<option value="${d.name}" ${d.name===selectedDrug?'selected':''}>[${d.code}] ${d.name} (${d.dose})</option>`).join('');
             let instOptsHtml = herbInstructionMaster.map(i => `<option value="${i}" ${i===selectedInst?'selected':''}>${i}</option>`).join('');
 
             let defaultQty = (qty !== null && qty !== undefined) ? qty : (selectedDrug ? getPresetQuantity(selectedDrug) : 30);
@@ -2049,7 +2078,7 @@
 
             let p = allPatientsData[key];
             if (statusMsg === 'จ่ายยาแล้ว' && p.diseases && p.diseases.includes('โรคไตเรื้อรัง') && prescriptionList.length > 0) {
-                let confirmKidneyPharm = confirm("⚠️ คำเตือนความปลอดภัยระดับสูง: ผู้ป่วยรายนี้มีประวัติ 'โรคไตเรื้อรัง' และกำลังมีการจ่ายยาสมุนไพร เภสัชกรต้องตรวจสอบขนาดยาและยืนยันการจ่ายจริง คุณต้องการดำเนินการต่อหรือไม่?");
+                let confirmKidneyPharm = confirm("⚠️ คำเตือนความปลอดภัย: ผู้ป่วยรายนี้มีประวัติ 'โรคไตเรื้อรัง' คุณต้องการดำเนินการต่อหรือไม่?");
                 if (!confirmKidneyPharm) return;
             }
 
@@ -2157,7 +2186,7 @@
             const isFreeScheme = (p.rightScheme === 'บัตรทอง' || p.rightScheme === 'ประกันสังคม ใน สกลนคร' || p.rightScheme === 'จ่ายตรงกรมบัญชีกลาง' || p.rightScheme === 'การปกครองส่วนท้องถิ่น');
             
             if (!isFreeScheme && p.payStatus !== 'ชำระแล้ว') {
-                alert("⚠️ ไม่สามารถส่งคนไข้กลับบ้านได้! กรุณากดยืนยันรับเงินและชำระเงินให้เรียบร้อยก่อนปิดสิทธิ์และกลับบ้าน");
+                alert("⚠️ ไม่สามารถส่งคนไข้กลับบ้านได้! กรุณากดยืนยันรับเงินและชำระเงินให้เรียบร้อย");
                 return;
             }
 
